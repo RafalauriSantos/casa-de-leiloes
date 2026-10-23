@@ -1,4 +1,5 @@
 import pg from 'pg';
+import { toPoolConfig } from './db-connection';
 
 type Params = readonly unknown[];
 
@@ -21,7 +22,7 @@ pg.types.setTypeParser(pg.types.builtins.INT8, (value: string): number => {
 
 export function createDb(connectionString: string): Db {
   // Small pool: each serverless instance holds few connections; the transaction pooler does the rest.
-  const pool = new pg.Pool({ connectionString, max: 3, idleTimeoutMillis: 10_000, connectionTimeoutMillis: 10_000 });
+  const pool = new pg.Pool({ ...toPoolConfig(connectionString), max: 3, idleTimeoutMillis: 10_000, connectionTimeoutMillis: 10_000 });
 
   const run = async <T extends pg.QueryResultRow>(
     target: Pick<pg.Pool | pg.PoolClient, 'query'>,
