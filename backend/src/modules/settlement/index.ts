@@ -1,0 +1,1 @@
+export { settlementRoutes } from './routes';
