@@ -6,6 +6,8 @@ import { healthRoutes } from './modules/health';
 import { identityRoutes } from './modules/identity';
 import { settlementRoutes } from './modules/settlement';
 import { walletRoutes } from './modules/wallet';
+import { catalogRoutes } from './modules/catalog';
+import { lotRoutes } from './modules/lots';
 
 export function createApp(deps: { config: Config; db: Db }): Hono {
   const { config, db } = deps;
@@ -14,6 +16,8 @@ export function createApp(deps: { config: Config; db: Db }): Hono {
   app.route('/', healthRoutes({ db }));
   app.route('/', identityRoutes({ db, config }));
   app.route('/', walletRoutes({ db, config }));
+  app.route('/', catalogRoutes({ db, config }));
+  app.route('/', lotRoutes({ db, config }));
   app.route('/', settlementRoutes({ config }));
 
   app.onError(handleError);
