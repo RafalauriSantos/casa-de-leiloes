@@ -1,8 +1,10 @@
 // Entry point used by Vercel: the Hono app is the default export.
-import { createApp } from './app';
+import type { Hono } from 'hono';
+import { createApp } from './create-app';
 import { loadConfig } from './config';
 import { createDb } from './shared/db';
 
 const config = loadConfig(process.env);
+const app: Hono = createApp({ config, db: createDb(config.databaseUrl) });
 
-export default createApp({ config, db: createDb(config.databaseUrl) });
+export default app;

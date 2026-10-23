@@ -1,6 +1,6 @@
 import type { AddressInfo } from 'node:net';
 import { serve } from '@hono/node-server';
-import { createApp } from '../../src/app';
+import { createApp } from '../../src/create-app';
 import { createDb, type Db } from '../../src/shared/db';
 import { testConfig } from './test-config';
 
