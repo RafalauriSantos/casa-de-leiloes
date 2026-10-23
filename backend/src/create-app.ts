@@ -5,6 +5,7 @@ import { handleError, handleNotFound } from './shared/errors';
 import { healthRoutes } from './modules/health';
 import { identityRoutes } from './modules/identity';
 import { settlementRoutes } from './modules/settlement';
+import { walletRoutes } from './modules/wallet';
 
 export function createApp(deps: { config: Config; db: Db }): Hono {
   const { config, db } = deps;
@@ -12,6 +13,7 @@ export function createApp(deps: { config: Config; db: Db }): Hono {
 
   app.route('/', healthRoutes({ db }));
   app.route('/', identityRoutes({ db, config }));
+  app.route('/', walletRoutes({ db, config }));
   app.route('/', settlementRoutes({ config }));
 
   app.onError(handleError);

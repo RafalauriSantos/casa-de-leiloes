@@ -62,9 +62,9 @@ Status: approved in phase 3 (design).
 
 ## D9. API contract and the single error shape
 - Error body is always `{ "code": "...", "message": "..." }`; framework validation errors are mapped to it.
-- Codes: `validation_error` 422, `bid_below_minimum` 422, `unauthenticated` 401, `forbidden` 403, `not_found` 404, `insufficient_funds` 409, `already_leading` 409, `lot_not_started` 409, `lot_ended` 409, `lot_not_editable` 409, `catalog_unavailable` 503, `internal_error` 500 (no stack or database message leaks).
+- Codes: `validation_error` 422, `bid_below_minimum` 422, `unauthenticated` 401, `forbidden` 403, `not_found` 404, `insufficient_funds` 409, `already_leading` 409, `lot_not_started` 409, `lot_ended` 409, `lot_not_editable` 409, `idempotency_conflict` 409, `catalog_unavailable` 503, `internal_error` 500 (no stack or database message leaks).
 - Public: `GET /api/lots?status=&q=`, `GET /api/lots/{id}`, `GET /api/lots/{id}/live`, `GET /api/lots/{id}/audit`, `GET /api/receipts/{code}`.
-- Bidder: `GET /api/me`, `POST /api/wallet/deposits` (requires `Idempotency-Key`), `POST /api/lots/{id}/bids`, `GET /api/me/wins`.
+- Bidder: `GET /api/me`, `GET /api/wallet`, `POST /api/wallet/deposits` (requires an `Idempotency-Key` UUID: 201 on the first request, 200 replaying the same key, 409 `idempotency_conflict` if the key is reused with another amount; the ledger has a unique index on `(user_id, idempotency_key)` and the balance is changed with an atomic `total_cents = total_cents + n`), `POST /api/lots/{id}/bids`, `GET /api/me/wins`.
 - Auctioneer: `GET /api/catalog/search?q=`, `POST /api/lots`, `PATCH /api/lots/{id}`, `POST /api/lots/{id}/cancel`, `GET /api/auctioneer/lots`, `GET /api/auctioneer/summary`.
 - Internal: `POST /api/internal/close-due` (Bearer `CRON_SECRET`).
 - Identity always comes from the JWT; ownership is checked on every auctioneer route.
@@ -81,7 +81,9 @@ Status: approved in phase 3 (design).
 - Real Postgres (`supabase start`) with the real migrations, real Supabase Auth, real HTTP server called with `fetch`, real parallel requests, real clock (short lots of 2-3 s; anti-sniping uses a lot ending in 90 s). Seed goes through the same services.
 - The Met is the only external system: in CI the production client reads responses captured from the real API and served by a local HTTP server; outage is a closed port. `make e2e-live` hits the real Met (not in `make ci`; run before each deploy and before submitting).
 - A full-journey script runs against the deployed URL after each deploy, with disposable `e2e-` users.
-- `make ci` runs lint, typecheck, tests and build, and is exactly what GitHub Actions runs.
+- `make ci` runs lint, typecheck, build, tests with coverage gates (backend 95% statements/lines and 90% branches/functions; frontend 85/80/85/85) and `npm audit` on production dependencies (high severity fails); it is exactly what GitHub Actions runs.
+- Frontend tests start the real backend (global setup) and drive the real UI against real Supabase Auth and Postgres, so the journeys (sign-up, wallet, double-click deposit, role guard) are end to end without mocks.
+- Every push is preceded by `make ci` and a read-only review by the `pr-reviewer` agent (`.claude/agents/pr-reviewer.md`); findings tiered Blocking/Important/Minor.
 
 ## D13. Time
 - Everything is `timestamptz` in UTC; the UI sends an explicit zone and shows America/Sao_Paulo. The server clock only (`clock_timestamp()` after the lock).

@@ -1,5 +1,7 @@
 import { useState, type SyntheticEvent } from 'react';
+import { Navigate } from 'react-router-dom';
 import { signIn, signUp } from '../api';
+import { useAuth } from '../auth-context';
 
 type Mode = 'signin' | 'signup';
 
@@ -12,6 +14,9 @@ export function AuthPanel() {
   const [mode, setMode] = useState<Mode>('signin');
   const [error, setError] = useState<string>();
   const [busy, setBusy] = useState(false);
+  const auth = useAuth();
+
+  if (auth.status === 'signed-in') return <Navigate to="/" replace />;
 
   async function onSubmit(event: SyntheticEvent<HTMLFormElement>) {
     event.preventDefault();

@@ -1,3 +1,4 @@
 export { AuthPanel } from './components/AuthPanel';
-export { MeCard } from './components/MeCard';
-export { useSession, type SessionState } from './hooks/use-session';
+export { RequireRole } from './components/RequireRole';
+export { AuthProvider, useAuth, type AuthState } from './auth-context';
+export { signOut } from './api';
