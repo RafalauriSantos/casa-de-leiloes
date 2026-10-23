@@ -25,8 +25,8 @@ export function createDb(connectionString: string): Db {
   const pool = new pg.Pool({ ...toPoolConfig(connectionString), max: 3, idleTimeoutMillis: 10_000, connectionTimeoutMillis: 10_000 });
 
   // A dropped idle connection emits 'error' on the pool; unhandled it would crash the process.
-  // The pool discards that client and opens a new one on demand. Log the message only: the error
-  // object carries the connection settings, including the password.
+  // The pool discards that client and opens a new one on demand. Log the message only: the error can
+  // carry the client object, whose settings include the password.
   pool.on('error', (err) => {
     console.error('idle database client error:', err.message);
   });
@@ -44,16 +44,25 @@ export function createDb(connectionString: string): Db {
     query: (text, params) => run(pool, text, params),
     tx: async (fn) => {
       const client = await pool.connect();
+      // A borrowed client no longer reports to the pool's listener: handle its errors here, or a
+      // connection dropped mid-transaction becomes an uncaught exception.
+      const onError = (err: Error) => {
+        console.error('database client error during a transaction:', err.message);
+      };
+      client.on('error', onError);
+      let broken = false;
       try {
         await client.query('BEGIN');
         const result = await fn({ query: (text, params) => run(client, text, params) });
         await client.query('COMMIT');
         return result;
       } catch (err) {
-        await client.query('ROLLBACK').catch(() => undefined);
+        // If even the rollback fails the connection is gone: discard it instead of reusing it.
+        await client.query('ROLLBACK').catch(() => { broken = true; });
         throw err;
       } finally {
-        client.release();
+        client.removeListener('error', onError);
+        client.release(broken);
       }
     },
     end: () => pool.end(),
