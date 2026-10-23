@@ -207,3 +207,45 @@ describe('keeping the screen steady (review findings)', () => {
     }
   });
 });
+
+describe('a deposit whose response was lost', () => {
+  it('can be retried with the same amount and is credited exactly once', async () => {
+    const user = userEvent.setup();
+    const { email, password } = credentials();
+    await supabase.auth.signUp({ email, password });
+
+    // The real API commits the deposit, but the answer never reaches the browser: the case the
+    // idempotency key exists for.
+    const realFetch = globalThis.fetch;
+    let lost = false;
+    globalThis.fetch = async (input, init) => {
+      const response = await realFetch(input, init);
+      const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
+      if (!lost && url.endsWith('/api/wallet/deposits') && init?.method === 'POST') {
+        lost = true;
+        throw new TypeError('connection lost after the server answered');
+      }
+      return response;
+    };
+
+    try {
+      window.history.replaceState({}, '', '/carteira');
+      render(<App />);
+      await user.type(await screen.findByLabelText('Valor (R$)'), '80,00');
+      await user.click(screen.getByRole('button', { name: 'Depositar' }));
+      expect((await screen.findByRole('alert')).textContent).toMatch(/Sem conexão/);
+
+      // The amount is still there: retry it as is.
+      await user.click(screen.getByRole('button', { name: 'Depositar' }));
+      expect((await screen.findByRole('status')).textContent).toBe('Depósito de R$ 80,00 realizado.');
+      expect(within(screen.getByLabelText('Saldos')).getAllByText('R$ 80,00')).toHaveLength(2);
+    } finally {
+      globalThis.fetch = realFetch;
+    }
+
+    // And the server agrees: one deposit, not two.
+    const { data } = await supabase.auth.getSession();
+    const wallet = await realFetch('/api/wallet', { headers: { Authorization: `Bearer ${data.session?.access_token ?? ''}` } });
+    expect(((await wallet.json()) as { totalCents: number }).totalCents).toBe(8_000);
+  });
+});
