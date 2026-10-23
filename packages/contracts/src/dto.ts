@@ -10,3 +10,14 @@ export interface MeResponse {
   role: UserRole;
   displayName: string;
 }
+
+export interface WalletResponse {
+  totalCents: number;
+  committedCents: number;
+  /** Always total - committed. */
+  availableCents: number;
+}
+
+export interface DepositRequest {
+  amountCents: number;
+}

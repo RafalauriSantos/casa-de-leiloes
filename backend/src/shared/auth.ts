@@ -1,10 +1,11 @@
 import { createRemoteJWKSet, jwtVerify } from 'jose';
 import type { MiddlewareHandler } from 'hono';
+import type { UserRole } from '@casa/contracts';
 import type { Config } from '../config';
 import { AppError } from './errors';
 
 export interface AuthEnv {
-  Variables: { userId: string };
+  Variables: { userId: string; role: UserRole };
 }
 
 /**

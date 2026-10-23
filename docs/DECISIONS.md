@@ -61,9 +61,9 @@ Status: approved in phase 3 (design).
 
 ## D9. API contract and the single error shape
 - Error body is always `{ "code": "...", "message": "..." }`; framework validation errors are mapped to it.
-- Codes: `validation_error` 422, `bid_below_minimum` 422, `unauthenticated` 401, `forbidden` 403, `not_found` 404, `insufficient_funds` 409, `already_leading` 409, `lot_not_started` 409, `lot_ended` 409, `lot_not_editable` 409, `catalog_unavailable` 503, `internal_error` 500 (no stack or database message leaks).
+- Codes: `validation_error` 422, `bid_below_minimum` 422, `unauthenticated` 401, `forbidden` 403, `not_found` 404, `insufficient_funds` 409, `already_leading` 409, `lot_not_started` 409, `lot_ended` 409, `lot_not_editable` 409, `idempotency_conflict` 409, `catalog_unavailable` 503, `internal_error` 500 (no stack or database message leaks).
 - Public: `GET /api/lots?status=&q=`, `GET /api/lots/{id}`, `GET /api/lots/{id}/live`, `GET /api/lots/{id}/audit`, `GET /api/receipts/{code}`.
-- Bidder: `GET /api/me`, `POST /api/wallet/deposits` (requires `Idempotency-Key`), `POST /api/lots/{id}/bids`, `GET /api/me/wins`.
+- Bidder: `GET /api/me`, `GET /api/wallet`, `POST /api/wallet/deposits` (requires an `Idempotency-Key` UUID: 201 on the first request, 200 replaying the same key, 409 `idempotency_conflict` if the key is reused with another amount; the ledger has a unique index on `(user_id, idempotency_key)` and the balance is changed with an atomic `total_cents = total_cents + n`), `POST /api/lots/{id}/bids`, `GET /api/me/wins`.
 - Auctioneer: `GET /api/catalog/search?q=`, `POST /api/lots`, `PATCH /api/lots/{id}`, `POST /api/lots/{id}/cancel`, `GET /api/auctioneer/lots`, `GET /api/auctioneer/summary`.
 - Internal: `POST /api/internal/close-due` (Bearer `CRON_SECRET`).
 - Identity always comes from the JWT; ownership is checked on every auctioneer route.

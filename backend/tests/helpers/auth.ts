@@ -28,3 +28,8 @@ export async function signUpUser(options: { displayName?: string; metadata?: Rec
   const body = (await response.json()) as SignUpResponse;
   return { id: body.user.id, email, token: body.access_token };
 }
+
+/** Auctioneers are created by the seed, never by sign-up: tests promote a real user directly in the database. */
+export async function promoteToAuctioneer(db: { query: (text: string, params?: readonly unknown[]) => Promise<unknown> }, userId: string): Promise<void> {
+  await db.query("update public.profiles set role = 'auctioneer' where id = $1", [userId]);
+}

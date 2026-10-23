@@ -10,6 +10,7 @@ export const ERROR_CODES = [
   'lot_not_started',
   'lot_ended',
   'lot_not_editable',
+  'idempotency_conflict',
   'catalog_unavailable',
   'internal_error',
 ] as const;
