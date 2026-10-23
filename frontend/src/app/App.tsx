@@ -1,6 +1,8 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { AuthProvider } from '@/features/auth';
-import { HomePage } from '@/pages/home';
+import { AuctioneerPage } from '@/pages/auctioneer';
+import { LotPage } from '@/pages/lot';
+import { ShowcasePage } from '@/pages/showcase';
 import { LoginPage } from '@/pages/login';
 import { WalletPage } from '@/pages/wallet';
 import { AppLayout } from './AppLayout';
@@ -11,7 +13,9 @@ export function App() {
       <AuthProvider>
         <Routes>
           <Route element={<AppLayout />}>
-            <Route index element={<HomePage />} />
+            <Route index element={<ShowcasePage />} />
+            <Route path="lotes/:id" element={<LotPage />} />
+            <Route path="leiloeiro" element={<AuctioneerPage />} />
             <Route path="entrar" element={<LoginPage />} />
             <Route path="carteira" element={<WalletPage />} />
             <Route path="*" element={<p>Página não encontrada.</p>} />

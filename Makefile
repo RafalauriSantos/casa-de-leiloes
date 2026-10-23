@@ -4,7 +4,7 @@
 audit:
 	npm audit --omit=dev --audit-level=high
 
-.PHONY: audit install lint typecheck test build ci dev dev-api dev-web db-up db-down db-reset
+.PHONY: audit install lint typecheck test build ci dev dev-api dev-web db-up db-down db-reset e2e-live
 
 install:
 	npm ci
@@ -42,3 +42,7 @@ db-down:
 
 db-reset:
 	npx supabase db reset
+
+# Real Met API, not part of ci: run before each deploy and before submitting.
+e2e-live:
+	npx tsx backend/scripts/e2e-live.ts

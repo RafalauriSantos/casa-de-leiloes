@@ -5,6 +5,8 @@ const schema = z.object({
   SUPABASE_URL: z.url().transform((url) => url.replace(/\/+$/, '')),
   AUDIT_HMAC_SECRET: z.string().min(32),
   CRON_SECRET: z.string().min(16),
+  // The public catalog API. Optional: it has a default, and tests point it at a local stub.
+  MET_API_URL: z.url().default('https://collectionapi.metmuseum.org/public/collection'),
 });
 
 export interface Config {
@@ -12,6 +14,7 @@ export interface Config {
   supabaseUrl: string;
   auditHmacSecret: string;
   cronSecret: string;
+  metApiUrl: string;
 }
 
 /** The only place that reads environment variables. Fails on startup; there are no default secrets. */
@@ -26,5 +29,6 @@ export function loadConfig(env: Record<string, string | undefined>): Config {
     supabaseUrl: parsed.data.SUPABASE_URL,
     auditHmacSecret: parsed.data.AUDIT_HMAC_SECRET,
     cronSecret: parsed.data.CRON_SECRET,
+    metApiUrl: parsed.data.MET_API_URL.replace(/\/+$/, ''),
   };
 }
