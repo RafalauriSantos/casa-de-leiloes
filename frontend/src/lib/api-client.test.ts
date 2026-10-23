@@ -13,6 +13,9 @@ beforeAll(async () => {
     res.setHeader('Content-Type', 'application/json');
     if (req.url === '/ok') {
       res.end(JSON.stringify({ hello: 'world', auth: req.headers.authorization ?? null }));
+    } else if (req.url === '/empty') {
+      res.statusCode = 200;
+      res.end();
     } else if (req.url === '/refused') {
       res.statusCode = 409;
       res.end(JSON.stringify({ code: 'insufficient_funds', message: 'Saldo insuficiente.' }));
@@ -37,6 +40,11 @@ describe('apiFetch', () => {
     const error = await apiFetch('/refused', { baseUrl }).catch((e: unknown) => e);
     expect(error).toBeInstanceOf(ApiRequestError);
     expect(error).toMatchObject({ code: 'insufficient_funds', message: 'Saldo insuficiente.', status: 409 });
+  });
+
+  it('does not report a success when a 2xx answer has no JSON body', async () => {
+    const error = await apiFetch('/empty', { baseUrl }).catch((e: unknown) => e);
+    expect(error).toMatchObject({ code: 'internal_error', status: 200 });
   });
 
   it('turns a non-JSON failure into a generic internal_error', async () => {

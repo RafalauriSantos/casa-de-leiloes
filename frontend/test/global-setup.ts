@@ -11,6 +11,9 @@ export async function setup(): Promise<void> {
   for (const name of REQUIRED) {
     if (!process.env[name]) throw new Error(`${name} is not set. Run the tests through "make test".`);
   }
+  const taken = await fetch(`http://127.0.0.1:${String(API_PORT)}/api/health`).then(() => true, () => false);
+  if (taken) throw new Error(`Port ${String(API_PORT)} is already in use; stop that process so the tests do not run against it.`);
+
   api = spawn(process.execPath, ['--import', 'tsx', 'src/dev-server.ts'], {
     cwd: fileURLToPath(new URL('../../backend', import.meta.url)),
     env: { ...process.env, PORT: String(API_PORT) },

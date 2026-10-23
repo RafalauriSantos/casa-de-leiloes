@@ -10,7 +10,6 @@ export function requireRole(db: Queryable, role: UserRole, refusal: string): Mid
   return async (c, next) => {
     const me = await getMe(db, c.get('userId'));
     if (me.role !== role) throw new AppError('forbidden', refusal);
-    c.set('role', me.role);
     await next();
   };
 }

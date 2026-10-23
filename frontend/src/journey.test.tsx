@@ -16,15 +16,17 @@ afterEach(async () => {
   window.history.replaceState({}, '', '/');
 });
 
-async function promoteToAuctioneer(userId: string): Promise<void> {
+async function sql(text: string, params: unknown[] = []): Promise<void> {
   const client = new pg.Client({ connectionString: process.env.DATABASE_URL });
   await client.connect();
   try {
-    await client.query("update public.profiles set role = 'auctioneer' where id = $1", [userId]);
+    await client.query(text, params);
   } finally {
     await client.end();
   }
 }
+
+const promoteToAuctioneer = (userId: string) => sql("update public.profiles set role = 'auctioneer' where id = $1", [userId]);
 
 describe('bidder journey', () => {
   it('signs up, sees an empty wallet, deposits once even on a double click, signs out and back in', async () => {
@@ -79,7 +81,7 @@ describe('bidder journey', () => {
     await waitFor(() => { expect(within(screen.getByLabelText('Saldos')).getAllByText('R$ 350,00')).toHaveLength(2); });
   });
 
-  it('keeps the form usable and shows the API reason when the deposit is refused', async () => {
+  it('refuses a deposit below the minimum before any request and keeps the form usable', async () => {
     const user = userEvent.setup();
     const { email, password } = credentials();
     await supabase.auth.signUp({ email, password });
@@ -118,5 +120,36 @@ describe('visitor', () => {
     window.history.replaceState({}, '', '/nao-existe');
     render(<App />);
     expect(await screen.findByText('Página não encontrada.')).toBeTruthy();
+  });
+});
+
+describe('when the API refuses or fails (the reason is shown and the user is never stuck)', () => {
+  it('shows the API message and a retry when the wallet cannot be read, then recovers', async () => {
+    const user = userEvent.setup();
+    const { email, password } = credentials();
+    const { data } = await supabase.auth.signUp({ email, password });
+    if (!data.user) throw new Error('sign-up did not return a user');
+    await sql('delete from public.wallets where user_id = $1', [data.user.id]);
+
+    window.history.replaceState({}, '', '/carteira');
+    render(<App />);
+    expect((await screen.findByRole('alert')).textContent).toBe('Carteira não encontrada.');
+
+    await sql('insert into public.wallets (user_id) values ($1)', [data.user.id]);
+    await user.click(screen.getByRole('button', { name: 'Tentar de novo' }));
+    await waitFor(() => { expect(within(screen.getByLabelText('Saldos')).getAllByText('R$ 0,00').length).toBeGreaterThan(0); });
+  });
+
+  it('offers to sign out when the account cannot be loaded', async () => {
+    const user = userEvent.setup();
+    const { email, password } = credentials();
+    const { data } = await supabase.auth.signUp({ email, password });
+    if (!data.user) throw new Error('sign-up did not return a user');
+    await sql('delete from public.profiles where id = $1', [data.user.id]);
+
+    render(<App />);
+    expect((await screen.findByRole('alert')).textContent).toBe('Perfil não encontrado para este usuário.');
+    await user.click(screen.getByRole('button', { name: 'Sair' }));
+    expect(await screen.findByRole('link', { name: 'Entrar' })).toBeTruthy();
   });
 });

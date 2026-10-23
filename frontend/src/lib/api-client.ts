@@ -31,7 +31,7 @@ export async function apiFetch<T>(path: string, options: { token?: string; metho
   }
 
   const body: unknown = await response.json().catch(() => undefined);
-  if (response.ok) return body as T;
+  if (response.ok && body !== undefined) return body as T;
   if (isApiError(body)) throw new ApiRequestError(body.code, body.message, response.status);
   throw new ApiRequestError('internal_error', GENERIC, response.status);
 }

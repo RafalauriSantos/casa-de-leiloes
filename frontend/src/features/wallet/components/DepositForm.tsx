@@ -1,6 +1,7 @@
 import { DEPOSIT_MAX_CENTS, DEPOSIT_MIN_CENTS, type WalletResponse } from '@casa/contracts';
 import { useRef, useState, type SyntheticEvent } from 'react';
 import { formatBRL, parseReaisToCents } from '@/lib/format';
+import { intentFor, type Intent } from '@/lib/idempotency';
 import { postDeposit } from '../api';
 
 interface Props {
@@ -11,8 +12,8 @@ interface Props {
 const LIMITS = `${formatBRL(DEPOSIT_MIN_CENTS)} a ${formatBRL(DEPOSIT_MAX_CENTS)}`;
 
 export function DepositForm({ token, onDeposited }: Props) {
-  // One key per deposit intent: kept on failure (a retry cannot credit twice), renewed on success.
-  const key = useRef(crypto.randomUUID());
+  // One key per deposit intent: kept on failure (a retry cannot credit twice), dropped on success.
+  const intent = useRef<Intent>(undefined);
   const [amount, setAmount] = useState('');
   const [error, setError] = useState<string>();
   const [notice, setNotice] = useState<string>();
@@ -32,11 +33,12 @@ export function DepositForm({ token, onDeposited }: Props) {
       return;
     }
 
+    intent.current = intentFor(intent.current, cents);
     setBusy(true);
     setError(undefined);
     try {
-      const wallet = await postDeposit(token, cents, key.current);
-      key.current = crypto.randomUUID();
+      const wallet = await postDeposit(token, cents, intent.current.key);
+      intent.current = undefined;
       setAmount('');
       setNotice(`Depósito de ${formatBRL(cents)} realizado.`);
       onDeposited(wallet);

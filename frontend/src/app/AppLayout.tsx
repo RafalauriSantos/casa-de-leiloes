@@ -11,7 +11,7 @@ export function AppLayout() {
           <Link to="/">Casa de Leilões</Link>
           {auth.status === 'signed-in' && auth.me.role === 'bidder' && <Link to="/carteira">Carteira</Link>}
           {auth.status === 'signed-out' && <Link to="/entrar">Entrar</Link>}
-          {auth.status === 'signed-in' && (
+          {(auth.status === 'signed-in' || auth.status === 'error') && (
             <button type="button" className="link" onClick={() => void signOut()}>Sair</button>
           )}
         </nav>
