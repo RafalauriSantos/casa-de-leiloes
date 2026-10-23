@@ -39,7 +39,7 @@ describe('db pool resilience', () => {
         await new Promise((resolve) => setTimeout(resolve, 300));
         await tx.query('select 1');
       }),
-    ).rejects.toThrow(/terminat/i);
+    ).rejects.toThrow(/connection error and is not queryable/);
     expect(killed).toBe(true);
     expect(await db.query<{ ok: number }>('select 1 as ok')).toEqual([{ ok: 1 }]);
   });
