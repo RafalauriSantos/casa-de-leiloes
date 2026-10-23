@@ -6,7 +6,6 @@
   "scripts": {
     "dev": "tsx watch src/dev-server.ts",
     "typecheck": "tsc -p tsconfig.json",
-    "build": "tsc -p tsconfig.json",
     "test": "vitest run"
   },
   "devDependencies": {
