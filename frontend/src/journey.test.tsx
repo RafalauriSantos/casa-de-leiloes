@@ -185,7 +185,7 @@ describe('keeping the screen steady (review findings)', () => {
     let held = false;
     globalThis.fetch = async (input, init) => {
       const response = await realFetch(input, init);
-      const url = String(input);
+      const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
       if (!held && url.endsWith('/api/wallet') && (init?.method ?? 'GET') === 'GET') {
         held = true;
         await new Promise((resolve) => setTimeout(resolve, 1500));
