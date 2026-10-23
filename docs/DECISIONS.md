@@ -80,7 +80,9 @@ Status: approved in phase 3 (design).
 - Real Postgres (`supabase start`) with the real migrations, real Supabase Auth, real HTTP server called with `fetch`, real parallel requests, real clock (short lots of 2-3 s; anti-sniping uses a lot ending in 90 s). Seed goes through the same services.
 - The Met is the only external system: in CI the production client reads responses captured from the real API and served by a local HTTP server; outage is a closed port. `make e2e-live` hits the real Met (not in `make ci`; run before each deploy and before submitting).
 - A full-journey script runs against the deployed URL after each deploy, with disposable `e2e-` users.
-- `make ci` runs lint, typecheck, tests and build, and is exactly what GitHub Actions runs.
+- `make ci` runs lint, typecheck, build, tests with coverage gates (backend 95% statements/lines and 90% branches/functions; frontend 85/80/85/85) and `npm audit` on production dependencies (high severity fails); it is exactly what GitHub Actions runs.
+- Frontend tests start the real backend (global setup) and drive the real UI against real Supabase Auth and Postgres, so the journeys (sign-up, wallet, double-click deposit, role guard) are end to end without mocks.
+- Every push is preceded by `make ci` and a read-only review by the `pr-reviewer` agent (`.claude/agents/pr-reviewer.md`); findings tiered Blocking/Important/Minor.
 
 ## D13. Time
 - Everything is `timestamptz` in UTC; the UI sends an explicit zone and shows America/Sao_Paulo. The server clock only (`clock_timestamp()` after the lock).

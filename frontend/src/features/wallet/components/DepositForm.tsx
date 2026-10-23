@@ -13,15 +13,14 @@ const LIMITS = `${formatBRL(DEPOSIT_MIN_CENTS)} a ${formatBRL(DEPOSIT_MAX_CENTS)
 export function DepositForm({ token, onDeposited }: Props) {
   // One key per deposit intent: kept on failure (a retry cannot credit twice), renewed on success.
   const key = useRef(crypto.randomUUID());
+  const [amount, setAmount] = useState('');
   const [error, setError] = useState<string>();
   const [notice, setNotice] = useState<string>();
   const [busy, setBusy] = useState(false);
 
   async function onSubmit(event: SyntheticEvent<HTMLFormElement>) {
     event.preventDefault();
-    const form = event.currentTarget;
-    const raw = new FormData(form).get('amount');
-    const cents = parseReaisToCents(typeof raw === 'string' ? raw : '');
+    const cents = parseReaisToCents(amount);
     setNotice(undefined);
 
     if (cents === undefined) {
@@ -38,7 +37,7 @@ export function DepositForm({ token, onDeposited }: Props) {
     try {
       const wallet = await postDeposit(token, cents, key.current);
       key.current = crypto.randomUUID();
-      form.reset();
+      setAmount('');
       setNotice(`Depósito de ${formatBRL(cents)} realizado.`);
       onDeposited(wallet);
     } catch (e: unknown) {
@@ -53,7 +52,7 @@ export function DepositForm({ token, onDeposited }: Props) {
       <h2 id="deposit-title">Depositar saldo (simulado)</h2>
       <label>
         Valor (R$)
-        <input name="amount" inputMode="decimal" autoComplete="off" placeholder="250,00" required />
+        <input name="amount" value={amount} onChange={(e) => { setAmount(e.target.value); }} inputMode="decimal" autoComplete="off" placeholder="250,00" required />
       </label>
       <small>Depósito simulado, de {LIMITS} por vez. Nenhum pagamento real é feito.</small>
       {error && <p role="alert">{error}</p>}
