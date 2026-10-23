@@ -10,6 +10,7 @@ import { testConfig } from '../helpers/test-config';
 let db: Db;
 beforeAll(async () => {
   db = createDb(testConfig().databaseUrl);
+  await db.query('drop table if exists public.spike_bid, public.spike_lot');
   await db.query('create table public.spike_lot (id int primary key, head_seq int not null)');
   await db.query('create table public.spike_bid (lot_id int not null, seq int not null, primary key (lot_id, seq))');
   await db.query('insert into public.spike_lot values (1, 0)');

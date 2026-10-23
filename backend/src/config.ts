@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 const schema = z.object({
   DATABASE_URL: z.string().min(1),
-  SUPABASE_URL: z.url(),
+  SUPABASE_URL: z.url().transform((url) => url.replace(/\/+$/, '')),
   AUDIT_HMAC_SECRET: z.string().min(32),
   CRON_SECRET: z.string().min(16),
 });

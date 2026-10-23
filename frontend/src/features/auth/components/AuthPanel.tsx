@@ -13,6 +13,7 @@ function field(form: FormData, name: string): string {
 export function AuthPanel() {
   const [mode, setMode] = useState<Mode>('signin');
   const [error, setError] = useState<string>();
+  const [notice, setNotice] = useState<string>();
   const [busy, setBusy] = useState(false);
   const auth = useAuth();
 
@@ -25,9 +26,11 @@ export function AuthPanel() {
     const password = field(form, 'password');
     setBusy(true);
     setError(undefined);
+    setNotice(undefined);
     const result = mode === 'signin' ? await signIn(email, password) : await signUp(email, password, field(form, 'displayName'));
     setBusy(false);
     if (!result.ok) setError(result.message);
+    else if ('notice' in result) setNotice(result.notice);
   }
 
   return (
@@ -48,6 +51,7 @@ export function AuthPanel() {
         <input name="password" type="password" required minLength={6} autoComplete={mode === 'signin' ? 'current-password' : 'new-password'} />
       </label>
       {error && <p role="alert">{error}</p>}
+      {notice && <p role="status">{notice}</p>}
       <button type="submit" disabled={busy}>
         {busy ? 'Aguarde…' : mode === 'signin' ? 'Entrar' : 'Criar conta'}
       </button>

@@ -15,6 +15,10 @@ describe('loadConfig', () => {
     expect(config.cronSecret).toBe('b'.repeat(16));
   });
 
+  it('drops trailing slashes from SUPABASE_URL, so the token issuer is built correctly', () => {
+    expect(loadConfig({ ...valid, SUPABASE_URL: 'https://x.supabase.co//' }).supabaseUrl).toBe('https://x.supabase.co');
+  });
+
   it.each(['DATABASE_URL', 'SUPABASE_URL', 'AUDIT_HMAC_SECRET', 'CRON_SECRET'])(
     'fails when %s is missing (no default secrets)',
     (key) => {

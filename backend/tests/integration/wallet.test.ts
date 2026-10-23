@@ -20,7 +20,7 @@ const api = (path: string, user?: TestUser, init: RequestInit & { key?: string |
   if (key !== null && rest.method === 'POST') headers.set('Idempotency-Key', key ?? randomUUID());
   return fetch(`${server.url}${path}`, { ...rest, headers });
 };
-const deposit = (user: TestUser, amountCents: unknown, key?: string | null) =>
+const deposit = (user: TestUser | undefined, amountCents: unknown, key?: string | null) =>
   api('/api/wallet/deposits', user, { method: 'POST', body: JSON.stringify({ amountCents }), key });
 const wallet = async (user: TestUser) => (await (await api('/api/wallet', user)).json()) as WalletResponse;
 const code = async (response: Response) => ((await response.json()) as { code: string }).code;
@@ -28,7 +28,7 @@ const code = async (response: Response) => ((await response.json()) as { code: s
 describe('access control', () => {
   it('needs a token', async () => {
     expect((await api('/api/wallet')).status).toBe(401);
-    expect((await deposit(undefined as never, 1000)).status).toBe(401);
+    expect((await deposit(undefined, 1000)).status).toBe(401);
   });
 
   it('is for bidders only: an auctioneer gets 403 on both routes', async () => {
@@ -198,5 +198,36 @@ describe('more scenarios', () => {
     const response = await api(path, user, { method, key: null });
     expect(response.status).toBe(404);
     expect(await response.json()).toEqual({ code: 'not_found', message: expect.any(String) as string });
+  });
+});
+
+describe('ledger integrity', () => {
+  it('keeps the balance equal to the sum of the ledger after many deposits', async () => {
+    const user = await signUpUser();
+    await Promise.all([1_000, 2_500, 99_999, 100].map((amount) => deposit(user, amount)));
+    const [row] = await server.db.query<{ total: number; ledger: number }>(
+      `select w.total_cents as total, coalesce(sum(l.amount_cents), 0)::bigint as ledger
+         from public.wallets w left join public.wallet_ledger l on l.user_id = w.user_id
+        where w.user_id = $1 group by w.total_cents`,
+      [user.id],
+    );
+    expect(row).toEqual({ total: 103_599, ledger: 103_599 });
+  });
+
+  it('is append-only: updates, deletes and truncates are refused by the database', async () => {
+    const user = await signUpUser();
+    await deposit(user, 1_000);
+    await expect(server.db.query('update public.wallet_ledger set amount_cents = 1 where user_id = $1', [user.id])).rejects.toThrow(/append-only/);
+    await expect(server.db.query('delete from public.wallet_ledger where user_id = $1', [user.id])).rejects.toThrow(/append-only/);
+    // Truncate is refused by the trigger; this is the shared test database, so it only ever runs
+    // while the trigger is in place.
+    await expect(server.db.query('truncate public.wallet_ledger')).rejects.toThrow(/append-only/);
+    expect((await wallet(user)).totalCents).toBe(1_000);
+  });
+
+  it('cannot delete a user that has money history (foreign key from the ledger)', async () => {
+    const user = await signUpUser();
+    await deposit(user, 1_000);
+    await expect(server.db.query('delete from public.profiles where id = $1', [user.id])).rejects.toThrow(/foreign key/);
   });
 });

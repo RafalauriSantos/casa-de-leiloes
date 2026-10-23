@@ -35,11 +35,22 @@ describe('a dependency failure is an error, never a fake success', () => {
   });
 
   it('answers /api/health with 500 internal_error and leaks nothing about the database', async () => {
-    const response = await fetch(`${brokenUrl}/api/health`);
+    const logged: string[] = [];
+    const original = console.error;
+    console.error = (...args: unknown[]) => { logged.push(args.map(String).join(' ')); };
+    let response: Response;
+    try {
+      response = await fetch(`${brokenUrl}/api/health`);
+    } finally {
+      console.error = original;
+    }
     const text = await response.text();
     expect(response.status).toBe(500);
     expect(JSON.parse(text)).toEqual({ code: 'internal_error', message: 'Erro interno. Tente novamente.' });
     expect(text).not.toMatch(/secret-password|127\.0\.0\.1|ECONNREFUSED/);
+    // The server log keeps the cause but never the connection settings.
+    expect(logged.join('\n')).toMatch(/unhandled error/);
+    expect(logged.join('\n')).not.toContain('secret-password');
   });
 });
 

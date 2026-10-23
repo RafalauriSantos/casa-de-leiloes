@@ -38,7 +38,7 @@ export function errorResponse(c: Context, code: ErrorCode, message: string): Res
 export function handleError(err: unknown, c: Context): Response {
   if (err instanceof AppError) return errorResponse(c, err.code, err.message);
   // Never leak a stack or a database message to the client.
-  console.error(err);
+  console.error('unhandled error:', err instanceof Error ? (err.stack ?? err.message) : 'non-error value thrown');
   return errorResponse(c, 'internal_error', 'Erro interno. Tente novamente.');
 }
 

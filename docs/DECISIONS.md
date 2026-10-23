@@ -3,6 +3,8 @@
 Each decision records what was chosen, why, and the tradeoff accepted.
 Status: approved in phase 3 (design).
 
+Implementation status (updated with each slice): slices 0 and 1 are built. Decisions D1, D2 (modules and lint rules), D3 (`profiles`, `wallets`, `wallet_ledger`), D9 (error shape; `me` and wallet routes), D11, D13 (UTC only so far), D14 and D16 are in the code. **Not built yet, only decided:** D4 hash chain, D5 bids, D6 settlement (only the scheduler and an empty endpoint exist), D7 polling, D8 catalog, D10 privacy, D15 seed, the `lots`, `bids` and `receipts` tables, the end-to-end script against the deployed URL, `make e2e-live`, CSP and security headers. A sentence below is in the present tense only when it is already true; the rest says "planned".
+
 ## D1. Stack and hosting
 - **Chosen:** React + Vite + TypeScript (front); Node.js + TypeScript + Hono (back); Postgres and Auth on Supabase; one Vercel project serving the static site and the API on the same origin (`/api/*`); `pg` as driver through the Supabase transaction pooler (port 6543).
 - **Why:** the brief requires "NodeJS or Python" and leaves the framework open. Node on Vercel is the native runtime. One language on both sides.
@@ -27,6 +29,7 @@ Status: approved in phase 3 (design).
 - `lots`: auctioneer, status `active|cancelled|settled`, outcome `sold|no_bids`, item snapshot, `starts_at`, `ends_at`, `starting_bid_cents`, `increment_cents`, plus `current_amount_cents`, `leader_id`, `bid_count`, `head_seq`, `head_hash`, `settled_at`. "Scheduled" and "live" are derived from the clock, not stored.
 - `bids(lot_id, seq, bidder_id, amount_cents, placed_at, prev_hash, hash)` unique `(lot_id, seq)`; a trigger rejects UPDATE/DELETE (defence in depth, not security).
 - `receipts(code, lot_id unique, winner_id, amount_cents, head_seq, head_hash, closed_at)`; `code` is random.
+- `wallet_ledger` is append-only for every normal connection: a trigger refuses update, delete and truncate (the table owner could still disable the trigger deliberately), and a user with money history cannot be deleted because of a foreign key. `display_name` (user-editable sign-up metadata) is capped at 80 characters by the trigger, and the trigger functions are not executable by the API roles.
 - RLS enabled on every table with no policies: Supabase's REST layer exposes nothing; only our API reads the database.
 - **Tradeoff:** `lots` duplicates the current bid for fast reads; it is written in the same transaction as the bid, and a test recomputes it from `bids`.
 
@@ -51,7 +54,7 @@ Status: approved in phase 3 (design).
 - **Tradeoff:** extra moving parts (two extensions, one secret) for punctuality only.
 
 ## D7. Real-time: polling
-- **Chosen:** `GET /api/lots/{id}/live` every 3 s, a single query, returns `server_now` so the countdown uses the server clock; pauses when the tab is hidden; backs off on errors and shows a connection warning instead of faking "live".
+- **Chosen:** `GET /api/lots/{id}/live` every 3 s (the 1-2 s of approved decision A2 was left open to be fixed in this phase; 3 s keeps one viewer under the free database query budget), a single query, returns `server_now` so the countdown uses the server clock; pauses when the tab is hidden; backs off on errors and shows a connection warning instead of faking "live".
 - **Why not Supabase Realtime / WebSocket / SSE:** Realtime would expose tables to clients (privacy, RLS); WebSocket and SSE fight serverless time limits.
 
 ## D8. External API and snapshot
@@ -75,15 +78,15 @@ Status: approved in phase 3 (design).
 - Receipt `code` is random (128 bits); the receipt shows the pseudonym only.
 
 ## D11. Auth
-- Supabase Auth; the backend validates the JWT against the project's JWKS (`jose`, issuer and `authenticated` audience checked). Supabase's default signing is HS256, which the JWKS endpoint cannot verify, so asymmetric signing keys must be enabled in the hosted project (and checked in local `supabase start`) in slice 0; email confirmation is off, both locally (default) and in the hosted project (Confirm email toggle; the hosted default is on and the built-in mailer allows only a few messages per hour, so sign-up fails with `over_email_send_rate_limit` until it is off; hosted Auth also rejects reserved domains such as `example.com` in e-mails); profile and wallet are created by a trigger. Session stays in `localStorage` (Supabase default; XSS exposure declared, CSP headers set).
+- Supabase Auth; the backend validates the JWT against the project's JWKS (`jose`, issuer, `authenticated` audience and an ES256/RS256 allowlist checked). A bad, expired or foreign token is a 401; the key server being unreachable or answering garbage is a 500, never "log in again". Tests sign real tokens against a real key server for each claim rule. Supabase's default signing is HS256, which the JWKS endpoint cannot verify, so asymmetric signing keys must be enabled in the hosted project (and checked in local `supabase start`) in slice 0; email confirmation is off, both locally (default) and in the hosted project (Confirm email toggle; the hosted default is on and the built-in mailer allows only a few messages per hour, so sign-up fails with `over_email_send_rate_limit` until it is off; hosted Auth also rejects reserved domains such as `example.com` in e-mails); profile and wallet are created by a trigger. Session stays in `localStorage` (Supabase default; XSS exposure to be declared in the README; CSP and security headers are planned for slice 6).
 
 ## D12. Tests: real, no mocks or fakes
-- Real Postgres (`supabase start`) with the real migrations, real Supabase Auth, real HTTP server called with `fetch`, real parallel requests, real clock (short lots of 2-3 s; anti-sniping uses a lot ending in 90 s). Seed goes through the same services.
-- The Met is the only external system: in CI the production client reads responses captured from the real API and served by a local HTTP server; outage is a closed port. `make e2e-live` hits the real Met (not in `make ci`; run before each deploy and before submitting).
-- A full-journey script runs against the deployed URL after each deploy, with disposable `e2e-` users.
+- Real Postgres (`supabase start`) with the real migrations, real Supabase Auth, real HTTP server called with `fetch`, real parallel requests, real clock (short lots of 2-3 s; anti-sniping uses a lot ending in 90 s). The seed (planned, slice 6) goes through the same services.
+- The Met is the only external system: in CI the production client reads responses captured from the real API and served by a local HTTP server; outage is a closed port. `make e2e-live` (planned, slice 2) hits the real Met (not in `make ci`; run before each deploy and before submitting).
+- Planned (slice 6): a full-journey script against the deployed URL after each deploy, with disposable `e2e-` users. Until then the deployed app is checked by hand and with the curl checks recorded in each slice's PR.
 - `make ci` runs lint, typecheck, build, tests with coverage gates (backend 95% statements/lines and 90% branches/functions; frontend 85/80/85/85) and `npm audit` on production dependencies (high severity fails); it is exactly what GitHub Actions runs.
 - Frontend tests start the real backend (global setup) and drive the real UI against real Supabase Auth and Postgres, so the journeys (sign-up, wallet, double-click deposit, role guard) are end to end without mocks.
-- Every push is preceded by `make ci` and a read-only review by the `pr-reviewer` agent (`.claude/agents/pr-reviewer.md`); findings tiered Blocking/Important/Minor.
+- Working rule of the author: every push is preceded by `make ci` and a read-only review by a `pr-reviewer` agent (a local tool, kept outside the repository); findings are tiered Blocking/Important/Minor and fixed before pushing.
 
 ## D13. Time
 - Everything is `timestamptz` in UTC; the UI sends an explicit zone and shows America/Sao_Paulo. The server clock only (`clock_timestamp()` after the lock).
@@ -91,7 +94,7 @@ Status: approved in phase 3 (design).
 ## D14. Money and deposits
 - Integer cents (`bigint` in the database, `number` in code, far below 2^53). Simulated deposit: min R$ 1,00, max R$ 100.000,00 per deposit.
 
-## D15. Seeds
+## D15. Seeds (planned, slice 6)
 - `make seed` is a separate CLI, idempotent, dates relative to now: 1 auctioneer, 2 bidders with balance, one live lot lasting 30 days with a bid history, one scheduled lot, one settled lot with receipt, and one lot deliberately tampered directly in the database to show the "tampered" verdict. Bids go through the real services, so the chain is valid.
 
 ## D16. File organization
