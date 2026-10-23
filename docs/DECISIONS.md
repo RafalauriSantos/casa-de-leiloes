@@ -93,7 +93,7 @@ Status: approved in phase 3 (design).
 - npm workspaces: `frontend/`, `backend/`, `packages/contracts/` (error codes, `{code, message}` shape and endpoint DTOs, types only, so front and back cannot drift); `supabase/migrations/` (one migration per concern, never edited after being applied); `docs/`.
 - Backend: `src/app.ts` (builds the Hono app), `src/config.ts` (the only place that reads env vars, fails on startup, no default secrets), `src/shared/` (`db`, `errors`, `auth`, `money`), `src/modules/<feature>/` with `index.ts`, `routes.ts`, `schemas.ts`, `service.ts`, `rules.ts`. Unit tests sit next to the code (`rules.test.ts`); integration and end-to-end tests live in `backend/tests/`.
 - Frontend: `app/` (router, providers), `pages/` (thin, compose features), `features/<name>/` (components, hooks, `api.ts`, `index.ts`), `components/ui/`, `lib/`, `styles/`. A feature imports another only through its `index.ts`.
-- Conventions: `kebab-case` files (React components in `PascalCase.tsx`), split a file past ~200 lines, no catch-all `utils.ts`, SQL only in `service.ts`, `@/` import alias per package.
+- Conventions: `kebab-case` files (React components in `PascalCase.tsx`), split a file past ~200 lines, no catch-all `utils.ts`, SQL only in `service.ts`, `@/` import alias in the frontend only; the backend uses short relative imports (Vercel bundles the function itself, and the module-boundary lint rule keeps imports shallow).
 - Tradeoff: three workspaces and one shared package add setup in slice 0 in exchange for one source of truth for the API contract.
 
 ## What stays simulated (declared in the README)
