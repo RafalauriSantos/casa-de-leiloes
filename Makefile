@@ -1,3 +1,6 @@
+# Plain `make` runs the full check.
+.DEFAULT_GOAL := ci
+
 audit:
 	npm audit --omit=dev --audit-level=high
 
