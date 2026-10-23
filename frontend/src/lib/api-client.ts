@@ -14,8 +14,8 @@ export class ApiRequestError extends Error {
 const GENERIC = 'Não foi possível concluir a operação. Tente novamente.';
 
 /** Calls our API and returns the typed body, or throws the API's `{ code, message }` as an ApiRequestError. */
-export async function apiFetch<T>(path: string, options: { token?: string; method?: string; body?: unknown; baseUrl?: string } = {}): Promise<T> {
-  const headers: Record<string, string> = {};
+export async function apiFetch<T>(path: string, options: { token?: string; method?: string; body?: unknown; baseUrl?: string; headers?: Record<string, string> } = {}): Promise<T> {
+  const headers: Record<string, string> = { ...options.headers };
   if (options.token) headers.Authorization = `Bearer ${options.token}`;
   if (options.body !== undefined) headers['Content-Type'] = 'application/json';
 
