@@ -24,6 +24,13 @@ export function createDb(connectionString: string): Db {
   // Small pool: each serverless instance holds few connections; the transaction pooler does the rest.
   const pool = new pg.Pool({ ...toPoolConfig(connectionString), max: 3, idleTimeoutMillis: 10_000, connectionTimeoutMillis: 10_000 });
 
+  // A dropped idle connection emits 'error' on the pool; unhandled it would crash the process.
+  // The pool discards that client and opens a new one on demand. Log the message only: the error
+  // object carries the connection settings, including the password.
+  pool.on('error', (err) => {
+    console.error('idle database client error:', err.message);
+  });
+
   const run = async <T extends pg.QueryResultRow>(
     target: Pick<pg.Pool | pg.PoolClient, 'query'>,
     text: string,
