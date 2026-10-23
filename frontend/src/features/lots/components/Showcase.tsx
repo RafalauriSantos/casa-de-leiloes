@@ -9,6 +9,12 @@ const TABS: Array<{ value: ShowcaseStatus; label: string }> = [
   { value: 'ended', label: 'Encerrados' },
 ];
 
+const EMPTY_HINT: Record<ShowcaseStatus, string> = {
+  live: 'Nenhum lote ao vivo agora. Quando um leiloeiro publicar um lote e o início chegar, ele aparece aqui.',
+  scheduled: 'Nenhum lote agendado no momento. Os próximos lotes aparecem nesta aba antes de começar.',
+  ended: 'Ainda não há lotes encerrados.',
+};
+
 type State = { status: 'loading' } | { status: 'error'; message: string } | { status: 'ready'; lots: LotSummary[] };
 
 export function Showcase() {
@@ -53,7 +59,11 @@ export function Showcase() {
           <button type="button" onClick={() => { setAttempt((n) => n + 1); }}>Tentar de novo</button>
         </>
       )}
-      {state.status === 'ready' && state.lots.length === 0 && <p>Nenhum lote nesta lista.</p>}
+      {state.status === 'ready' && state.lots.length === 0 && (
+        <div className="empty">
+          <p>{query ? `Nenhum lote encontrado para "${query}".` : EMPTY_HINT[tab]}</p>
+        </div>
+      )}
       {state.status === 'ready' && state.lots.length > 0 && (
         <div className="lot-grid">
           {state.lots.map((lot) => <LotCard key={lot.id} lot={lot} />)}
