@@ -35,7 +35,7 @@ describe('bidder journey', () => {
     render(<App />);
 
     // Sign up
-    await user.click(await screen.findByRole('link', { name: 'Entre ou crie sua conta' }));
+    await user.click(await screen.findByRole('link', { name: 'Entrar' }));
     await user.click(screen.getByRole('button', { name: 'Não tenho conta' }));
     await user.type(screen.getByLabelText('Nome'), 'Ana Jornada');
     await user.type(screen.getByLabelText('E-mail'), email);
@@ -147,6 +147,7 @@ describe('when the API refuses or fails (the reason is shown and the user is nev
     if (!data.user) throw new Error('sign-up did not return a user');
     await sql('delete from public.profiles where id = $1', [data.user.id]);
 
+    window.history.replaceState({}, '', '/carteira');
     render(<App />);
     expect((await screen.findByRole('alert')).textContent).toBe('Perfil não encontrado para este usuário.');
     await user.click(screen.getByRole('button', { name: 'Sair' }));
