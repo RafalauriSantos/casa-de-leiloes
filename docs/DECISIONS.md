@@ -3,7 +3,7 @@
 Each decision records what was chosen, why, and the tradeoff accepted.
 Status: approved in phase 3 (design).
 
-Implementation status (updated with each slice): slices 0 and 1 are built. Decisions D1, D2 (modules and lint rules), D3 (`profiles`, `wallets`, `wallet_ledger`), D9 (error shape; `me` and wallet routes), D11, D13 (UTC only so far), D14 and D16 are in the code. **Not built yet, only decided:** D4 hash chain, D5 bids, D6 settlement (only the scheduler and an empty endpoint exist), D7 polling, D8 catalog, D10 privacy, D15 seed, the `lots`, `bids` and `receipts` tables, the end-to-end script against the deployed URL, `make e2e-live`, CSP and security headers. A sentence below is in the present tense only when it is already true; the rest says "planned".
+Implementation status (updated with each slice): slices 0, 1 and 2 are built (slice 2: catalog and lots, see D17). Decisions D1, D2 (modules and lint rules), D3 (`profiles`, `wallets`, `wallet_ledger`), D9 (error shape; `me` and wallet routes), D11, D13 (UTC only so far), D14 and D16 are in the code. **Not built yet, only decided:** D4 hash chain, D5 bids, D6 settlement (only the scheduler and an empty endpoint exist), D7 polling, D10 privacy, D15 seed, the `bids` and `receipts` tables, the end-to-end script against the deployed URL, CSP and security headers. (`make e2e-live` exists since slice 2.) A sentence below is in the present tense only when it is already true; the rest says "planned".
 
 ## D1. Stack and hosting
 - **Chosen:** React + Vite + TypeScript (front); Node.js + TypeScript + Hono (back); Postgres and Auth on Supabase; one Vercel project serving the static site and the API on the same origin (`/api/*`); `pg` as driver through the Supabase transaction pooler (port 6543).
@@ -58,8 +58,8 @@ Implementation status (updated with each slice): slices 0 and 1 are built. Decis
 - **Why not Supabase Realtime / WebSocket / SSE:** Realtime would expose tables to clients (privacy, RLS); WebSocket and SSE fight serverless time limits.
 
 ## D8. External API and snapshot
-- **Chosen:** Met Museum Collection API (`/v1.1/search`, `hasImages=true&isPublicDomain=true`). Search returns only ids; the server fetches the first 12 details in parallel (5 s timeout) and skips failures. The Art Institute of Chicago was rejected: automated requests got a 403 Cloudflare challenge.
-- **Snapshot:** the client sends only `external_id`; the server refetches and copies title, artist, date, medium, department, source link and image URL into `lots.item_*`. Never trust item data sent by the client. After creation nothing depends on the API (image is stored as a URL; a placeholder shows if it fails to load).
+- **Chosen:** Met Museum Collection API (`/v1.1/search`, `hasImages=true&isPublicDomain=true`). Search returns only ids; the server fetches the first 12 details in parallel (5 s timeout). The Art Institute of Chicago was rejected: automated requests got a 403 Cloudflare challenge.
+- **Snapshot:** the client sends only `external_id`; the server refetches and copies title, artist, date, medium, department, source link and image URL into `lots.item_*`. Never trust item data sent by the client. After creation nothing depends on the API (image is stored as a URL; if the image fails to load, its alt text (the item title) stays visible).
 - **Outage:** search returns `503 catalog_unavailable`; no half-created lot; showcase, rooms, audit and receipts keep working.
 - **Tradeoff:** images are hotlinked, so the lot loses its picture if the museum's image host is down.
 
@@ -82,7 +82,7 @@ Implementation status (updated with each slice): slices 0 and 1 are built. Decis
 
 ## D12. Tests: real, no mocks or fakes
 - Real Postgres (`supabase start`) with the real migrations, real Supabase Auth, real HTTP server called with `fetch`, real parallel requests, real clock (short lots of 2-3 s; anti-sniping uses a lot ending in 90 s). The seed (planned, slice 6) goes through the same services.
-- The Met is the only external system: in CI the production client reads responses captured from the real API and served by a local HTTP server; outage is a closed port. `make e2e-live` (planned, slice 2) hits the real Met (not in `make ci`; run before each deploy and before submitting).
+- The Met is the only external system: in CI the production client reads responses captured from the real API and served by a local HTTP server; outage is a closed port. `make e2e-live` (slice 2) hits the real Met (not in `make ci`; run before each deploy and before submitting).
 - Planned (slice 6): a full-journey script against the deployed URL after each deploy, with disposable `e2e-` users. Until then the deployed app is checked by hand and with the curl checks recorded in each slice's PR.
 - `make ci` runs lint, typecheck, build, tests with coverage gates (backend 95% statements/lines and 90% branches/functions; frontend 85/80/85/85) and `npm audit` on production dependencies (high severity fails); it is exactly what GitHub Actions runs.
 - Frontend tests start the real backend (global setup) and drive the real UI against real Supabase Auth and Postgres, so the journeys (sign-up, wallet, double-click deposit, role guard) are end to end without mocks.
@@ -103,6 +103,16 @@ Implementation status (updated with each slice): slices 0 and 1 are built. Decis
 - Frontend: `app/` (router, providers), `pages/` (thin, compose features), `features/<name>/` (components, hooks, `api.ts`, `index.ts`), `components/ui/`, `lib/`, `styles/`. A feature imports another only through its `index.ts`.
 - Conventions: `kebab-case` files (React components in `PascalCase.tsx`), split a file past ~200 lines, no catch-all `utils.ts`, SQL only in `service.ts`, `@/` import alias in the frontend only; the backend uses short relative imports (Vercel bundles the function itself, and the module-boundary lint rule keeps imports shallow).
 - Tradeoff: three workspaces and one shared package add setup in slice 0 in exchange for one source of truth for the API contract.
+
+## D17. Slice 2: catalog and lots (as built)
+- **Catalog adapter** (`modules/catalog/met-client.ts`): the Met's public API. Search (`/v1.1/search`, images and public domain only) returns ids; the first 12 are fetched in parallel with a 5 s timeout. Items that are not public domain or have no image are skipped, never shown broken. Any detail that fails (network error, timeout, 5xx or unexpected body) fails the whole search with `503 catalog_unavailable`: a shorter list would look like a complete answer (no fail-open). Only an item the catalog does not have (404) is left out.
+- **Copy, not reference:** creating a lot sends only `externalId`; the server fetches the item and copies title, image URL, source URL and attributes into the lot. If the catalog fails, nothing is written (tested by counting rows). Afterwards the lot never reads the catalog.
+- **Derived states:** `scheduled`, `live`, `ended` come from the database clock: start inclusive, end exclusive (exact boundaries unit-tested). `cancelled` is stored.
+- **Rules (pure, `modules/lots/rules.ts`):** create needs a start in the future and a duration of at least one minute; edit only before the start and without bids; cancel only without bids and before the end. The bid count is `bid_count`, kept at zero until the bidding slice maintains it.
+- **Ownership:** an auctioneer edits or cancels only their own lots: `403 forbidden` for someone else's lot, `404` for an id that is not a lot.
+- **Showcase:** public, no login; cancelled lots are hidden from everyone but their owner; at most 60 lots per list. Unfiltered, live and scheduled lots come first (soonest-ending first) and ended lots last; the ended tab shows the most recently ended first. The start rule is checked in the application and again inside the insert (a database guard, tested by holding a table lock until the start passes). Title search escapes `%` and `_`.
+- **Times:** the UI sends a Brazilian wall-clock time with the explicit `-03:00` offset; the server stores UTC; the screens show `America/Sao_Paulo`.
+- **Test catalog:** tests use real responses captured from the Met (`backend/tests/fixtures/met`) served by a local stub, so CI never depends on the internet. `make e2e-live` calls the real Met (not part of `make ci`).
 
 ## What stays simulated (declared in the README)
 Deposits (no real payment), email confirmation off, polling instead of push.

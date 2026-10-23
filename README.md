@@ -1,6 +1,6 @@
 # Casa de Leilões
 
-Casa de leilões online (teste técnico Verzel "Elite Dev"). **Em construção**: hoje existem cadastro, login, papéis e a carteira com depósito simulado; lotes, lances, comprovante e auditoria entram nas próximas etapas.
+Casa de leilões online (teste técnico Verzel "Elite Dev"). **Em construção**: hoje existem cadastro, login, papéis, carteira com depósito simulado, e a vitrine com lotes publicados a partir do catálogo público do The Met. Lances, comprovante e auditoria entram nas próximas etapas.
 
 Decisões de design e seus tradeoffs: [docs/DECISIONS.md](docs/DECISIONS.md).
 
@@ -13,6 +13,7 @@ npm ci
 make db-up      # sobe o Supabase local (Postgres e Auth reais) e aplica supabase/migrations sozinho
 make dev        # API em http://localhost:8787 e site em http://localhost:5173
 make ci         # lint, tipos, build, testes com cobertura e npm audit (a única definição de verde)
+make e2e-live   # bate na API real do The Met (não roda no ci; use antes de publicar)
 ```
 
 - `make test`, `make dev` e `make ci` exigem `make db-up` antes (portas 54321 da API/Auth e 54322 do Postgres).
@@ -34,4 +35,8 @@ make ci         # lint, tipos, build, testes com cobertura e npm audit (a única
 - **Chave de idempotência só na tela aberta:** ela vive na memória da página. Se o depósito foi creditado mas a resposta se perdeu, repetir o mesmo valor **sem recarregar a página** não credita de novo; recarregar a página antes de tentar outra vez gera uma chave nova e pode creditar duas vezes.
 - **Livro-caixa sem edição:** movimentos de dinheiro não podem ser alterados nem apagados, e um usuário com histórico de depósito não pode ser excluído.
 - **Cadastro sem confirmação de e-mail:** desligada de propósito para a demonstração; o provedor de e-mail do Supabase hospedado também recusa domínios reservados como `example.com`.
+- **Catálogo do The Met:** a busca mostra no máximo 12 resultados e só itens de domínio público com imagem. Itens sem imagem pública não aparecem. Se o catálogo estiver fora, a busca e a criação de lote mostram erro; a vitrine e as páginas de lote continuam funcionando, porque lotes guardam uma cópia do item.
+- **Limites conhecidos:** cada busca no catálogo faz até 13 requisições ao The Met (1 busca e até 12 detalhes), sem cache; a vitrine mostra até 60 lotes por lista.
+- **Horário:** o leiloeiro informa início e fim no horário de Brasília (UTC-03:00); o servidor guarda em UTC. A contagem de estado (agendado, ao vivo, encerrado) vem do relógio do banco, não do navegador.
+- **Editar e cancelar lote:** editar só antes do início e sem lances. Cancelar só sem lances e antes do fim (um lote ao vivo sem lances pode ser cancelado). Lote com lances não pode ser alterado nem cancelado.
 - **Logout:** encerra a sessão em todos os dispositivos; o token de acesso já emitido ainda vale no servidor até expirar (até 1 hora).
