@@ -153,3 +153,57 @@ describe('when the API refuses or fails (the reason is shown and the user is nev
     expect(await screen.findByRole('link', { name: 'Entrar' })).toBeTruthy();
   });
 });
+
+describe('keeping the screen steady (review findings)', () => {
+  it('keeps the typed amount when the session token is refreshed in the background', async () => {
+    const user = userEvent.setup();
+    const { email, password } = credentials();
+    await supabase.auth.signUp({ email, password });
+    render(<App />);
+
+    await user.click(await screen.findByRole('link', { name: 'Carteira' }));
+    const input = await screen.findByLabelText('Valor (R$)');
+    await user.type(input, '123,45');
+
+    // A real token refresh makes Supabase emit a new session for the same user.
+    const { error } = await supabase.auth.refreshSession();
+    expect(error).toBeNull();
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
+    expect(screen.getByLabelText<HTMLInputElement>('Valor (R$)').value).toBe('123,45');
+    expect(screen.getByRole('heading', { name: 'Carteira' })).toBeTruthy();
+  });
+
+  it('does not let a slow, older balance read overwrite a deposit that finished first', async () => {
+    const user = userEvent.setup();
+    const { email, password } = credentials();
+    await supabase.auth.signUp({ email, password });
+
+    // The real API answers the first wallet read at once, but its delivery is held back so it
+    // arrives after the deposit: the stale-read ordering from the review.
+    const realFetch = globalThis.fetch;
+    let held = false;
+    globalThis.fetch = async (input, init) => {
+      const response = await realFetch(input, init);
+      const url = String(input);
+      if (!held && url.endsWith('/api/wallet') && (init?.method ?? 'GET') === 'GET') {
+        held = true;
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+      }
+      return response;
+    };
+
+    try {
+      window.history.replaceState({}, '', '/carteira');
+      render(<App />);
+      await user.type(await screen.findByLabelText('Valor (R$)'), '100,00');
+      await user.click(screen.getByRole('button', { name: 'Depositar' }));
+      await waitFor(() => { expect(within(screen.getByLabelText('Saldos')).getAllByText('R$ 100,00')).toHaveLength(2); });
+
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      expect(within(screen.getByLabelText('Saldos')).getAllByText('R$ 100,00')).toHaveLength(2);
+    } finally {
+      globalThis.fetch = realFetch;
+    }
+  });
+});

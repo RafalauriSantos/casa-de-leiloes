@@ -1,5 +1,6 @@
 import type { MeResponse } from '@casa/contracts';
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import type { Session } from '@supabase/supabase-js';
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import { apiFetch } from '@/lib/api-client';
 import { supabase } from '@/lib/supabase';
 
@@ -14,19 +15,30 @@ const AuthContext = createContext<AuthState>({ status: 'loading' });
 /** One subscription to Supabase Auth for the whole app; the role comes from our API (/api/me), not from the token. */
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<AuthState>({ status: 'loading' });
+  const known = useRef<MeResponse>(undefined);
 
   useEffect(() => {
     let current = 0;
-    const apply = (token: string | undefined) => {
+    const apply = (session: Session | null) => {
       const attempt = ++current;
-      if (!token) {
+      if (!session) {
+        known.current = undefined;
         setState({ status: 'signed-out' });
+        return;
+      }
+      const token = session.access_token;
+      // Same user with a fresh token (background refresh, tab focus): swap the token in place so the
+      // open screens keep their state instead of being torn down and rebuilt.
+      if (known.current?.id === session.user.id) {
+        setState({ status: 'signed-in', token, me: known.current });
         return;
       }
       setState({ status: 'loading' });
       apiFetch<MeResponse>('/api/me', { token })
         .then((me) => {
-          if (attempt === current) setState({ status: 'signed-in', token, me });
+          if (attempt !== current) return;
+          known.current = me;
+          setState({ status: 'signed-in', token, me });
         })
         .catch((error: unknown) => {
           if (attempt === current) setState({ status: 'error', message: error instanceof Error ? error.message : 'Erro inesperado.' });
@@ -34,10 +46,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     void supabase.auth.getSession().then(({ data }) => {
-      apply(data.session?.access_token);
+      apply(data.session);
     });
     const { data } = supabase.auth.onAuthStateChange((_event, session) => {
-      apply(session?.access_token);
+      apply(session);
     });
     return () => {
       current++;
