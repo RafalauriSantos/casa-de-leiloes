@@ -50,3 +50,18 @@ describe('token edge cases (every protected route answers 401 or 403, never 200)
     expect(await read(unnamed.token)).toBe(unnamed.email.split('@')[0]);
   });
 });
+
+describe('sign-up metadata', () => {
+  it('caps the display name at 80 characters instead of failing the sign-up', async () => {
+    const user = await signUpUser({ displayName: 'x'.repeat(200) });
+    const response = await get('/api/me', `Bearer ${user.token}`);
+    expect(((await response.json()) as { displayName: string }).displayName).toHaveLength(80);
+  });
+
+  it('does not let the API roles call the sign-up trigger function directly', async () => {
+    const rows = await server.db.query<{ anon: boolean; authenticated: boolean }>(
+      "select has_function_privilege('anon', 'public.handle_new_user()', 'execute') as anon, has_function_privilege('authenticated', 'public.handle_new_user()', 'execute') as authenticated",
+    );
+    expect(rows).toEqual([{ anon: false, authenticated: false }]);
+  });
+});
