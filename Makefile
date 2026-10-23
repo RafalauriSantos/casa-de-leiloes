@@ -1,4 +1,7 @@
-.PHONY: install lint typecheck test build ci dev dev-api dev-web db-up db-down db-reset
+audit:
+	npm audit --omit=dev --audit-level=high
+
+.PHONY: audit install lint typecheck test build ci dev dev-api dev-web db-up db-down db-reset
 
 install:
 	npm ci
@@ -17,7 +20,7 @@ test:
 	./scripts/with-local-env.sh npm test
 
 # The only definition of green. GitHub Actions runs exactly this.
-ci: lint typecheck build test
+ci: lint typecheck build test audit
 
 dev:
 	$(MAKE) -j2 dev-api dev-web

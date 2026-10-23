@@ -143,3 +143,60 @@ describe('database invariants', () => {
     await expect(server.db.query('update public.wallets set total_cents = -1 where user_id = $1', [user.id])).rejects.toThrow();
   });
 });
+
+describe('more scenarios', () => {
+  it('accepts exactly the minimum and the maximum deposit', async () => {
+    const user = await signUpUser();
+    expect((await deposit(user, DEPOSIT_MIN_CENTS)).status).toBe(201);
+    expect((await deposit(user, DEPOSIT_MAX_CENTS)).status).toBe(201);
+    expect((await wallet(user)).totalCents).toBe(DEPOSIT_MIN_CENTS + DEPOSIT_MAX_CENTS);
+  });
+
+  it.each([
+    ['malformed JSON', '{"amountCents": '],
+    ['an empty body', ''],
+    ['an array', '[]'],
+    ['null', 'null'],
+    ['an astronomically large number', '{"amountCents": 1e21}'],
+  ])('refuses %s with the single error shape', async (_name, raw) => {
+    const user = await signUpUser();
+    const response = await api('/api/wallet/deposits', user, { method: 'POST', body: raw === '' ? undefined : raw, headers: { 'Content-Type': 'application/json' } });
+    expect(response.status).toBe(422);
+    expect(await response.json()).toEqual({ code: 'validation_error', message: expect.any(String) as string });
+    expect((await wallet(user)).totalCents).toBe(0);
+  });
+
+  it('treats the same key in another letter case as the same key', async () => {
+    const user = await signUpUser();
+    const key = randomUUID();
+    expect((await deposit(user, 2_000, key)).status).toBe(201);
+    expect((await deposit(user, 2_000, key.toUpperCase())).status).toBe(200);
+    expect((await wallet(user)).totalCents).toBe(2_000);
+  });
+
+  it('scopes keys per user: two users may use the same key and are both credited', async () => {
+    const [a, b] = await Promise.all([signUpUser(), signUpUser()]);
+    const key = randomUUID();
+    expect((await deposit(a, 1_000, key)).status).toBe(201);
+    expect((await deposit(b, 1_000, key)).status).toBe(201);
+  });
+
+  it('keeps many users depositing at the same time independent', async () => {
+    const users = await Promise.all(Array.from({ length: 8 }, () => signUpUser()));
+    await Promise.all(users.flatMap((user, i) => Array.from({ length: 5 }, () => deposit(user, (i + 1) * 1_000))));
+    const balances = await Promise.all(users.map(async (user) => (await wallet(user)).totalCents));
+    expect(balances).toEqual(users.map((_u, i) => (i + 1) * 1_000 * 5));
+  });
+
+  it.each([
+    ['DELETE', '/api/wallet'],
+    ['POST', '/api/wallet'],
+    ['GET', '/api/wallet/deposits'],
+    ['PUT', '/api/wallet/deposits'],
+  ])('answers %s %s with the single not-found error', async (method, path) => {
+    const user = await signUpUser();
+    const response = await api(path, user, { method, key: null });
+    expect(response.status).toBe(404);
+    expect(await response.json()).toEqual({ code: 'not_found', message: expect.any(String) as string });
+  });
+});

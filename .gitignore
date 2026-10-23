@@ -6,3 +6,4 @@ dist/
 coverage/
 .vercel/
 supabase/.temp/
+.claude/settings.local.json

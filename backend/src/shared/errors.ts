@@ -1,7 +1,5 @@
 import type { Context } from 'hono';
-import { HTTPException } from 'hono/http-exception';
 import type { ContentfulStatusCode } from 'hono/utils/http-status';
-import { ZodError } from 'zod';
 import type { ApiError, ErrorCode } from '@casa/contracts';
 
 const STATUS: Record<ErrorCode, ContentfulStatusCode> = {
@@ -39,10 +37,6 @@ export function errorResponse(c: Context, code: ErrorCode, message: string): Res
 
 export function handleError(err: unknown, c: Context): Response {
   if (err instanceof AppError) return errorResponse(c, err.code, err.message);
-  if (err instanceof ZodError) return errorResponse(c, 'validation_error', 'Dados inválidos.');
-  if (err instanceof HTTPException && err.status === 400) {
-    return errorResponse(c, 'validation_error', 'Requisição malformada.');
-  }
   // Never leak a stack or a database message to the client.
   console.error(err);
   return errorResponse(c, 'internal_error', 'Erro interno. Tente novamente.');
