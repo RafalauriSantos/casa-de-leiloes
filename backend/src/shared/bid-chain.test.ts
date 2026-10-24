@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { bidHash, genesisHash, pseudonymFor } from './chain';
+import { bidHash, genesisHash, pseudonymFor } from './bid-chain';
 
 const SECRET = 'a'.repeat(32);
 const LOT = '11111111-1111-4111-8111-111111111111';

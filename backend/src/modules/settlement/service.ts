@@ -1,7 +1,7 @@
 import { randomBytes } from 'node:crypto';
-import { chainIsValid, type StoredBid } from '../bidding';
 import type { Config } from '../../config';
 import { databaseNow } from '../../shared/clock';
+import { chainIsValid, type StoredBid } from '../../shared/bid-chain';
 import type { Db, Queryable } from '../../shared/db';
 import { AppError } from '../../shared/errors';
 import { isDue } from './rules';
@@ -126,9 +126,36 @@ export async function settleDue(db: Db, config: Config): Promise<{ settled: numb
       if (await settleLot(db, config, id)) settled += 1;
     } catch (error) {
       failed += 1;
-      const reason = error instanceof Error ? error.message : 'unexpected error';
-      console.error(`settlement failed for lot ${id}: ${reason}`);
+      logFailure(id, error);
     }
   }
   return { settled, failed };
+}
+
+/**
+ * Settles one lot when someone reads it or bids on it (D6), so a lot closes when it is looked at, not
+ * only on the cron. A failure is logged and does not fail the reader: the lot is shown as ended either
+ * way, and the cron keeps reporting the failure with HTTP 500.
+ */
+export async function settleIfEnded(db: Db, config: Config, lotId: string): Promise<void> {
+  try {
+    await settleLot(db, config, lotId);
+  } catch (error) {
+    logFailure(lotId, error);
+  }
+}
+
+/** Settles the due lots a bidder leads, so reading the wallet releases the money no longer committed. */
+export async function settleEndedLedBy(db: Db, config: Config, userId: string): Promise<void> {
+  const now = await databaseNow(db);
+  const due = await db.query<{ id: string }>(
+    "select id from public.lots where leader_id = $1 and status = 'active' and settled_at is null and ends_at <= $2",
+    [userId, now],
+  );
+  for (const { id } of due) await settleIfEnded(db, config, id);
+}
+
+function logFailure(lotId: string, error: unknown): void {
+  const reason = error instanceof Error ? error.message : 'unexpected error';
+  console.error(`settlement failed for lot ${lotId}: ${reason}`);
 }

@@ -4,6 +4,7 @@ import { authMiddleware, type AuthEnv } from '../../shared/auth';
 import type { Db } from '../../shared/db';
 import { AppError } from '../../shared/errors';
 import { requireRole } from '../identity';
+import { settleEndedLedBy } from '../settlement';
 import { depositBody, idempotencyKey } from './schemas';
 import { deposit, getWallet } from './service';
 
@@ -12,7 +13,10 @@ export function walletRoutes(deps: { db: Db; config: Config }): Hono<AuthEnv> {
 
   return new Hono<AuthEnv>()
     .use('/wallet/*', authMiddleware(config), requireRole(db, 'bidder', 'Apenas licitantes têm carteira.'))
-    .get('/wallet', async (c) => c.json(await getWallet(db, c.get('userId'))))
+    .get('/wallet', async (c) => {
+      await settleEndedLedBy(db, config, c.get('userId'));
+      return c.json(await getWallet(db, c.get('userId')));
+    })
     .post('/wallet/deposits', async (c) => {
       const key = idempotencyKey.safeParse(c.req.header('Idempotency-Key'));
       if (!key.success) throw new AppError('validation_error', 'Envie um cabeçalho Idempotency-Key com um UUID.');
