@@ -42,7 +42,7 @@ Implementation status (updated with each slice): slices 0, 1, 2 and 3 are built 
 
 ## D5. Concurrency of bids and committed balance
 - **Chosen:** one transaction per bid: `SELECT ... FOR UPDATE` on the lot (serializes bids of the same lot), then lock the bidder's and the previous leader's wallets in `user_id` order (avoids deadlock across lots), read the database clock after the locks, validate, release the previous leader, commit the new one, append the bid with its hash, update the lot, apply anti-sniping.
-- **Anti-sniping:** if `ends_at - now <= 2 min` then `ends_at = max(ends_at, now + 2 min)`. A bid at exactly `ends_at` is refused. Extensions are unbounded (README).
+- **Anti-sniping (literal reading of the brief, chosen by the owner):** if `ends_at - now <= 2 min` then `ends_at = ends_at + 2 min`. A bid at exactly `ends_at` is refused. Extensions are unbounded (README). This replaces the earlier rule `ends_at = max(ends_at, now + 2 min)`, which the owner set aside in favor of the brief's wording.
 - **Proof:** parallel HTTP requests against real Postgres; afterwards seqs are contiguous, the chain is valid, `committed` equals the recomputed value and nobody is negative. The `CHECK` is the second barrier.
 
 ## D6. Closing and settlement
@@ -54,7 +54,7 @@ Implementation status (updated with each slice): slices 0, 1, 2 and 3 are built 
 - **Tradeoff:** extra moving parts (two extensions, one secret) for punctuality only.
 
 ## D7. Real-time: polling
-- **Chosen:** `GET /api/lots/{id}/live` every 3 s (the 1-2 s of approved decision A2 was left open to be fixed in this phase; 3 s keeps one viewer under the free database query budget), a single query, returns `server_now` so the countdown uses the server clock; pauses when the tab is hidden; backs off on errors and shows a connection warning instead of faking "live".
+- **Chosen:** `GET /api/lots/{id}/live` every 3 s (the 1-2 s first approved was left open to be fixed in this phase; 3 s keeps one viewer under the free database query budget), a single query, returns `server_now` so the countdown uses the server clock; pauses when the tab is hidden; backs off on errors and shows a connection warning instead of faking "live".
 - **Why not Supabase Realtime / WebSocket / SSE:** Realtime would expose tables to clients (privacy, RLS); WebSocket and SSE fight serverless time limits.
 
 ## D8. External API and snapshot
