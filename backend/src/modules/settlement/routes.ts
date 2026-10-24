@@ -16,7 +16,7 @@ export function settlementRoutes(deps: { db: Db; config: Config }): Hono {
     if (!hasCronSecret(c.req.header('Authorization'), deps.config.cronSecret)) {
       throw new AppError('unauthenticated', 'Chamada interna não autorizada.');
     }
-    const result = await settleDue(deps.db);
+    const result = await settleDue(deps.db, deps.config);
     // A lot that could not be settled is a failure for the caller, never an HTTP success.
     return c.json(result, result.failed > 0 ? 500 : 200);
   });

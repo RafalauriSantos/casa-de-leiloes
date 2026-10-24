@@ -1,4 +1,6 @@
 import { randomBytes } from 'node:crypto';
+import { chainIsValid, type StoredBid } from '../bidding';
+import type { Config } from '../../config';
 import { databaseNow } from '../../shared/clock';
 import type { Db, Queryable } from '../../shared/db';
 import { AppError } from '../../shared/errors';
@@ -27,7 +29,7 @@ interface WalletRow {
  * the first one settles the lot, and the rest find `settled_at` set and do nothing.
  * Returns true only when this call settled the lot.
  */
-export async function settleLot(db: Db, lotId: string): Promise<boolean> {
+export async function settleLot(db: Db, config: Config, lotId: string): Promise<boolean> {
   return db.tx(async (tx) => {
     const [lot] = await tx.query<LotRow>(
       `select id, auctioneer_id, status, ends_at, leader_id, current_amount_cents, head_seq, head_hash, settled_at
@@ -39,12 +41,12 @@ export async function settleLot(db: Db, lotId: string): Promise<boolean> {
     const now = await databaseNow(tx);
     if (!isDue(lot.ends_at, now)) return false;
 
+    await assertHistoryIntact(tx, lot, config.auditHmacSecret);
+
     if (lot.leader_id === null || lot.current_amount_cents === null) {
       await tx.query("update public.lots set settled_at = $2, outcome = 'no_bids' where id = $1", [lotId, now]);
       return true;
     }
-
-    await assertHeadMatchesChain(tx, lot, lot.leader_id, lot.current_amount_cents);
 
     // Wallets are locked in user-id order, the same order bidding uses, so the two cannot deadlock.
     const involved = [lot.leader_id, lot.auctioneer_id].sort();
@@ -74,28 +76,43 @@ export async function settleLot(db: Db, lotId: string): Promise<boolean> {
 }
 
 /**
- * The lot keeps a copy of its head for speed. Before money moves, the copy must match the last bid
- * of the chain; if it does not, settlement stops rather than trusting the copy.
+ * Before any money moves, the whole history must be intact: every bid links to the one before it and
+ * every hash recomputes. The lot's head copy must then match the last bid. A lot with no leader must
+ * have no history at all, so a lot cannot be closed as "no bids" while bids sit in the chain.
  */
-async function assertHeadMatchesChain(tx: Queryable, lot: LotRow, leaderId: string, amountCents: number): Promise<void> {
-  const [last] = await tx.query<{ seq: number; bidder_id: string; amount_cents: number; hash: string }>(
-    'select seq, bidder_id, amount_cents, hash from public.bids where lot_id = $1 order by seq desc limit 1',
+async function assertHistoryIntact(tx: Queryable, lot: LotRow, secret: string): Promise<void> {
+  const rows = await tx.query<{ seq: number; bidder_id: string; amount_cents: number; placed_at: Date; prev_hash: string; hash: string }>(
+    'select seq, bidder_id, amount_cents, placed_at, prev_hash, hash from public.bids where lot_id = $1 order by seq',
     [lot.id],
   );
-  const matches =
-    last !== undefined &&
-    last.seq === lot.head_seq &&
-    last.hash === lot.head_hash &&
-    last.bidder_id === leaderId &&
-    last.amount_cents === amountCents;
-  if (!matches) throw new AppError('internal_error', 'O histórico do lote não confere com a cópia da ponta.');
+  const bids: StoredBid[] = rows.map((row) => ({
+    lotId: lot.id,
+    seq: row.seq,
+    bidderId: row.bidder_id,
+    amountCents: row.amount_cents,
+    placedAt: row.placed_at,
+    prevHash: row.prev_hash,
+    hash: row.hash,
+  }));
+  const last = bids.at(-1);
+  const headMatches =
+    last === undefined
+      ? lot.leader_id === null && lot.head_seq === 0 && lot.head_hash === null
+      : lot.leader_id !== null &&
+        last.seq === lot.head_seq &&
+        last.hash === lot.head_hash &&
+        last.bidderId === lot.leader_id &&
+        last.amountCents === lot.current_amount_cents;
+  if (!headMatches || !chainIsValid(secret, lot.id, bids)) {
+    throw new AppError('internal_error', 'O histórico do lote não confere com a cópia da ponta.');
+  }
 }
 
 /**
  * Settles every lot whose time has come. Each lot is its own transaction, so one failing lot does not
  * stop the others. A failure is logged and counted, never reported as a success.
  */
-export async function settleDue(db: Db): Promise<{ settled: number; failed: number }> {
+export async function settleDue(db: Db, config: Config): Promise<{ settled: number; failed: number }> {
   const now = await databaseNow(db);
   const due = await db.query<{ id: string }>(
     "select id from public.lots where status = 'active' and settled_at is null and ends_at <= $1 order by ends_at",
@@ -106,7 +123,7 @@ export async function settleDue(db: Db): Promise<{ settled: number; failed: numb
   let failed = 0;
   for (const { id } of due) {
     try {
-      if (await settleLot(db, id)) settled += 1;
+      if (await settleLot(db, config, id)) settled += 1;
     } catch (error) {
       failed += 1;
       const reason = error instanceof Error ? error.message : 'unexpected error';

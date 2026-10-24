@@ -215,3 +215,55 @@ describe('a settlement that cannot prove its history is refused, not forced thro
     }
   });
 });
+
+/** Changes one stored bid as someone with database access could. The append-only trigger is skipped for this transaction only. */
+async function alterBidAmount(lotId: string, seq: number, amountCents: number): Promise<void> {
+  await server.db.tx(async (tx) => {
+    await tx.query('set local session_replication_role = replica');
+    await tx.query('update public.bids set amount_cents = $3 where lot_id = $1 and seq = $2', [lotId, seq, amountCents]);
+  });
+}
+
+describe('the whole history is checked, not only its last bid', () => {
+  it('refuses a lot whose middle bid was altered, and moves no money', async () => {
+    const lot = await liveLot();
+    const first = await bidder();
+    const second = await bidder();
+    const third = await bidder();
+    await bid(lot.id, first, 50_000);
+    await bid(lot.id, second, 55_000);
+    await bid(lot.id, third, 60_000);
+    await endLot(lot.id);
+    const thirdBefore = await balances(third);
+    await alterBidAmount(lot.id, 2, 56_000);
+
+    try {
+      const result = await closeDue();
+
+      expect(result.status).toBe(500);
+      expect(result.failed).toBeGreaterThanOrEqual(1);
+      expect((await lotState(lot.id)).settled_at).toBeNull();
+      expect(await balances(third)).toEqual(thirdBefore);
+      expect(await ledgerOf(lot.id)).toEqual([]);
+    } finally {
+      await alterBidAmount(lot.id, 2, 55_000);
+    }
+  });
+
+  it('refuses to close as "no bids" a lot whose history still has bids', async () => {
+    const lot = await liveLot();
+    const winner = await bidder();
+    await bid(lot.id, winner, 50_000);
+    await endLot(lot.id);
+    await server.db.query('update public.lots set leader_id = null, current_amount_cents = null where id = $1', [lot.id]);
+
+    try {
+      const result = await closeDue();
+
+      expect(result.status).toBe(500);
+      expect((await lotState(lot.id)).settled_at).toBeNull();
+    } finally {
+      await server.db.query('update public.lots set leader_id = $2, current_amount_cents = $3 where id = $1', [lot.id, winner.id, 50_000]);
+    }
+  });
+});
