@@ -30,7 +30,7 @@ export function LotDetail({ id }: { id: string }) {
   return (
     <article aria-label="Lote">
       <h1>{lot.title}</h1>
-      <LiveRoom lotId={lot.id} />
+      <LiveRoom key={lot.id} lotId={lot.id} />
       <img src={lot.imageUrl} alt={lot.title} className="lot-hero" />
       <p><span className="state">{STATE_LABEL[lot.state]}</span></p>
       <dl>

@@ -124,5 +124,5 @@ Deposits (no real payment), email confirmation off, polling instead of push.
 - **Privacy:** public responses carry pseudonyms (HMAC of lot and user, 12 hex characters) and never user ids; `mine` marks the viewer's own bids.
 - **Position:** `leading`, `outbid` (asked of the whole history, not the window shown) or `none`, for a signed-in viewer only.
 - **Not idempotent by design:** a repeated bid from the leader is refused with `already_leading`; a retry after a lost response is refused the same way.
-- **Clock for the screen:** the room polls every 3 s, reads the server clock at the midpoint of each request, ignores answers older than the newest applied, and never runs two reads at once.
+- **Clock for the screen:** the room polls every 3 s, reads the server clock at the midpoint of each request, ignores answers older than the newest applied or started before the last bid's answer, and never runs two reads at once.
 - **Tests:** rules and chain as unit tests; integration on real Postgres: exact messages, funds boundaries, anti-sniping boundaries, the hash chain recomputed from rows, the append-only trigger, and concurrency (20 bidders at once, one user firing ten, one balance in two lots, bids crossing between two lots) with invariants on the committed money. Mutation check: removing the row locks makes four of the concurrency tests fail.
