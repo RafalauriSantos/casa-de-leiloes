@@ -37,18 +37,20 @@ export function LiveRoom({ lotId }: { lotId: string }) {
   const [busy, setBusy] = useState(false);
   const [bidError, setBidError] = useState<string>();
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  // Every read takes a number; only an answer newer than the last applied one may replace the screen.
+  // A bid moves the applied number past every read started before it, so no older poll can undo it.
+  const readCount = useRef(0);
+  const applied = useRef(0);
 
   // Poll the room every 3 s, pause while the tab is hidden, and show when the connection is failing.
   useEffect(() => {
     // Refs, not plain variables: the callbacks below read them after awaits.
     const alive = { current: true };
     const inFlight = { current: false };
-    const latestApplied = { current: 0 };
-    let requestId = 0;
     const read = async () => {
       if (inFlight.current) return;
       inFlight.current = true;
-      const mine = ++requestId;
+      const mine = ++readCount.current;
       const sentAt = Date.now();
       try {
         const room = await fetchLive(lotId, token);
@@ -58,8 +60,8 @@ export function LiveRoom({ lotId }: { lotId: string }) {
         const midpoint = (sentAt + Date.now()) / 2;
         setOffset(new Date(room.serverNow).getTime() - midpoint);
         // An answer to an older request must not overwrite a newer one.
-        if (mine > latestApplied.current) {
-          latestApplied.current = mine;
+        if (mine > applied.current) {
+          applied.current = mine;
           setLoad({ status: 'ready', room });
         }
         setStale(false);
@@ -104,6 +106,9 @@ export function LiveRoom({ lotId }: { lotId: string }) {
     setBidError(undefined);
     try {
       const room = await placeBid(token, lotId, cents);
+      // Polls started before this answer are now stale: drop them so they cannot undo it.
+      readCount.current++;
+      applied.current = readCount.current;
       setLoad({ status: 'ready', room });
       setAmount((room.nextMinimumCents / 100).toFixed(2).replace('.', ','));
     } catch (error: unknown) {
