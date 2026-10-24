@@ -1,4 +1,4 @@
-import type { CreateLotInput, ItemSummary, LotDetail, LotInput, LotSummary, OwnLot } from '@casa/contracts';
+import type { CreateLotInput, ItemSummary, LiveLot, LotDetail, LotInput, LotSummary, OwnLot } from '@casa/contracts';
 import { apiFetch } from '@/lib/api-client';
 
 export type ShowcaseStatus = 'live' | 'scheduled' | 'ended';
@@ -33,4 +33,12 @@ export function updateLot(token: string, id: string, body: LotInput): Promise<Ow
 
 export function cancelLot(token: string, id: string): Promise<OwnLot> {
   return apiFetch<OwnLot>(`/api/lots/${id}/cancel`, { token, method: 'POST' });
+}
+
+export function fetchLive(id: string, token: string | undefined): Promise<LiveLot> {
+  return apiFetch<LiveLot>(`/api/lots/${id}/live`, token ? { token } : {});
+}
+
+export function placeBid(token: string, id: string, amountCents: number): Promise<LiveLot> {
+  return apiFetch<LiveLot>(`/api/lots/${id}/bids`, { token, method: 'POST', body: { amountCents } });
 }
