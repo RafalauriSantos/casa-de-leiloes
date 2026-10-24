@@ -5,6 +5,7 @@ import { loadConfig } from './config';
 import { createDb } from './shared/db';
 
 const config = loadConfig(process.env);
+console.log(`anchor mode: ${config.anchor.mode}`);
 const app: Hono = createApp({ config, db: createDb(config.databaseUrl) });
 
 export default app;

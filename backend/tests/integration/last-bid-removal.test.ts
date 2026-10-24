@@ -98,7 +98,7 @@ describe('D21: the head the bidder kept is what exposes a removed last bid', () 
       await tx.query('set local session_replication_role = replica');
       await tx.query('delete from public.bids where lot_id = $1 and seq = 2', [lot.id]);
       await tx.query(
-        `update public.lots set leader_id = $2, current_amount_cents = 50000, head_seq = 1, bid_count = 1,
+        `update public.lots set leader_id = $2, current_amount_cents = 50000, head_seq = 1, bid_count = 1, anchored_seq = least(anchored_seq, 1),
            head_hash = (select hash from public.bids where lot_id = $1 and seq = 1) where id = $1`,
         [lot.id, first.id],
       );
