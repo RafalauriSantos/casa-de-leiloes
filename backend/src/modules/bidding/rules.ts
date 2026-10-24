@@ -1,7 +1,7 @@
 import type { ErrorCode } from '@casa/contracts';
 import { formatBRL } from '../../shared/money';
 
-/** A bid in the last two minutes of a lot moves its end: the new end is the later of the current end and now plus two minutes. */
+/** A bid in the last two minutes of a lot extends its end by two minutes (brief: "estende o fim do lote para +2 minutos"). */
 export const ANTI_SNIPING_WINDOW_MS = 120_000;
 
 export interface BidLot {
@@ -53,7 +53,7 @@ export function decideBid(lot: BidLot, wallet: BidderWallet, bid: BidAttempt, no
 
   const remaining = lot.endsAt.getTime() - now.getTime();
   const newEndsAt = remaining <= ANTI_SNIPING_WINDOW_MS
-    ? new Date(Math.max(lot.endsAt.getTime(), now.getTime() + ANTI_SNIPING_WINDOW_MS))
+    ? new Date(lot.endsAt.getTime() + ANTI_SNIPING_WINDOW_MS)
     : lot.endsAt;
 
   return {

@@ -42,7 +42,7 @@ Implementation status (updated with each slice): slices 0, 1, 2 and 3 are built 
 
 ## D5. Concurrency of bids and committed balance
 - **Chosen:** one transaction per bid: `SELECT ... FOR UPDATE` on the lot (serializes bids of the same lot), then lock the bidder's and the previous leader's wallets in `user_id` order (avoids deadlock across lots), read the database clock after the locks, validate, release the previous leader, commit the new one, append the bid with its hash, update the lot, apply anti-sniping.
-- **Anti-sniping:** if `ends_at - now <= 2 min` then `ends_at = max(ends_at, now + 2 min)`. A bid at exactly `ends_at` is refused. Extensions are unbounded (README).
+- **Anti-sniping (literal reading of the brief, chosen by the owner):** if `ends_at - now <= 2 min` then `ends_at = ends_at + 2 min`. A bid at exactly `ends_at` is refused. Extensions are unbounded (README). This replaces the earlier reading A3 (`max(ends_at, now + 2 min)`), which the owner reviewed and set aside in favor of the brief's wording.
 - **Proof:** parallel HTTP requests against real Postgres; afterwards seqs are contiguous, the chain is valid, `committed` equals the recomputed value and nobody is negative. The `CHECK` is the second barrier.
 
 ## D6. Closing and settlement

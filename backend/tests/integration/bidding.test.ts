@@ -177,18 +177,16 @@ describe('POST /api/lots/:id/bids: the rules and their exact messages', () => {
   });
 });
 
-describe('anti-sniping: a bid in the last two minutes extends the lot', () => {
-  it('moves the end to now plus two minutes when the lot ends in under two minutes', async () => {
+describe('anti-sniping: a bid in the last two minutes extends the end by two minutes', () => {
+  it('a lot ending in 90 seconds gets exactly two more minutes after the bid', async () => {
     const lot = await liveLot();
     const now = await dbNow(server);
-    await server.db.query('update public.lots set ends_at = $2 where id = $1', [lot.id, new Date(now.getTime() + 90_000)]);
+    const oldEnd = new Date(now.getTime() + 90_000);
+    await server.db.query('update public.lots set ends_at = $2 where id = $1', [lot.id, oldEnd]);
     const response = await bid(lot.id, await bidder(), 50_000);
     expect(response.status).toBe(201);
     const body = (await response.json()) as { endsAt: string };
-    const after = await dbNow(server);
-    const newEnd = new Date(body.endsAt).getTime();
-    expect(newEnd).toBeGreaterThanOrEqual(now.getTime() + 120_000);
-    expect(newEnd).toBeLessThanOrEqual(after.getTime() + 120_000);
+    expect(new Date(body.endsAt).getTime()).toBe(oldEnd.getTime() + 120_000);
   });
 });
 

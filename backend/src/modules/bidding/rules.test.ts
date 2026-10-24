@@ -95,49 +95,42 @@ describe('the outbid leader is released', () => {
   });
 });
 
-describe('anti-sniping: a bid in the last two minutes extends the end', () => {
+describe('anti-sniping: a bid in the last two minutes extends the end by two minutes', () => {
   const window = ANTI_SNIPING_WINDOW_MS;
 
   it('does not extend a bid made more than two minutes before the end', () => {
     const verdict = decideBid(open, wallet, bid(50_000), new Date(open.endsAt.getTime() - window - 1));
-    expect(verdict).toMatchObject({ ok: true });
     expect(verdict.ok && verdict.newEndsAt.getTime()).toBe(open.endsAt.getTime());
   });
 
   it('extends a bid made exactly two minutes before the end', () => {
-    const at2min = new Date(open.endsAt.getTime() - window);
-    const verdict = decideBid(open, wallet, bid(50_000), at2min);
-    expect(verdict.ok && verdict.newEndsAt.getTime()).toBe(at2min.getTime() + window);
+    const verdict = decideBid(open, wallet, bid(50_000), new Date(open.endsAt.getTime() - window));
+    expect(verdict.ok && verdict.newEndsAt.getTime()).toBe(open.endsAt.getTime() + window);
   });
 
-  it('sets the new end to now plus two minutes when that is later than the current end', () => {
+  it('adds two minutes to the existing end, however late the bid is (30 s left: end + 2 min, not now + 2 min)', () => {
     const late = new Date(open.endsAt.getTime() - 30_000);
     const verdict = decideBid(open, wallet, bid(50_000), late);
-    expect(verdict.ok && verdict.newEndsAt.getTime()).toBe(late.getTime() + window);
+    expect(verdict.ok && verdict.newEndsAt.getTime()).toBe(open.endsAt.getTime() + window);
   });
 
-  it('never shortens the lot: a late bid keeps the end when the end is already further than now plus two minutes', () => {
-    const lot = { ...open, endsAt: new Date(open.endsAt.getTime() + 10 * MIN) };
-    const late = new Date(lot.endsAt.getTime() - 60_000);
-    const verdict = decideBid(lot, wallet, bid(50_000), late);
-    // Now plus two minutes is later than the end here, so the end moves; it is never earlier than before.
-    expect(verdict.ok && verdict.newEndsAt.getTime()).toBe(late.getTime() + window);
-    expect(verdict.ok && verdict.newEndsAt.getTime()).toBeGreaterThan(lot.endsAt.getTime());
+  it('a bid at 1 minute left also adds two minutes to the existing end', () => {
+    const verdict = decideBid(open, wallet, bid(50_000), new Date(open.endsAt.getTime() - 60_000));
+    expect(verdict.ok && verdict.newEndsAt.getTime()).toBe(open.endsAt.getTime() + window);
   });
 
-  it('keeps the end when a late bid is already more than two minutes before it', () => {
-    const lot = { ...open, endsAt: new Date(open.endsAt.getTime() + 10 * MIN) };
-    const verdict = decideBid(lot, wallet, bid(50_000), new Date(lot.endsAt.getTime() - 5 * MIN));
-    expect(verdict.ok && verdict.newEndsAt.getTime()).toBe(lot.endsAt.getTime());
-  });
-
-  it('keeps extending: every late bid moves the end again', () => {
+  it('keeps extending: every late bid adds two more minutes', () => {
     const first = decideBid(open, wallet, bid(50_000), new Date(open.endsAt.getTime() - 30_000));
     expect(first.ok).toBe(true);
     if (!first.ok) return;
     const next = { ...open, endsAt: first.newEndsAt, currentAmountCents: 50_000, leaderId: 'ana' };
-    const lateAgain = new Date(first.newEndsAt.getTime() - 10_000);
-    const second = decideBid(next, wallet, bid(55_000, 'bruno'), lateAgain);
-    expect(second.ok && second.newEndsAt.getTime()).toBe(lateAgain.getTime() + window);
+    const second = decideBid(next, wallet, bid(55_000, 'bruno'), new Date(first.newEndsAt.getTime() - 10_000));
+    expect(second.ok && second.newEndsAt.getTime()).toBe(first.newEndsAt.getTime() + window);
+  });
+
+  it('a bid more than two minutes before the end leaves a longer end untouched', () => {
+    const lot = { ...open, endsAt: new Date(open.endsAt.getTime() + 10 * MIN) };
+    const verdict = decideBid(lot, wallet, bid(50_000), new Date(lot.endsAt.getTime() - 5 * MIN));
+    expect(verdict.ok && verdict.newEndsAt.getTime()).toBe(lot.endsAt.getTime());
   });
 });
