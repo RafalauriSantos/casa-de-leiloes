@@ -1,0 +1,1 @@
+export { biddingRoutes } from './routes';
