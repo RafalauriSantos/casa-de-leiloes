@@ -54,7 +54,7 @@ Implementation status (updated with each slice): slices 0, 1, 2 and 3 are built 
 - **Tradeoff:** extra moving parts (two extensions, one secret) for punctuality only.
 
 ## D7. Real-time: polling
-- **Chosen:** `GET /api/lots/{id}/live` every 3 s (the 1-2 s of approved decision A2 was left open to be fixed in this phase; 3 s keeps one viewer under the free database query budget), a single query, returns `server_now` so the countdown uses the server clock; pauses when the tab is hidden; backs off on errors and shows a connection warning instead of faking "live".
+- **Chosen:** `GET /api/lots/{id}/live` every 3 s (the 1-2 s first approved was left open to be fixed in this phase; 3 s keeps one viewer under the free database query budget), a single query, returns `server_now` so the countdown uses the server clock; pauses when the tab is hidden; backs off on errors and shows a connection warning instead of faking "live".
 - **Why not Supabase Realtime / WebSocket / SSE:** Realtime would expose tables to clients (privacy, RLS); WebSocket and SSE fight serverless time limits.
 
 ## D8. External API and snapshot
