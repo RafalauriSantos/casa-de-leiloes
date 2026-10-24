@@ -126,3 +126,27 @@ Deposits (no real payment), email confirmation off, polling instead of push.
 - **Not idempotent by design:** a repeated bid from the leader is refused with `already_leading`; a retry after a lost response is refused the same way.
 - **Clock for the screen:** the room polls every 3 s, reads the server clock at the midpoint of each request, ignores answers older than the newest applied or started before the last bid's answer, and never runs two reads at once.
 - **Tests:** rules and chain as unit tests; integration on real Postgres: exact messages, funds boundaries, anti-sniping boundaries, the hash chain recomputed from rows, the append-only trigger, and concurrency (20 bidders at once, one user firing ten, one balance in two lots, bids crossing between two lots) with invariants on the committed money. Mutation check: removing the row locks makes four of the concurrency tests fail.
+
+## D19. Quality bar per phase (what "tested well" means here)
+Each item is measurable. A phase closes only when its items are met and the evidence is in the PR.
+
+**Phase 6, build by slice (every slice):**
+- **Traceability:** every acceptance criterion of the slice (J0..J8, the brief's journeys from phase 2 of the delivery process) maps to at least one test with a stable name. The map lives in `docs/TRACEABILITY.md`; a criterion with no test is listed as open, never silently skipped.
+- **Real dependencies:** business rules and error paths run on real Postgres, real Auth and real HTTP. No mocks or fakes in the repository's tests.
+- **Money paths:** at least 20 simultaneous requests for each path that moves money, with invariants checked afterwards (no negative balance, committed money equals the leader's amount, contiguous sequence numbers, no lost update).
+- **No fixed waits:** tests wait for a condition with a timeout, never for a fixed number of milliseconds.
+- **Stability:** the suite passes on 10 consecutive runs before a slice closes.
+- **Browser flow in CI:** at least one happy path and three refusal paths per slice run in a real browser on every push.
+- **Review:** the clean-context reviewer returns PASS on the staged diff, and the report lists what was not verified.
+
+**Phase 7, harden (before delivery):**
+- **Mutation:** a mutation tool kills at least 80% of injected defects in the money modules (wallet, bidding, settlement). The score is recorded in CI.
+- **Accessibility:** zero critical or serious violations on each screen, checked automatically.
+- **Load:** the bid endpoint answers with no 500 and no broken invariant under the target load, with a response-time budget recorded.
+- **Security:** dependency audit at zero high-severity findings; authorization and token-claim tests; row-level-security tests for every table.
+
+**Phase 8, deliver:**
+- A journey script runs against the deployed URL after each deploy.
+- Traceability covers 100% of the brief's criteria, or each gap is declared in the README.
+
+**Current status (recorded when this decision was written):** slice 3 meets the no-mock item, and the 20-request item only for the multi-bidder path (20 bidders at once). Its other money paths use 2 to 12 simultaneous requests. It does not yet meet the traceability, browser-flow, mutation, accessibility, load, fixed-wait and full concurrency items. Those gaps are the next work.

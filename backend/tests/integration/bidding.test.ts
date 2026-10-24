@@ -304,7 +304,6 @@ describe('concurrency: parallel bids keep the lot and the balances consistent', 
 });
 
 describe('GET /api/lots/:id/live: the room\'s view', () => {
-
   it('still says "outbid" to someone who bid long before the last 50 bids', async () => {
     const lot = await liveLot({ startingBidCents: 10_000, incrementCents: 100 });
     const early = await bidder();
@@ -318,23 +317,6 @@ describe('GET /api/lots/:id/live: the room\'s view', () => {
     expect(view.history).toHaveLength(50);
     expect(view.position).toBe('outbid');
   }, 60_000);
-  it('still says "outbid" to someone who bid long before the last 50 bids', async () => {
-    const lot = await liveLot({ startingBidCents: 10_000, incrementCents: 100 });
-    const early = await bidder();
-    await bid(lot.id, early, 10_000);
-    const top = await bidder();
-    // Fifty-one later bids push the early bidder out of the history window.
-    for (let i = 1; i <= 51; i++) {
-      const next = await bidder();
-      const response = await bid(lot.id, next, 10_000 + i * 100);
-      expect(response.status).toBe(201);
-    }
-    await bid(lot.id, top, 10_000 + 52 * 100);
-    const view = (await (await fetch(`${server.url}/api/lots/${lot.id}/live`, { headers: json(early) })).json()) as { position: string; history: unknown[] };
-    expect(view.history).toHaveLength(50);
-    expect(view.position).toBe('outbid');
-  }, 60_000);
-
 
   it('is public and shows no user ids, and marks my position only when I am signed in', async () => {
     const lot = await liveLot();
