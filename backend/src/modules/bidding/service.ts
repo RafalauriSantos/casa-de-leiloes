@@ -1,4 +1,4 @@
-import type { LiveLot } from '@casa/contracts';
+import type { BidAccepted, BidReceipt, LiveLot } from '@casa/contracts';
 import type { Config } from '../../config';
 import { databaseNow } from '../../shared/clock';
 import type { Db, Queryable } from '../../shared/db';
@@ -83,8 +83,8 @@ export async function liveView(db: Queryable, config: Config, lotId: string, vie
  * Places one bid. Lock order is fixed to avoid deadlocks: the lot first, then the wallets involved,
  * in user-id order. The clock is read after the locks, so a bid cannot be judged against a stale time.
  */
-export async function placeBid(db: Db, config: Config, bidderId: string, lotId: string, amountCents: number): Promise<LiveLot> {
-  await db.tx(async (tx) => {
+export async function placeBid(db: Db, config: Config, bidderId: string, lotId: string, amountCents: number): Promise<BidAccepted> {
+  const receipt: BidReceipt = await db.tx(async (tx) => {
     const [lot] = await tx.query<LotRow>(`select ${LOT_COLUMNS} from public.lots where id = $1 for update`, [lotId]);
     if (!lot) throw new AppError('not_found', 'Lote não encontrado.');
 
@@ -130,7 +130,8 @@ export async function placeBid(db: Db, config: Config, bidderId: string, lotId: 
               head_seq = $4, head_hash = $5, ends_at = $6 where id = $1`,
       [lotId, amountCents, bidderId, seq, hash, verdict.newEndsAt],
     );
+    return { seq, head: hash, placedAt: now.toISOString() };
   });
-  return liveView(db, config, lotId, bidderId);
+  return { ...(await liveView(db, config, lotId, bidderId)), receipt };
 }
 
