@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { ApiRequestError } from '@/lib/api-client';
 import { formatBRL } from '@/lib/format';
 import { fetchLot } from '../api';
+import { LiveRoom } from './LiveRoom';
 import { formatWhen, STATE_LABEL } from '../time';
 
 type State = { status: 'loading' } | { status: 'error'; message: string } | { status: 'ready'; lot: LotDetailView };
@@ -29,6 +30,7 @@ export function LotDetail({ id }: { id: string }) {
   return (
     <article aria-label="Lote">
       <h1>{lot.title}</h1>
+      <LiveRoom key={lot.id} lotId={lot.id} />
       <img src={lot.imageUrl} alt={lot.title} className="lot-hero" />
       <p><span className="state">{STATE_LABEL[lot.state]}</span></p>
       <dl>

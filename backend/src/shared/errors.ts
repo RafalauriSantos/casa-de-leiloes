@@ -12,6 +12,7 @@ const STATUS: Record<ErrorCode, ContentfulStatusCode> = {
   already_leading: 409,
   lot_not_started: 409,
   lot_ended: 409,
+  lot_cancelled: 409,
   lot_not_editable: 409,
   idempotency_conflict: 409,
   catalog_unavailable: 503,

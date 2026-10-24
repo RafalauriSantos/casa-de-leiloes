@@ -3,7 +3,7 @@
 Each decision records what was chosen, why, and the tradeoff accepted.
 Status: approved in phase 3 (design).
 
-Implementation status (updated with each slice): slices 0, 1 and 2 are built (slice 2: catalog and lots, see D17). Decisions D1, D2 (modules and lint rules), D3 (`profiles`, `wallets`, `wallet_ledger`), D9 (error shape; `me` and wallet routes), D11, D13 (UTC only so far), D14 and D16 are in the code. **Not built yet, only decided:** D4 hash chain, D5 bids, D6 settlement (only the scheduler and an empty endpoint exist), D7 polling, D10 privacy, D15 seed, the `bids` and `receipts` tables, the end-to-end script against the deployed URL, CSP and security headers. (`make e2e-live` exists since slice 2.) A sentence below is in the present tense only when it is already true; the rest says "planned".
+Implementation status (updated with each slice): slices 0, 1, 2 and 3 are built (slice 2: catalog and lots, see D17; slice 3: bids, see D18). Decisions D1, D2 (modules and lint rules), D3 (`profiles`, `wallets`, `wallet_ledger`), D9 (error shape; `me` and wallet routes), D11, D13 (UTC only so far), D14 and D16 are in the code. **Not built yet, only decided:** D6 settlement (only the scheduler and an empty endpoint exist), D10 privacy (pseudonyms are in use; the audit page is not), D15 seed, the `receipts` table, the audit page and its verifier, the end-to-end script against the deployed URL, CSP and security headers. (`make e2e-live` exists since slice 2.) A sentence below is in the present tense only when it is already true; the rest says "planned".
 
 ## D1. Stack and hosting
 - **Chosen:** React + Vite + TypeScript (front); Node.js + TypeScript + Hono (back); Postgres and Auth on Supabase; one Vercel project serving the static site and the API on the same origin (`/api/*`); `pg` as driver through the Supabase transaction pooler (port 6543).
@@ -116,3 +116,13 @@ Implementation status (updated with each slice): slices 0, 1 and 2 are built (sl
 
 ## What stays simulated (declared in the README)
 Deposits (no real payment), email confirmation off, polling instead of push.
+
+## D18. Slice 3: bids and the live room (as built)
+- **Rules are pure** (`modules/bidding/rules.ts`): `decideBid(lot, wallet, bid, now)` returns the verdict and the money to release; the clock is a parameter read from the database after the locks.
+- **One transaction per bid:** lock the lot (`for update`), then lock the bidder's and the previous leader's wallets in user-id order, read the clock, decide, release the previous leader, commit the bidder, append the bid with its hash, update the lot. Lock order is fixed, so two lots and two bidders cannot deadlock.
+- **Hash chain** (`modules/bidding/chain.ts`): HMAC-SHA256 with the audit secret over the lot, sequence, bidder, amount, time (ISO with milliseconds, the stored precision) and the previous hash; the genesis is per lot. The `bids` table refuses update, delete and truncate. The lot keeps a copy of its head (`head_seq`, `head_hash`) for speed; settlement and the audit must check those copies against the chain and not trust them alone.
+- **Privacy:** public responses carry pseudonyms (HMAC of lot and user, 12 hex characters) and never user ids; `mine` marks the viewer's own bids.
+- **Position:** `leading`, `outbid` (asked of the whole history, not the window shown) or `none`, for a signed-in viewer only.
+- **Not idempotent by design:** a repeated bid from the leader is refused with `already_leading`; a retry after a lost response is refused the same way.
+- **Clock for the screen:** the room polls every 3 s, reads the server clock at the midpoint of each request, ignores answers older than the newest applied or started before the last bid's answer, and never runs two reads at once.
+- **Tests:** rules and chain as unit tests; integration on real Postgres: exact messages, funds boundaries, anti-sniping boundaries, the hash chain recomputed from rows, the append-only trigger, and concurrency (20 bidders at once, one user firing ten, one balance in two lots, bids crossing between two lots) with invariants on the committed money. Mutation check: removing the row locks makes four of the concurrency tests fail.

@@ -9,6 +9,7 @@ export const ERROR_CODES = [
   'already_leading',
   'lot_not_started',
   'lot_ended',
+  'lot_cancelled',
   'lot_not_editable',
   'idempotency_conflict',
   'catalog_unavailable',

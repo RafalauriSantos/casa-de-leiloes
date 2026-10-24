@@ -8,6 +8,7 @@ import { settlementRoutes } from './modules/settlement';
 import { walletRoutes } from './modules/wallet';
 import { catalogRoutes } from './modules/catalog';
 import { lotRoutes } from './modules/lots';
+import { biddingRoutes } from './modules/bidding';
 
 export function createApp(deps: { config: Config; db: Db }): Hono {
   const { config, db } = deps;
@@ -18,6 +19,7 @@ export function createApp(deps: { config: Config; db: Db }): Hono {
   app.route('/', walletRoutes({ db, config }));
   app.route('/', catalogRoutes({ db, config }));
   app.route('/', lotRoutes({ db, config }));
+  app.route('/', biddingRoutes({ db, config }));
   app.route('/', settlementRoutes({ config }));
 
   app.onError(handleError);
