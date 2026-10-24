@@ -27,6 +27,23 @@ export function bidHash(secret: string, bid: ChainedBid): string {
   return hmac(secret, `v1|${bid.lotId}|${String(bid.seq)}|${bid.bidderId}|${String(bid.amountCents)}|${bid.placedAt.toISOString()}|${bid.prevHash}`);
 }
 
+export interface StoredBid extends ChainedBid {
+  hash: string;
+}
+
+/**
+ * True when the whole history is intact: bids run 1, 2, 3 without gaps, each one links to the hash
+ * before it (the first to the genesis), and each stored hash recomputes. An empty history is intact.
+ */
+export function chainIsValid(secret: string, lotId: string, bids: StoredBid[]): boolean {
+  let prevHash = genesisHash(secret, lotId);
+  for (const [index, bid] of bids.entries()) {
+    if (bid.seq !== index + 1 || bid.prevHash !== prevHash || bidHash(secret, bid) !== bid.hash) return false;
+    prevHash = bid.hash;
+  }
+  return true;
+}
+
 /** The name a bidder shows in a lot. Stable inside the lot, unlinkable across lots, and not the user id. */
 export function pseudonymFor(secret: string, lotId: string, userId: string): string {
   return hmac(secret, `pseudonym|${lotId}|${userId}`).slice(0, 12);

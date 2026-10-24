@@ -20,7 +20,7 @@ export function createApp(deps: { config: Config; db: Db }): Hono {
   app.route('/', catalogRoutes({ db, config }));
   app.route('/', lotRoutes({ db, config }));
   app.route('/', biddingRoutes({ db, config }));
-  app.route('/', settlementRoutes({ config }));
+  app.route('/', settlementRoutes({ db, config }));
 
   app.onError(handleError);
   app.notFound(handleNotFound);
