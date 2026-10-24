@@ -1,7 +1,9 @@
 import { timingSafeEqual } from 'node:crypto';
 import { Hono } from 'hono';
 import type { Config } from '../../config';
+import type { Db } from '../../shared/db';
 import { AppError } from '../../shared/errors';
+import { settleDue } from './service';
 
 function hasCronSecret(header: string | undefined, secret: string): boolean {
   const given = Buffer.from(header ?? '');
@@ -9,12 +11,13 @@ function hasCronSecret(header: string | undefined, secret: string): boolean {
   return given.length === expected.length && timingSafeEqual(given, expected);
 }
 
-export function settlementRoutes(deps: { config: Config }): Hono {
-  return new Hono().post('/internal/close-due', (c) => {
+export function settlementRoutes(deps: { db: Db; config: Config }): Hono {
+  return new Hono().post('/internal/close-due', async (c) => {
     if (!hasCronSecret(c.req.header('Authorization'), deps.config.cronSecret)) {
       throw new AppError('unauthenticated', 'Chamada interna não autorizada.');
     }
-    // Walking skeleton: there are no lots yet. Slice 4 replaces this with the real settlement.
-    return c.json({ settled: 0 });
+    const result = await settleDue(deps.db);
+    // A lot that could not be settled is a failure for the caller, never an HTTP success.
+    return c.json(result, result.failed > 0 ? 500 : 200);
   });
 }
