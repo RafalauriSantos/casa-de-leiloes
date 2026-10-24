@@ -20,7 +20,7 @@ Each criterion of the brief's journeys (defined in phase 2 of the delivery proce
 
 | Criterion | Test | Status |
 |---|---|---|
-| 5.1 closes at its time with nobody looking | `backend/tests/integration/settlement.test.ts`, "5.1" (cron call settles an ended lot, leaves a running one) | Covered (cron trigger only; on-demand triggers are planned in D6) |
+| 5.1 closes at its time with nobody looking | `backend/tests/integration/settlement.test.ts`, "5.1" (cron call settles an ended lot, leaves a running one) | Covered (cron trigger), plus on-demand in `settlement-on-demand.test.ts` |
 | 5.2 winner pays, auctioneer is credited, outbid money released, receipt written | `settlement.test.ts`, "5.2" | Covered |
 | 5.3 no bids closes without a winner | `settlement.test.ts`, "5.3" | Covered |
 | 5.4 settles once under parallel triggers | `settlement.test.ts`, "5.4" (ten parallel cron calls) | Covered |

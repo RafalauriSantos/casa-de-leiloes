@@ -3,7 +3,7 @@ import type { Config } from '../../config';
 import { databaseNow } from '../../shared/clock';
 import type { Db, Queryable } from '../../shared/db';
 import { AppError } from '../../shared/errors';
-import { bidHash, genesisHash, pseudonymFor } from './chain';
+import { bidHash, genesisHash, pseudonymFor } from '../../shared/bid-chain';
 import { decideBid } from './rules';
 import { stateOf } from '../lots';
 

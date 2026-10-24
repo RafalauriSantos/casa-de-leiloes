@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import type { OwnLot } from '@casa/contracts';
-import { bidHash, genesisHash } from '../../src/modules/bidding/chain';
+import { bidHash, genesisHash } from '../../src/shared/bid-chain';
 import { signUpUser, type TestUser } from '../helpers/auth';
 import { createAuctioneer, dbNow, lotBody, minutes } from '../helpers/lots';
 import { startMetStub, type MetStub } from '../helpers/met-stub';
