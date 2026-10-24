@@ -14,6 +14,9 @@ get() { printf '%s\n' "$status" | sed -n "s/^$1=\"\(.*\)\"$/\1/p"; }
 export SUPABASE_URL="$(get API_URL)"
 export SUPABASE_ANON_KEY="$(get ANON_KEY)"
 export DATABASE_URL="$(get DB_URL)"
+# The public anchor is always off here, whatever the shell holds: a test or a dev server must never write to the
+# real public repository. The tests of the anchor switch it on themselves, against a local stub.
+export ANCHOR_MODE=off
 export VITE_SUPABASE_URL="$SUPABASE_URL"
 export VITE_SUPABASE_ANON_KEY="$SUPABASE_ANON_KEY"
 secrets=".env.dev-secrets"

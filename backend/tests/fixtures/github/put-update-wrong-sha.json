@@ -1,0 +1,11 @@
+{
+  "status": 409,
+  "headers": {
+    "content-type": "application/json; charset=utf-8"
+  },
+  "body": {
+    "message": "scratch/rec.txt does not match 0000000000000000000000000000000000000000",
+    "documentation_url": "https://docs.github.com/rest/repos/contents#create-or-update-file-contents",
+    "status": "409"
+  }
+}

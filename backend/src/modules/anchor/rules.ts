@@ -10,6 +10,9 @@ export interface AnchoredBid {
   publishedAt: string;
 }
 
+/** The first line of every anchor file. */
+export const ANCHOR_HEADER = 'lot_id,seq,head_hash,published_at';
+
 /** One line of the anchor file: lot, sequence number, hash and publication time, comma separated. */
 export function anchorLine(entry: AnchoredBid): string {
   return `${entry.lotId},${String(entry.seq)},${entry.hash},${entry.publishedAt}`;

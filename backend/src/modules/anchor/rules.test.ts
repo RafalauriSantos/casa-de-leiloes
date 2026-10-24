@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { anchorLine, isStalePending, retryDelayMs, seqsToPublish, STALE_PENDING_MS } from './rules';
+import { ANCHOR_HEADER, anchorLine, isStalePending, retryDelayMs, seqsToPublish, STALE_PENDING_MS } from './rules';
+
+describe('ANCHOR_HEADER', () => {
+  it('names the four columns of every anchor line', () => {
+    expect(ANCHOR_HEADER).toBe('lot_id,seq,head_hash,published_at');
+  });
+});
 
 describe('anchorLine', () => {
   it('writes lot, sequence number, hash and time, comma separated', () => {

@@ -1,0 +1,24 @@
+{
+  "status": 200,
+  "headers": {
+    "content-type": "application/json; charset=utf-8"
+  },
+  "body": {
+    "name": "rec.txt",
+    "path": "scratch/rec.txt",
+    "sha": "902d9d4ded6d31c1471896d83ac7fcded606d6b0",
+    "size": 98,
+    "url": "https://api.github.com/repos/owner/anchor/contents/scratch/rec.txt?ref=main",
+    "html_url": "https://github.com/owner/anchor/blob/main/scratch/rec.txt",
+    "git_url": "https://api.github.com/repos/owner/anchor/git/blobs/902d9d4ded6d31c1471896d83ac7fcded606d6b0",
+    "download_url": "https://raw.githubusercontent.com/owner/anchor/main/scratch/rec.txt",
+    "type": "file",
+    "content": "bG90LTEsMSxhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFh\nYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhLDIwMjYtMTAtMjRUMjA6MDA6\nMDAuMDAwWgo=\n",
+    "encoding": "base64",
+    "_links": {
+      "self": "https://api.github.com/repos/owner/anchor/contents/scratch/rec.txt?ref=main",
+      "git": "https://api.github.com/repos/owner/anchor/git/blobs/902d9d4ded6d31c1471896d83ac7fcded606d6b0",
+      "html": "https://github.com/owner/anchor/blob/main/scratch/rec.txt"
+    }
+  }
+}
