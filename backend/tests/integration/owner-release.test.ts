@@ -501,6 +501,17 @@ describe('the owner releases the money of a lot whose history fails verification
     expect((await committedOf(winner))?.committed_cents).toBe(0);
   });
 
+  it('releases a lot whose copy alone names another leader while the chain verifies: the last bid holds the money, not the copy', async () => {
+    const { lot, first, winner } = await endedLot();
+    await server.db.query('update public.lots set leader_id = $2 where id = $1', [lot.id, first.id]);
+    expect(await reviewTamperedLot(server.db, config, lot.id)).toMatchObject({ copyDisagrees: true, decidable: true, brokenAtSeq: null });
+
+    await releaseTamperedLot(server.db, config, lot.id, { decidedBy: 'owner', reason: 'cópia com outro líder', leaderId: winner.id, amountCents: 55_000 });
+
+    expect(await stateOf(lot.id)).toMatchObject({ status: 'integrity_cancelled' });
+    expect((await committedOf(winner))?.committed_cents).toBe(0);
+  });
+
   it('records a release above the 32-bit range: the decision keeps the whole amount, as money does everywhere else', async () => {
     const { lot, winner } = await endedLot();
     const big = 3_000_000_000;
