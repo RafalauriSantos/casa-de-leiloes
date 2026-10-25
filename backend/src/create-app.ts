@@ -9,9 +9,9 @@ import { walletRoutes } from './modules/wallet';
 import { catalogRoutes } from './modules/catalog';
 import { lotRoutes } from './modules/lots';
 import { biddingRoutes } from './modules/bidding';
-import { auditRoutes } from './modules/audit';
+import { auditRoutes, type AuditOptions } from './modules/audit';
 
-export function createApp(deps: { config: Config; db: Db }): Hono {
+export function createApp(deps: { config: Config; db: Db; audit?: Partial<AuditOptions> }): Hono {
   const { config, db } = deps;
   const app = new Hono().basePath('/api');
 
@@ -21,7 +21,7 @@ export function createApp(deps: { config: Config; db: Db }): Hono {
   app.route('/', catalogRoutes({ db, config }));
   app.route('/', lotRoutes({ db, config }));
   app.route('/', biddingRoutes({ db, config }));
-  app.route('/', auditRoutes({ db, config }));
+  app.route('/', auditRoutes({ db, config, options: deps.audit }));
   app.route('/', settlementRoutes({ db, config }));
 
   app.onError(handleError);

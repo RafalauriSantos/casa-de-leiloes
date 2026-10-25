@@ -40,11 +40,11 @@ interface Answer {
 
 const encodePath = (path: string) => path.split('/').map(encodeURIComponent).join('/');
 
-async function call(target: GithubTarget, method: 'GET' | 'PUT', path: string, body?: Record<string, unknown>): Promise<Answer> {
-  const query = method === 'GET' ? `?ref=${encodeURIComponent(target.branch)}` : '';
+/** One call to the GitHub API, `repoPath` being what follows `/repos/{repo}` (for example `/contents/lots/x.csv?ref=main`). */
+async function call(target: GithubTarget, method: 'GET' | 'PUT', repoPath: string, body?: Record<string, unknown>): Promise<Answer> {
   let response: Response;
   try {
-    response = await fetch(`${target.apiUrl}/repos/${target.repo}/contents/${encodePath(path)}${query}`, {
+    response = await fetch(`${target.apiUrl}/repos/${target.repo}${repoPath}`, {
       method,
       headers: {
         Accept: 'application/vnd.github+json',
@@ -91,7 +91,7 @@ export interface AnchorFile {
 
 /** The file as it is now, or null when it does not exist yet. */
 export async function readAnchorFile(target: GithubTarget, path: string): Promise<AnchorFile | null> {
-  const answer = await call(target, 'GET', path);
+  const answer = await call(target, 'GET', `/contents/${encodePath(path)}?ref=${encodeURIComponent(target.branch)}`);
   if (answer.status === 404) return null;
   if (answer.status !== 200) throw failure(answer);
   const parsed = fileBody.safeParse(answer.body);
@@ -101,11 +101,21 @@ export async function readAnchorFile(target: GithubTarget, path: string): Promis
 
 /** Creates the file (no sha) or updates it (the sha that was read). A stale sha is a conflict. */
 export async function writeAnchorFile(target: GithubTarget, path: string, content: string, sha: string | undefined, message: string): Promise<void> {
-  const answer = await call(target, 'PUT', path, {
+  const answer = await call(target, 'PUT', `/contents/${encodePath(path)}`, {
     message,
     content: Buffer.from(content, 'utf8').toString('base64'),
     branch: target.branch,
     ...(sha === undefined ? {} : { sha }),
   });
   if (answer.status !== 200 && answer.status !== 201) throw failure(answer);
+}
+
+/**
+ * Confirms that the repository and the branch exist and the token can see them. GitHub answers 404 for a file that
+ * is missing, but also for a wrong repository, a wrong branch or a token without access, so a missing file is only
+ * believed after this call succeeds. Any other answer throws, and a 404 here is named `auth`, as for a write.
+ */
+export async function confirmBranch(target: GithubTarget): Promise<void> {
+  const answer = await call(target, 'GET', `/branches/${encodeURIComponent(target.branch)}`);
+  if (answer.status !== 200) throw failure(answer);
 }

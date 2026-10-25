@@ -128,7 +128,7 @@ describe('GET /api/lots/:id/audit shows the history of an intact lot', () => {
     const response = await audit(lot.id);
 
     expect(response.status).toBe(200);
-    expect((await response.json()) as AuditReport).toEqual({ lotId: lot.id, bids: [], chain: { status: 'intact' } });
+    expect((await response.json()) as AuditReport).toEqual({ lotId: lot.id, bids: [], chain: { status: 'intact' }, anchor: { status: 'off' } });
   });
 
   it('never settles and never writes: an ended lot stays unsettled after being audited', async () => {
