@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import type { BidAccepted, OwnLot } from '@casa/contracts';
-import { chainIsValid, type StoredBid } from '../../src/shared/bid-chain';
+import { firstBrokenSeq, type StoredBid } from '../../src/shared/bid-chain';
 import { signUpUser, type TestUser } from '../helpers/auth';
 import { createAuctioneer, dbNow, lotBody, minutes } from '../helpers/lots';
 import { startMetStub, type MetStub } from '../helpers/met-stub';
@@ -120,7 +120,8 @@ describe('D21: the head the bidder kept is what exposes a removed last bid', () 
       prevHash: row.prev_hash,
       hash: row.hash,
     }));
-    expect(chainIsValid(testConfig().auditHmacSecret, lot.id, chain)).toBe(true);
+    const [head] = await server.db.query<{ head_seq: number; head_hash: string | null }>('select head_seq, head_hash from public.lots where id = $1', [lot.id]);
+    expect(firstBrokenSeq(testConfig().auditHmacSecret, lot.id, chain, { seq: head?.head_seq ?? -1, hash: head?.head_hash ?? null })).toBeNull();
     expect(chain).toHaveLength(1);
     expect(await historyHashes(lot.id)).not.toContain(keptHead);
   });

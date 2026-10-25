@@ -101,6 +101,48 @@ describe('a failed on-demand settlement does not fail the reader and moves no mo
   });
 });
 
+describe('a lot whose history or head copy was altered is never settled and moves no money', () => {
+  async function committed(user: TestUser): Promise<number> {
+    const [wallet] = await server.db.query<{ committed_cents: number }>('select committed_cents from public.wallets where user_id = $1', [user.id]);
+    return wallet?.committed_cents ?? Number.NaN;
+  }
+
+  it('refuses a lot whose earlier bid was edited in the database', async () => {
+    const lot = await liveLot();
+    const first = await bidder();
+    const winner = await bidder();
+    await bid(lot.id, first, 50_000);
+    await bid(lot.id, winner, 55_000);
+    await endLot(lot.id);
+    // The edited bid is not the last one, so the leader and amount of the lot still match: only the chain check can see it.
+    await server.db.tx(async (tx) => {
+      await tx.query('set local session_replication_role = replica');
+      await tx.query('update public.bids set amount_cents = 1 where lot_id = $1 and seq = 1', [lot.id]);
+    });
+
+    expect((await fetch(`${server.url}/api/lots/${lot.id}`)).status).toBe(200);
+    const wallet = await fetch(`${server.url}/api/wallet`, { headers: json(winner) });
+    expect(wallet.status).toBe(200);
+
+    expect(await settledAt(lot.id)).toBeNull();
+    expect(await committed(winner)).toBe(55_000);
+  });
+
+  it('refuses a lot whose head_seq was rewritten to a state the history does not reach', async () => {
+    const lot = await liveLot();
+    const winner = await bidder();
+    await bid(lot.id, winner, 50_000);
+    await endLot(lot.id);
+    await server.db.query('update public.lots set head_seq = 2 where id = $1', [lot.id]);
+
+    expect((await fetch(`${server.url}/api/lots/${lot.id}`)).status).toBe(200);
+    expect((await fetch(`${server.url}/api/wallet`, { headers: json(winner) })).status).toBe(200);
+
+    expect(await settledAt(lot.id)).toBeNull();
+    expect(await committed(winner)).toBe(50_000);
+  });
+});
+
 describe('a due lot is settled when someone reads it, without the cron', () => {
   it('settles the lot when its public page is read', async () => {
     const lot = await liveLot();
