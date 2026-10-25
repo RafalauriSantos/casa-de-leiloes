@@ -1,4 +1,4 @@
-import type { CreateLotInput, ItemSummary, LiveLot, LotDetail, LotInput, LotSummary, OwnLot } from '@casa/contracts';
+import type { BidAccepted, CreateLotInput, ItemSummary, LiveLot, LotDetail, LotInput, LotSummary, OwnLot } from '@casa/contracts';
 import { apiFetch } from '@/lib/api-client';
 
 export type ShowcaseStatus = 'live' | 'scheduled' | 'ended';
@@ -39,6 +39,6 @@ export function fetchLive(id: string, token: string | undefined): Promise<LiveLo
   return apiFetch<LiveLot>(`/api/lots/${id}/live`, token ? { token } : {});
 }
 
-export function placeBid(token: string, id: string, amountCents: number): Promise<LiveLot> {
-  return apiFetch<LiveLot>(`/api/lots/${id}/bids`, { token, method: 'POST', body: { amountCents } });
+export function placeBid(token: string, id: string, amountCents: number): Promise<BidAccepted> {
+  return apiFetch<BidAccepted>(`/api/lots/${id}/bids`, { token, method: 'POST', body: { amountCents } });
 }

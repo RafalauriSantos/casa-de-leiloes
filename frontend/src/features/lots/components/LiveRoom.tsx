@@ -1,9 +1,11 @@
-import type { LiveLot } from '@casa/contracts';
+import { BID_LIMIT_MESSAGE, MAX_BIDS_PER_LOT, type BidReceipt, type LiveLot } from '@casa/contracts';
 import { useEffect, useRef, useState, type SyntheticEvent } from 'react';
+import { Link } from 'react-router-dom';
 import { ApiRequestError } from '@/lib/api-client';
 import { formatBRL, parseReaisToCents } from '@/lib/format';
 import { useAuth } from '@/features/auth';
 import { fetchLive, placeBid } from '../api';
+import { addReceipt, readReceipts } from '../receipts';
 import { formatWhen, STATE_LABEL } from '../time';
 
 const POLL_MS = 3_000;
@@ -28,6 +30,7 @@ export function LiveRoom({ lotId }: { lotId: string }) {
   const auth = useAuth();
   const token = auth.status === 'signed-in' ? auth.token : undefined;
   const role = auth.status === 'signed-in' ? auth.me.role : undefined;
+  const userId = auth.status === 'signed-in' ? auth.me.id : undefined;
 
   const [load, setLoad] = useState<Load>({ status: 'loading' });
   const [offset, setOffset] = useState(0);
@@ -36,6 +39,14 @@ export function LiveRoom({ lotId }: { lotId: string }) {
   const [amount, setAmount] = useState('');
   const [busy, setBusy] = useState(false);
   const [bidError, setBidError] = useState<string>();
+  // The receipts belong to the user named in `owner`, so another user never sees them, not even for one render.
+  const [stored, setStored] = useState<{ owner: string | undefined; list: BidReceipt[] }>({ owner: undefined, list: [] });
+  const receipts = stored.owner === userId ? stored.list : [];
+  const signedInUser = useRef(userId);
+  signedInUser.current = userId;
+  useEffect(() => {
+    setStored({ owner: userId, list: userId ? readReceipts(userId, lotId) : [] });
+  }, [userId, lotId]);
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
   // Every read takes a number; only an answer newer than the last applied one may replace the screen.
   // A bid moves the applied number past every read started before it, so no older poll can undo it.
@@ -96,7 +107,7 @@ export function LiveRoom({ lotId }: { lotId: string }) {
 
   async function submit(event: SyntheticEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!token) return;
+    if (!token || !userId) return;
     const cents = parseReaisToCents(amount);
     if (cents === undefined) {
       setBidError('Informe o lance em reais, por exemplo 550,00.');
@@ -105,12 +116,17 @@ export function LiveRoom({ lotId }: { lotId: string }) {
     setBusy(true);
     setBidError(undefined);
     try {
-      const room = await placeBid(token, lotId, cents);
+      const accepted = await placeBid(token, lotId, cents);
+      // The receipt is saved even if the signed-in user changed while the bid was in flight: the server accepted it.
+      const next = addReceipt(userId, lotId, accepted.receipt, receipts);
+      if (signedInUser.current === userId) setStored({ owner: userId, list: next });
       // Polls started before this answer are now stale: drop them so they cannot undo it.
-      readCount.current++;
-      applied.current = readCount.current;
-      setLoad({ status: 'ready', room });
-      setAmount((room.nextMinimumCents / 100).toFixed(2).replace('.', ','));
+      if (signedInUser.current === userId) {
+        readCount.current++;
+        applied.current = readCount.current;
+        setLoad({ status: 'ready', room: accepted });
+        setAmount((accepted.nextMinimumCents / 100).toFixed(2).replace('.', ','));
+      }
     } catch (error: unknown) {
       setBidError(error instanceof ApiRequestError ? error.message : 'Não foi possível registrar o lance.');
     } finally {
@@ -122,7 +138,8 @@ export function LiveRoom({ lotId }: { lotId: string }) {
   if (load.status === 'error') return <p role="alert">{load.message}</p>;
   const { room } = load;
   const remaining = remainingMs(room, offset, now);
-  const canBid = room.state === 'live' && role === 'bidder';
+  const full = room.bidCount >= MAX_BIDS_PER_LOT;
+  const canBid = room.state === 'live' && role === 'bidder' && !full;
 
   return (
     <section aria-label="Sala do lote">
@@ -154,6 +171,21 @@ export function LiveRoom({ lotId }: { lotId: string }) {
           {bidError && <p role="alert">{bidError}</p>}
           <button type="submit" disabled={busy || remaining <= 0}>{busy ? 'Enviando…' : 'Dar lance'}</button>
         </form>
+      )}
+      {room.state === 'live' && full && <p>{BID_LIMIT_MESSAGE}</p>}
+      {receipts.length > 0 && (
+        <section aria-label="Seus recibos">
+          <h3>Seus recibos</h3>
+          <p>Guarde a ponta: ela comprova o seu lance na auditoria.</p>
+          <ul>
+            {receipts.map((receipt) => (
+              <li key={receipt.seq}>
+                Lance nº {receipt.seq}: <code>{receipt.head}</code>{' '}
+                <Link to={`/auditoria/${lotId}?head=${receipt.head}`}>Conferir na auditoria</Link>
+              </li>
+            ))}
+          </ul>
+        </section>
       )}
       {room.state === 'live' && role === undefined && <p>Entre como licitante para dar lances.</p>}
       {role === 'auctioneer' && <p>Leiloeiros não dão lances.</p>}

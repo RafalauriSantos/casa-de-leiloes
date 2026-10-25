@@ -1,0 +1,59 @@
+{
+  "status": 201,
+  "headers": {
+    "content-type": "application/json; charset=utf-8"
+  },
+  "body": {
+    "content": {
+      "name": "rec.txt",
+      "path": "scratch/rec.txt",
+      "sha": "902d9d4ded6d31c1471896d83ac7fcded606d6b0",
+      "size": 98,
+      "url": "https://api.github.com/repos/owner/anchor/contents/scratch/rec.txt?ref=main",
+      "html_url": "https://github.com/owner/anchor/blob/main/scratch/rec.txt",
+      "git_url": "https://api.github.com/repos/owner/anchor/git/blobs/902d9d4ded6d31c1471896d83ac7fcded606d6b0",
+      "download_url": "https://raw.githubusercontent.com/owner/anchor/main/scratch/rec.txt",
+      "type": "file",
+      "_links": {
+        "self": "https://api.github.com/repos/owner/anchor/contents/scratch/rec.txt?ref=main",
+        "git": "https://api.github.com/repos/owner/anchor/git/blobs/902d9d4ded6d31c1471896d83ac7fcded606d6b0",
+        "html": "https://github.com/owner/anchor/blob/main/scratch/rec.txt"
+      }
+    },
+    "commit": {
+      "sha": "8828fc80fd17c8865b4e3a70f66e0c54528319ba",
+      "node_id": "C_kwDOVV9Q2doAKDg4MjhmYzgwZmQxN2M4ODY1YjRlM2E3MGY2NmUwYzU0NTI4MzE5YmE",
+      "url": "https://api.github.com/repos/owner/anchor/git/commits/8828fc80fd17c8865b4e3a70f66e0c54528319ba",
+      "html_url": "https://github.com/owner/anchor/commit/8828fc80fd17c8865b4e3a70f66e0c54528319ba",
+      "author": {
+        "name": "Test Author",
+        "email": "0+test@users.noreply.github.com",
+        "date": "2026-10-24T19:45:33Z"
+      },
+      "committer": {
+        "name": "Test Author",
+        "email": "0+test@users.noreply.github.com",
+        "date": "2026-10-24T19:45:33Z"
+      },
+      "tree": {
+        "sha": "c535b1ee86a5de883d8712c1670ddac128ea631b",
+        "url": "https://api.github.com/repos/owner/anchor/git/trees/c535b1ee86a5de883d8712c1670ddac128ea631b"
+      },
+      "message": "scratch: create",
+      "parents": [
+        {
+          "sha": "303e56731ea69931c8038362e288ce5f9074909e",
+          "url": "https://api.github.com/repos/owner/anchor/git/commits/303e56731ea69931c8038362e288ce5f9074909e",
+          "html_url": "https://github.com/owner/anchor/commit/303e56731ea69931c8038362e288ce5f9074909e"
+        }
+      ],
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    }
+  }
+}

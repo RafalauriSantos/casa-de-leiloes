@@ -4,6 +4,8 @@ export default defineConfig({
   test: {
     include: ['src/**/*.test.ts', 'tests/**/*.test.ts'],
     testTimeout: 30_000,
+    // A test must never write to the real public anchor, whatever the shell holds. The anchor tests turn it on themselves.
+    env: { ANCHOR_MODE: 'off' },
     // Integration tests share one real database: run files one at a time.
     fileParallelism: false,
     coverage: {

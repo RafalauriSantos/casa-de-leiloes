@@ -5,6 +5,7 @@ import { authMiddleware, type AuthEnv } from '../../shared/auth';
 import type { Db } from '../../shared/db';
 import { AppError } from '../../shared/errors';
 import { requireRole } from '../identity';
+import { settleIfEnded } from '../settlement';
 import { createLotInput, lotInput, lotsQuery } from './schemas';
 import { cancelLot, createLot, getPublicLot, listOwnLots, listPublicLots, updateLot } from './service';
 
@@ -32,6 +33,7 @@ export function lotRoutes(deps: { db: Db; config: Config }): Hono<AuthEnv> {
     .get('/lots/:id', async (c) => {
       const id = uuid.safeParse(c.req.param('id'));
       if (!id.success) throw new AppError('not_found', 'Lote não encontrado.');
+      await settleIfEnded(db, config, id.data);
       return c.json(await getPublicLot(db, id.data));
     })
     .post('/lots', ...guard, async (c) => {

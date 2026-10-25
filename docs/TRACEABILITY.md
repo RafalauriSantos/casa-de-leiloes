@@ -16,8 +16,13 @@ Each criterion of the brief's journeys (defined in phase 2 of the delivery proce
 | 4.8 | Same balance in two lots at the same time never goes negative | `bidding.test.ts` ("one balance in two lots at once ..."; "bids crossing between two lots ...") | Covered |
 | 4.9 | Server clock: the countdown uses the server's time, not the browser's | None directly. The offset arithmetic in `frontend/src/features/lots/components/LiveRoom.tsx` (`remainingMs`, midpoint offset) has no test | **Open** |
 
-## J5: closing and settlement (slice 4, not built)
+## J5: closing and settlement (slice 4)
 
-| Criterion | Status |
-|---|---|
-| 5.1 to 5.5 | **Open**: slice 4 |
+| Criterion | Test | Status |
+|---|---|---|
+| 5.1 closes at its time with nobody looking | `backend/tests/integration/settlement.test.ts`, "5.1" (cron call settles an ended lot, leaves a running one) | Covered (cron trigger), plus on-demand in `settlement-on-demand.test.ts` |
+| 5.2 winner pays, auctioneer is credited, outbid money released, receipt written | `settlement.test.ts`, "5.2" | Covered |
+| 5.3 no bids closes without a winner | `settlement.test.ts`, "5.3" | Covered |
+| 5.4 settles once under parallel triggers | `settlement.test.ts`, "5.4" (ten parallel cron calls) | Covered |
+| 5.5 the money only moves, the lot's ledger nets to zero | `settlement.test.ts`, "5.5" | Covered |
+| Settlement refuses a head copy that does not match the chain (D6) | `settlement.test.ts`, "a settlement that cannot prove its history" | Covered |

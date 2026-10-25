@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { MAX_BIDS_PER_LOT } from '@casa/contracts';
 import { ANTI_SNIPING_WINDOW_MS, decideBid, type BidLot, type BidVerdict } from './rules';
 
 const messageOf = (verdict: BidVerdict): string => (verdict.ok ? '' : verdict.message);
@@ -14,10 +15,39 @@ const open: BidLot = {
   incrementCents: 5_000,
   currentAmountCents: null,
   leaderId: null,
+  bidCount: 0,
 };
 const now = at(10 * MIN);
 const wallet = { totalCents: 1_000_000, committedCents: 0 };
 const bid = (amountCents: number, bidderId = 'ana') => ({ bidderId, amountCents });
+
+describe('a lot takes at most MAX_BIDS_PER_LOT bids (D23)', () => {
+  const withBids = (bidCount: number): BidLot => ({ ...open, bidCount, currentAmountCents: 50_000, leaderId: 'bruno' });
+
+  it('accepts the last bid that fits and refuses the next one', () => {
+    expect(decideBid(withBids(MAX_BIDS_PER_LOT - 1), wallet, bid(55_000), now)).toMatchObject({ ok: true });
+    expect(decideBid(withBids(MAX_BIDS_PER_LOT), wallet, bid(55_000), now)).toMatchObject({ ok: false, code: 'bid_limit_reached' });
+    expect(decideBid(withBids(MAX_BIDS_PER_LOT + 5), wallet, bid(55_000), now)).toMatchObject({ ok: false, code: 'bid_limit_reached' });
+  });
+
+  it('says why, with the limit written the way people read it', () => {
+    expect(messageOf(decideBid(withBids(MAX_BIDS_PER_LOT), wallet, bid(55_000), now))).toBe('Este lote atingiu o limite de 1.000 lances.');
+  });
+
+  it('refuses for the limit whoever bids, and whatever the amount, but not before the lot state is judged', () => {
+    expect(decideBid(withBids(MAX_BIDS_PER_LOT), wallet, bid(9_999_999, 'carla'), now)).toMatchObject({ code: 'bid_limit_reached' });
+    expect(decideBid({ ...withBids(MAX_BIDS_PER_LOT), cancelled: true }, wallet, bid(55_000), now)).toMatchObject({ code: 'lot_cancelled' });
+    expect(decideBid(withBids(MAX_BIDS_PER_LOT), wallet, bid(55_000), open.endsAt)).toMatchObject({ code: 'lot_ended' });
+  });
+
+  it('says the lot is full to its own leader too, not "you are already winning"', () => {
+    expect(decideBid(withBids(MAX_BIDS_PER_LOT), wallet, bid(55_000, 'bruno'), now)).toMatchObject({ ok: false, code: 'bid_limit_reached' });
+  });
+
+  it('is a limit of 1,000', () => {
+    expect(MAX_BIDS_PER_LOT).toBe(1000);
+  });
+});
 
 describe('lot state gates the bid', () => {
   it('refuses a cancelled lot', () => {

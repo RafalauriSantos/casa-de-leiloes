@@ -2,6 +2,7 @@ import type { AddressInfo } from 'node:net';
 import { serve } from '@hono/node-server';
 import { createApp } from '../../src/create-app';
 import type { Config } from '../../src/config';
+import type { AuditOptions } from '../../src/modules/audit';
 import { createDb, type Db } from '../../src/shared/db';
 import { testConfig } from './test-config';
 
@@ -12,10 +13,10 @@ export interface TestServer {
 }
 
 /** A real HTTP server on an ephemeral port, backed by the real local database. */
-export async function startTestServer(overrides: Partial<Config> = {}): Promise<TestServer> {
+export async function startTestServer(overrides: Partial<Config> = {}, options: { audit?: Partial<AuditOptions> } = {}): Promise<TestServer> {
   const config = { ...testConfig(), ...overrides };
   const db = createDb(config.databaseUrl);
-  const app = createApp({ config, db });
+  const app = createApp({ config, db, audit: options.audit });
 
   const server = await new Promise<ReturnType<typeof serve>>((resolve) => {
     const s = serve({ fetch: app.fetch, port: 0 }, () => {

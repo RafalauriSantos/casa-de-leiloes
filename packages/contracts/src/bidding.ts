@@ -28,3 +28,15 @@ export interface LiveLot {
   /** Only for a signed-in viewer: leading, outbid, or none. */
   position?: 'leading' | 'outbid' | 'none';
 }
+
+/** The receipt a bidder keeps for an accepted bid: the chain head ("ponta") right after it. */
+export interface BidReceipt {
+  seq: number;
+  head: string;
+  placedAt: string;
+}
+
+/** The answer to an accepted bid: the live room as it is now, and the bidder's receipt. */
+export interface BidAccepted extends LiveLot {
+  receipt: BidReceipt;
+}

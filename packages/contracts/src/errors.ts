@@ -7,6 +7,7 @@ export const ERROR_CODES = [
   'not_found',
   'insufficient_funds',
   'already_leading',
+  'bid_limit_reached',
   'lot_not_started',
   'lot_ended',
   'lot_cancelled',

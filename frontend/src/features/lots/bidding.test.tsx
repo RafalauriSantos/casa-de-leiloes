@@ -2,7 +2,7 @@ import { cleanup, fireEvent, render, screen, within } from '@testing-library/rea
 import userEvent from '@testing-library/user-event';
 import { randomBytes, randomUUID } from 'node:crypto';
 import pg from 'pg';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { App } from '@/app/App';
 import { supabase } from '@/lib/supabase';
 
@@ -140,6 +140,21 @@ describe('live room: bidding in the UI', () => {
     expect(screen.queryByRole('form', { name: 'Dar lance' })).toBeNull();
   });
 
+  it('a full lot (1,000 bids) tells a bidder why they cannot bid and shows no bid form', async () => {
+    const auctioneer = await newAccount('auctioneer');
+    const lotId = await liveLotFor(auctioneer.token);
+    // Only what the room reads is set: the count of bids. The server refuses the 1,001st on its own (tested in the API).
+    await sql('update public.lots set bid_count = 1000 where id = $1', [lotId]);
+    const edna = await fundedBidder(1_000_000);
+    await signInAs(edna.id);
+
+    window.history.replaceState({}, '', `/lotes/${lotId}`);
+    render(<App />);
+
+    expect(await screen.findByText('Este lote atingiu o limite de 1.000 lances.')).toBeTruthy();
+    expect(screen.queryByRole('form', { name: 'Dar lance' })).toBeNull();
+  });
+
   it('an auctioneer sees the room and is told they cannot bid', async () => {
     const auctioneer = await newAccount('auctioneer');
     const lotId = await liveLotFor(auctioneer.token);
@@ -149,6 +164,94 @@ describe('live room: bidding in the UI', () => {
     expect(await screen.findByText('Leiloeiros não dão lances.')).toBeTruthy();
     expect(screen.queryByRole('form', { name: 'Dar lance' })).toBeNull();
   });
+
+  it('shows the receipt of an accepted bid and keeps it across a reload', async () => {
+    const user = userEvent.setup();
+    const auctioneer = await newAccount('auctioneer');
+    const lotId = await liveLotFor(auctioneer.token);
+    const dora = await fundedBidder(1_000_000);
+    await signInAs(dora.id);
+
+    window.history.replaceState({}, '', `/lotes/${lotId}`);
+    const first = render(<App />);
+    const form = await screen.findByRole('form', { name: 'Dar lance' });
+    await user.click(within(form).getByRole('button', { name: 'Dar lance' }));
+    const receipts = await screen.findByRole('region', { name: 'Seus recibos' });
+    const head = within(receipts).getByText(/^[0-9a-f]{64}$/).textContent;
+    expect(within(receipts).getByText(/Lance nº 1/)).toBeTruthy();
+    // Each receipt links to the audit with its head, so the bidder can check it with one click.
+    expect(within(receipts).getByRole('link', { name: 'Conferir na auditoria' }).getAttribute('href')).toBe(`/auditoria/${lotId}?head=${head}`);
+    first.unmount();
+
+    render(<App />);
+    const again = await screen.findByRole('region', { name: 'Seus recibos' });
+    expect(within(again).getByText(head)).toBeTruthy();
+  }, 30_000);
+
+  it('keeps receipts per bidder on a shared device, and ignores stored data that is not a receipt list', async () => {
+    const user = userEvent.setup();
+    const auctioneer = await newAccount('auctioneer');
+    const lotId = await liveLotFor(auctioneer.token);
+    const eva = await fundedBidder(1_000_000);
+    const fabio = await fundedBidder(1_000_000);
+    window.localStorage.setItem(`receipts:${eva.id}:${lotId}`, '{"not":"a list"}');
+    await signInAs(eva.id);
+
+    window.history.replaceState({}, '', `/lotes/${lotId}`);
+    const first = render(<App />);
+    const form = await screen.findByRole('form', { name: 'Dar lance' });
+    expect(screen.queryByRole('region', { name: 'Seus recibos' })).toBeNull();
+    await user.click(within(form).getByRole('button', { name: 'Dar lance' }));
+    expect(await screen.findByRole('region', { name: 'Seus recibos' })).toBeTruthy();
+    first.unmount();
+
+    await supabase.auth.signOut();
+    await signInAs(fabio.id);
+    render(<App />);
+    await screen.findByRole('form', { name: 'Dar lance' });
+    expect(screen.queryByRole('region', { name: 'Seus recibos' })).toBeNull();
+  }, 30_000);
+
+  it('keeps the valid receipts when stored data also holds an entry that is not a receipt', async () => {
+    const user = userEvent.setup();
+    const auctioneer = await newAccount('auctioneer');
+    const lotId = await liveLotFor(auctioneer.token);
+    const gil = await fundedBidder(1_000_000);
+    const kept = { seq: 7, head: 'a'.repeat(64), placedAt: new Date().toISOString() };
+    window.localStorage.setItem(`receipts:${gil.id}:${lotId}`, JSON.stringify([kept, 123]));
+    await signInAs(gil.id);
+
+    window.history.replaceState({}, '', `/lotes/${lotId}`);
+    render(<App />);
+    const receipts = await screen.findByRole('region', { name: 'Seus recibos' });
+    expect(within(receipts).getByText('a'.repeat(64))).toBeTruthy();
+    const form = screen.getByRole('form', { name: 'Dar lance' });
+    await user.click(within(form).getByRole('button', { name: 'Dar lance' }));
+    expect(await within(receipts).findByText(/Lance nº 1/)).toBeTruthy();
+    expect(within(receipts).getByText('a'.repeat(64))).toBeTruthy();
+  }, 30_000);
+
+  it('shows the receipt of a bid even when the browser refuses to store it', async () => {
+    const user = userEvent.setup();
+    const auctioneer = await newAccount('auctioneer');
+    const lotId = await liveLotFor(auctioneer.token);
+    const hana = await fundedBidder(1_000_000);
+    await signInAs(hana.id);
+    const refuse = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new Error('storage refused');
+    });
+
+    try {
+      window.history.replaceState({}, '', `/lotes/${lotId}`);
+      render(<App />);
+      const form = await screen.findByRole('form', { name: 'Dar lance' });
+      await user.click(within(form).getByRole('button', { name: 'Dar lance' }));
+      expect(await screen.findByRole('region', { name: 'Seus recibos' })).toBeTruthy();
+      expect(refuse).toHaveBeenCalled();
+    } finally {
+      refuse.mockRestore();
+    }
+  }, 30_000);
 });
 
 // Signing a test account in through the real Auth API, so the app's own session is used.
