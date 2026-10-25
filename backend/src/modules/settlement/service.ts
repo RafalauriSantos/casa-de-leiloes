@@ -1,7 +1,7 @@
 import { randomBytes } from 'node:crypto';
 import type { Config } from '../../config';
 import { databaseNow } from '../../shared/clock';
-import { chainIsValid, type StoredBid } from '../../shared/bid-chain';
+import { firstBrokenSeq, type StoredBid } from '../../shared/bid-chain';
 import type { Db, Queryable } from '../../shared/db';
 import { AppError } from '../../shared/errors';
 import { isDue } from './rules';
@@ -98,12 +98,8 @@ async function assertHistoryIntact(tx: Queryable, lot: LotRow, secret: string): 
   const headMatches =
     last === undefined
       ? lot.leader_id === null && lot.head_seq === 0 && lot.head_hash === null
-      : lot.leader_id !== null &&
-        last.seq === lot.head_seq &&
-        last.hash === lot.head_hash &&
-        last.bidderId === lot.leader_id &&
-        last.amountCents === lot.current_amount_cents;
-  if (!headMatches || !chainIsValid(secret, lot.id, bids)) {
+      : lot.leader_id !== null && last.bidderId === lot.leader_id && last.amountCents === lot.current_amount_cents;
+  if (!headMatches || firstBrokenSeq(secret, lot.id, bids, { seq: lot.head_seq, hash: lot.head_hash }) !== null) {
     throw new AppError('internal_error', 'O histórico do lote não confere com a cópia da ponta.');
   }
 }

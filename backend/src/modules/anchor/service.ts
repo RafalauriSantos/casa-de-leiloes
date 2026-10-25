@@ -1,5 +1,5 @@
 import type { Config } from '../../config';
-import { chainIsValid, type StoredBid } from '../../shared/bid-chain';
+import { firstBrokenSeq, type StoredBid } from '../../shared/bid-chain';
 import { databaseNow } from '../../shared/clock';
 import type { Db } from '../../shared/db';
 import { AnchorError, readAnchorFile, writeAnchorFile, type GithubTarget } from './github-client';
@@ -91,7 +91,7 @@ async function verifiedBids(db: Db, config: Config, lotId: string): Promise<Stor
       hash: row.hash,
     }));
     const last = bids.at(-1);
-    if (!lot || !last || last.seq !== lot.head_seq || last.hash !== lot.head_hash || !chainIsValid(config.auditHmacSecret, lotId, bids)) {
+    if (!lot || !last || firstBrokenSeq(config.auditHmacSecret, lotId, bids, { seq: lot.head_seq, hash: lot.head_hash }) !== null) {
       throw new AnchorError('integrity', 'The history of the lot does not verify, so it is not published.');
     }
     return bids;
