@@ -216,6 +216,38 @@ describe('the audit page, through the real API', () => {
     expect((await screen.findByRole('alert')).textContent).toContain('64 caracteres');
   });
 
+  it('keeps the receipt form after a refused head, so it can be corrected or cleared without editing the address', async () => {
+    const user = userEvent.setup();
+    const { lotId, head } = await lotWithOneBid();
+
+    window.history.replaceState({}, '', `/auditoria/${lotId}?head=${head.slice(0, 20)}`);
+    render(<App />);
+    expect((await screen.findByRole('alert')).textContent).toContain('64 caracteres');
+    const input = screen.getByLabelText<HTMLInputElement>('Ponta do seu recibo');
+    expect(input.value).toBe(head.slice(0, 20));
+
+    fireEvent.change(input, { target: { value: head } });
+    await user.click(screen.getByRole('button', { name: 'Conferir' }));
+    expect(await screen.findByText('Sua ponta é a do lance 1')).toBeTruthy();
+    expect(screen.queryByRole('alert')).toBeNull();
+    cleanup();
+
+    window.history.replaceState({}, '', `/auditoria/${lotId}?head=abc`);
+    render(<App />);
+    await screen.findByRole('alert');
+    await user.click(screen.getByRole('button', { name: 'Limpar ponta' }));
+    expect(await screen.findByRole('heading', { level: 2, name: 'Âncora não verificada' })).toBeTruthy();
+    expect(window.location.search).toBe('');
+  });
+
+  it('does not show the receipt form for a lot that does not exist and was opened without a head', async () => {
+    window.history.replaceState({}, '', `/auditoria/${randomUUID()}`);
+    render(<App />);
+
+    expect((await screen.findByRole('alert')).textContent).toBe('Lote não encontrado.');
+    expect(screen.queryByLabelText('Ponta do seu recibo')).toBeNull();
+  });
+
   it('is linked from the lot page', async () => {
     const { lotId } = await lotWithOneBid();
 

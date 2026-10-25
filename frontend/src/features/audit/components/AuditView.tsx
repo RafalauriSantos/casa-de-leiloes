@@ -1,21 +1,14 @@
 import type { AuditReport } from '@casa/contracts';
-import { useState, type SyntheticEvent } from 'react';
 import { formatBRL } from '@/lib/format';
 import { anchorText, chainText, headlineText, receiptText } from '../texts';
+import { ReceiptForm } from './ReceiptForm';
 
 const SECOND = new Intl.DateTimeFormat('pt-BR', { timeZone: 'America/Sao_Paulo', dateStyle: 'short', timeStyle: 'medium' });
 
 /** The audit of a lot, from the server's answer: the headline, the three results, the receipt form and every bid. */
 export function AuditView({ report, head, onHead }: { report: AuditReport; head: string | undefined; onHead: (head: string) => void }) {
-  const [typed, setTyped] = useState(head ?? '');
   const { title, detail, tone } = headlineText(report.headline);
   const lastSeq = report.bids.at(-1)?.seq ?? 0;
-
-  const submit = (event: SyntheticEvent) => {
-    event.preventDefault();
-    // The server accepts only lowercase hex, so a hash pasted in capitals is not refused for that.
-    onHead(typed.trim().toLowerCase());
-  };
 
   return (
     <article aria-label="Auditoria do lote">
@@ -32,13 +25,7 @@ export function AuditView({ report, head, onHead }: { report: AuditReport; head:
 
       {report.bids.length > 0 && <p className="audit-note">Um lance removido antes de ser publicado só aparece com um recibo: informe a ponta do seu para conferir.</p>}
 
-      <form onSubmit={submit} aria-label="Conferir recibo">
-        <label>
-          Ponta do seu recibo
-          <input value={typed} onChange={(event) => { setTyped(event.target.value); }} autoComplete="off" spellCheck={false} />
-        </label>
-        <button type="submit">Conferir</button>
-      </form>
+      <ReceiptForm head={head} onHead={onHead} />
 
       {report.bids.length > 0 && (
         <div className="audit-scroll" role="region" aria-label="Lances" tabIndex={0}>
