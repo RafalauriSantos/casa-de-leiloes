@@ -1,5 +1,6 @@
 import type { Config } from '../../config';
 import { firstBrokenSeq, type StoredBid } from '../../shared/bid-chain';
+import { readBids } from '../../shared/bid-history';
 import { databaseNow } from '../../shared/clock';
 import type { Db } from '../../shared/db';
 import { AnchorError, readAnchorFile, writeAnchorFile, type GithubTarget } from './github-client';
@@ -34,15 +35,6 @@ export interface PublishResult {
 
 interface ClaimedLot {
   anchored_seq: number;
-}
-
-interface BidRow {
-  seq: number;
-  bidder_id: string;
-  amount_cents: number;
-  placed_at: Date;
-  prev_hash: string;
-  hash: string;
 }
 
 const pathOf = (lotId: string) => `lots/${lotId}.csv`;
@@ -80,16 +72,7 @@ function hashesInFile(content: string, lotId: string): Map<number, string> {
 async function verifiedBids(db: Db, config: Config, lotId: string): Promise<StoredBid[]> {
   return db.tx(async (tx) => {
     const [lot] = await tx.query<{ head_seq: number; head_hash: string | null }>('select head_seq, head_hash from public.lots where id = $1 for share', [lotId]);
-    const rows = await tx.query<BidRow>('select seq, bidder_id, amount_cents, placed_at, prev_hash, hash from public.bids where lot_id = $1 order by seq', [lotId]);
-    const bids: StoredBid[] = rows.map((row) => ({
-      lotId,
-      seq: row.seq,
-      bidderId: row.bidder_id,
-      amountCents: row.amount_cents,
-      placedAt: row.placed_at,
-      prevHash: row.prev_hash,
-      hash: row.hash,
-    }));
+    const bids = await readBids(tx, lotId);
     const last = bids.at(-1);
     if (!lot || !last || firstBrokenSeq(config.auditHmacSecret, lotId, bids, { seq: lot.head_seq, hash: lot.head_hash }) !== null) {
       throw new AnchorError('integrity', 'The history of the lot does not verify, so it is not published.');

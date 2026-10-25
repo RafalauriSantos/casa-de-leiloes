@@ -187,6 +187,13 @@ describe('the chain result names the first broken seq when the database is alter
     expect(await tampered(time.lot.id)).toEqual({ status: 'tampered', brokenAtSeq: 1 });
   });
 
+  it('names a change of a single microsecond in the stored time, finer than the millisecond a Date holds', async () => {
+    const { lot } = await lotWithThreeBids();
+    await asDatabaseWriter([{ text: "update public.bids set placed_at = placed_at + interval '1 microsecond' where lot_id = $1 and seq = 2", params: [lot.id] }]);
+
+    expect(await tampered(lot.id)).toEqual({ status: 'tampered', brokenAtSeq: 2 });
+  });
+
   it('names the seq expected where a bid was removed from the middle', async () => {
     const { lot } = await lotWithThreeBids();
     await asDatabaseWriter([{ text: 'delete from public.bids where lot_id = $1 and seq = 2', params: [lot.id] }]);

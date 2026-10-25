@@ -128,6 +128,25 @@ describe('a lot whose history or head copy was altered is never settled and move
     expect(await committed(winner)).toBe(55_000);
   });
 
+  it('refuses a lot whose earlier bid time was changed by a microsecond', async () => {
+    const lot = await liveLot();
+    const first = await bidder();
+    const winner = await bidder();
+    await bid(lot.id, first, 50_000);
+    await bid(lot.id, winner, 55_000);
+    await endLot(lot.id);
+    await server.db.tx(async (tx) => {
+      await tx.query('set local session_replication_role = replica');
+      await tx.query("update public.bids set placed_at = placed_at + interval '1 microsecond' where lot_id = $1 and seq = 1", [lot.id]);
+    });
+
+    expect((await fetch(`${server.url}/api/lots/${lot.id}`)).status).toBe(200);
+    expect((await fetch(`${server.url}/api/wallet`, { headers: json(winner) })).status).toBe(200);
+
+    expect(await settledAt(lot.id)).toBeNull();
+    expect(await committed(winner)).toBe(55_000);
+  });
+
   it('refuses a lot whose head_seq was rewritten to a state the history does not reach', async () => {
     const lot = await liveLot();
     const winner = await bidder();

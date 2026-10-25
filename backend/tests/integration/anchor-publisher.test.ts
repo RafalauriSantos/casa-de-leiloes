@@ -208,6 +208,20 @@ describe('the publisher writes the bid hashes of a lot to the anchor', () => {
     expect(await progressOf(lot.id)).toMatchObject({ anchored_seq: 0, anchor_attempts: 1 });
   });
 
+  it('does not publish a history whose stored time was changed by a microsecond', async () => {
+    const lot = await lotWithBids([50_000, 55_000]);
+    await server.db.tx(async (tx) => {
+      await tx.query('set local session_replication_role = replica');
+      await tx.query("update public.bids set placed_at = placed_at + interval '1 microsecond' where lot_id = $1 and seq = 1", [lot.id]);
+    });
+
+    const result = await cron();
+
+    expect(result.status).toBe(500);
+    expect(github.requestsFor(fileOf(lot.id))).toEqual([]);
+    expect(await progressOf(lot.id)).toMatchObject({ anchored_seq: 0, anchor_attempts: 1 });
+  });
+
   it('does not publish a lot whose head does not match its last bid', async () => {
     const lot = await lotWithBids([50_000]);
     await server.db.query("update public.lots set head_hash = repeat('0', 64) where id = $1", [lot.id]);

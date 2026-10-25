@@ -1,7 +1,8 @@
 import { randomUUID } from 'node:crypto';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import type { BidAccepted, OwnLot } from '@casa/contracts';
-import { firstBrokenSeq, type StoredBid } from '../../src/shared/bid-chain';
+import { firstBrokenSeq } from '../../src/shared/bid-chain';
+import { readBids } from '../../src/shared/bid-history';
 import { signUpUser, type TestUser } from '../helpers/auth';
 import { createAuctioneer, dbNow, lotBody, minutes } from '../helpers/lots';
 import { startMetStub, type MetStub } from '../helpers/met-stub';
@@ -107,19 +108,7 @@ describe('D21: the head the bidder kept is what exposes a removed last bid', () 
     });
 
     // The rewritten history passes the chain check on its own, so only the bidder's kept head can expose it.
-    const rows = await server.db.query<{ seq: number; bidder_id: string; amount_cents: number; placed_at: Date; prev_hash: string; hash: string }>(
-      'select seq, bidder_id, amount_cents, placed_at, prev_hash, hash from public.bids where lot_id = $1 order by seq',
-      [lot.id],
-    );
-    const chain: StoredBid[] = rows.map((row) => ({
-      lotId: lot.id,
-      seq: row.seq,
-      bidderId: row.bidder_id,
-      amountCents: row.amount_cents,
-      placedAt: row.placed_at,
-      prevHash: row.prev_hash,
-      hash: row.hash,
-    }));
+    const chain = await readBids(server.db, lot.id);
     const [head] = await server.db.query<{ head_seq: number; head_hash: string | null }>('select head_seq, head_hash from public.lots where id = $1', [lot.id]);
     expect(firstBrokenSeq(testConfig().auditHmacSecret, lot.id, chain, { seq: head?.head_seq ?? -1, hash: head?.head_hash ?? null })).toBeNull();
     expect(chain).toHaveLength(1);
