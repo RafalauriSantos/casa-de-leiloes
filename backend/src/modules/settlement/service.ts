@@ -10,7 +10,7 @@ import { isDue, mustWaitForAnchor } from './rules';
 interface LotRow {
   id: string;
   auctioneer_id: string;
-  status: 'active' | 'cancelled';
+  status: 'active' | 'cancelled' | 'integrity_cancelled';
   ends_at: Date;
   leader_id: string | null;
   current_amount_cents: number | null;
