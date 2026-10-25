@@ -128,7 +128,7 @@ describe('GET /api/lots/:id/audit shows the history of an intact lot', () => {
     const response = await audit(lot.id);
 
     expect(response.status).toBe(200);
-    expect((await response.json()) as AuditReport).toEqual({ lotId: lot.id, bids: [], chain: { status: 'intact' }, anchor: { status: 'off' } });
+    expect((await response.json()) as AuditReport).toEqual({ lotId: lot.id, bids: [], chain: { status: 'intact' }, anchor: { status: 'off' }, headline: { kind: 'no_bids', anchorUnverified: true } });
   });
 
   it('never settles and never writes: an ended lot stays unsettled after being audited', async () => {
@@ -140,6 +140,58 @@ describe('GET /api/lots/:id/audit shows the history of an intact lot', () => {
     expect(response.status).toBe(200);
     const [row] = await server.db.query<{ settled_at: Date | null }>('select settled_at from public.lots where id = $1', [lot.id]);
     expect(row?.settled_at).toBeNull();
+  });
+});
+
+describe('the headline and the receipt head, with the anchor off', () => {
+  const hashOf = async (lotId: string, seq: number) => (await server.db.query<{ hash: string }>('select hash from public.bids where lot_id = $1 and seq = $2', [lotId, seq]))[0]?.hash ?? '';
+
+  it('says only that the anchor was not verified for an intact lot, and finds a receipt head without upgrading the headline', async () => {
+    const { lot } = await lotWithThreeBids();
+
+    const plain = (await (await audit(lot.id)).json()) as AuditReport;
+    const withHead = (await (await audit(lot.id, `?head=${await hashOf(lot.id, 2)}`)).json()) as AuditReport;
+
+    expect(plain.headline).toEqual({ kind: 'anchor_unverified' });
+    expect(plain.receiptHead).toBeUndefined();
+    expect(withHead.receiptHead).toEqual({ status: 'in_history', seq: 2 });
+    expect(withHead.headline).toEqual({ kind: 'anchor_unverified' });
+  });
+
+  it('says unconfirmed, not tampered, for a head that is not in the history, and for a made-up one', async () => {
+    const { lot } = await lotWithThreeBids();
+
+    const report = (await (await audit(lot.id, `?head=${'a'.repeat(64)}`)).json()) as AuditReport;
+
+    expect(report.receiptHead).toEqual({ status: 'not_in_history' });
+    expect(report.chain).toEqual({ status: 'intact' });
+    expect(report.headline).toEqual({ kind: 'unconfirmed' });
+  });
+
+  it('says unconfirmed for the receipt of a last bid that was removed and the head rewritten (the window the anchor cannot see)', async () => {
+    const { lot } = await lotWithThreeBids();
+    const kept = await hashOf(lot.id, 3);
+    await asDatabaseWriter([
+      { text: 'delete from public.bids where lot_id = $1 and seq = 3', params: [lot.id] },
+      { text: 'update public.lots set head_seq = 2, bid_count = 2, head_hash = (select hash from public.bids where lot_id = $1 and seq = 2) where id = $1', params: [lot.id] },
+    ]);
+
+    const report = (await (await audit(lot.id, `?head=${kept}`)).json()) as AuditReport;
+
+    expect(report.chain).toEqual({ status: 'intact' });
+    expect(report.headline).toEqual({ kind: 'unconfirmed' });
+  });
+
+  it('says tampered for a tampered chain whatever head is sent, and for a lot with no bids says there are no bids', async () => {
+    const { lot } = await lotWithThreeBids();
+    await asDatabaseWriter([{ text: 'update public.bids set amount_cents = 1 where lot_id = $1 and seq = 2', params: [lot.id] }]);
+    for (const head of [await hashOf(lot.id, 1), 'a'.repeat(64)]) {
+      expect(((await (await audit(lot.id, `?head=${head}`)).json()) as AuditReport).headline).toEqual({ kind: 'tampered' });
+    }
+
+    const created = await fetch(`${server.url}/api/lots`, { method: 'POST', headers: json(auctioneer), body: JSON.stringify(lotBody(await dbNow(server))) });
+    const empty = (await created.json()) as OwnLot;
+    expect(((await (await audit(empty.id)).json()) as AuditReport).headline).toEqual({ kind: 'no_bids', anchorUnverified: true });
   });
 });
 

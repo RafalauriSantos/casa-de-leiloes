@@ -7,7 +7,7 @@ import { AppError } from '../../shared/errors';
 import { databaseNow } from '../../shared/clock';
 import type { AnchorRead, AnchorReader } from './anchor-reader';
 import type { AuditOptions } from './options';
-import { chainResult, compareWithAnchor, truncateToSecond } from './rules';
+import { chainResult, compareWithAnchor, headlineOf, receiptHeadResult, truncateToSecond } from './rules';
 
 /** The lot row and its bids in one repeatable-read transaction, without locks (D22): a bid placed meanwhile cannot make the head copy and the bids disagree. */
 async function snapshotOf(db: Db, lotId: string) {
@@ -30,7 +30,7 @@ async function anchoredSeqOf(db: Db, lotId: string): Promise<number> {
  * One pass in the order D22 needs: the lot's anchored_seq, then the anchor file, then the snapshot of the lot and its bids.
  * A bid placed or published between the steps then shows as pending, never as a bid the history lost.
  */
-async function onePass(db: Db, config: Config, reader: AnchorReader | undefined, lotId: string, deadlineMs: number, fresh: boolean): Promise<AuditReport> {
+async function onePass(db: Db, config: Config, reader: AnchorReader | undefined, lotId: string, deadlineMs: number, fresh: boolean, head: string | undefined): Promise<AuditReport> {
   const anchoredSeq = await anchoredSeqOf(db, lotId);
   const read: AnchorRead | undefined = reader ? await reader.read(lotId, anchoredSeq, deadlineMs, fresh) : undefined;
   const { lot, bids } = await snapshotOf(db, lotId);
@@ -47,6 +47,8 @@ async function onePass(db: Db, config: Config, reader: AnchorReader | undefined,
       nowMs,
     );
   }
+  const chain = chainResult(firstBrokenSeq(config.auditHmacSecret, lotId, bids, { seq: lot.head_seq, hash: lot.head_hash }));
+  const receiptHead = head === undefined ? undefined : receiptHeadResult(bids, head);
   return {
     lotId,
     bids: bids.map((bid) => ({
@@ -56,8 +58,10 @@ async function onePass(db: Db, config: Config, reader: AnchorReader | undefined,
       placedAt: truncateToSecond(bid.placedAt.toISOString()),
       hash: bid.hash,
     })),
-    chain: chainResult(firstBrokenSeq(config.auditHmacSecret, lotId, bids, { seq: lot.head_seq, hash: lot.head_hash })),
+    chain,
     anchor,
+    ...(receiptHead === undefined ? {} : { receiptHead }),
+    headline: headlineOf({ chain, anchor, receiptHead, bidCount: bids.length }),
   };
 }
 
@@ -67,11 +71,11 @@ async function onePass(db: Db, config: Config, reader: AnchorReader | undefined,
  * (never the cache) before it is reported, and if that read fails or the time budget is spent it is `unavailable`,
  * because a stale answer from GitHub must not show a healthy lot as tampered.
  */
-export async function auditReport(db: Db, config: Config, reader: AnchorReader | undefined, options: AuditOptions, lotId: string): Promise<AuditReport> {
+export async function auditReport(db: Db, config: Config, reader: AnchorReader | undefined, options: AuditOptions, lotId: string, head?: string): Promise<AuditReport> {
   const deadlineMs = Date.now() + options.budgetMs;
-  const first = await onePass(db, config, reader, lotId, deadlineMs, false);
+  const first = await onePass(db, config, reader, lotId, deadlineMs, false, head);
   if (first.anchor.status !== 'divergent' || first.anchor.atSeq === null) return first;
 
   await new Promise((resolve) => setTimeout(resolve, options.rereadWaitMs));
-  return onePass(db, config, reader, lotId, deadlineMs, true);
+  return onePass(db, config, reader, lotId, deadlineMs, true, head);
 }
