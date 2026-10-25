@@ -1,5 +1,6 @@
 import type { BidReceipt, LiveLot } from '@casa/contracts';
 import { useEffect, useRef, useState, type SyntheticEvent } from 'react';
+import { Link } from 'react-router-dom';
 import { ApiRequestError } from '@/lib/api-client';
 import { formatBRL, parseReaisToCents } from '@/lib/format';
 import { useAuth } from '@/features/auth';
@@ -177,7 +178,8 @@ export function LiveRoom({ lotId }: { lotId: string }) {
           <ul>
             {receipts.map((receipt) => (
               <li key={receipt.seq}>
-                Lance nº {receipt.seq}: <code>{receipt.head}</code>
+                Lance nº {receipt.seq}: <code>{receipt.head}</code>{' '}
+                <Link to={`/auditoria/${lotId}?head=${receipt.head}`}>Conferir na auditoria</Link>
               </li>
             ))}
           </ul>
