@@ -12,7 +12,9 @@ export function LotCard({ lot }: { lot: LotSummary }) {
         <h3>{lot.title}</h3>
       </Link>
       <p>
-        <span className="state">{STATE_LABEL[lot.state]}</span>{' '}
+        {lot.state === 'live'
+          ? <span className="live-badge"><span className="live-dot" aria-hidden="true" />AO VIVO</span>
+          : <span className="state">{STATE_LABEL[lot.state]}</span>}{' '}
         {lot.currentAmountCents === null ? 'Lance inicial' : 'Lance atual'} <strong>{formatBRL(bid)}</strong>
       </p>
       <p><small>Termina em {formatWhen(lot.endsAt)}</small></p>
