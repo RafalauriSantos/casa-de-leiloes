@@ -17,7 +17,8 @@ export function settlementRoutes(deps: { db: Db; config: Config }): Hono {
     if (!hasCronSecret(c.req.header('Authorization'), deps.config.cronSecret)) {
       throw new AppError('unauthenticated', 'Chamada interna não autorizada.');
     }
-    // Money first: the settlement never waits for the anchor, and an anchor that fails or hangs cannot stop it.
+    // The settlement run never calls the anchor, so an anchor that fails or hangs cannot stall it; a payment waits only for
+    // the lot's `anchored_seq` (D21, option B), which the publisher raises after it has written the file.
     const requestStarted = Date.now();
     const settlement = await settleDue(deps.db, deps.config);
     let anchor: PublishResult;

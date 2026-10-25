@@ -5,7 +5,7 @@ import { firstBrokenSeq } from '../../shared/bid-chain';
 import { readBids } from '../../shared/bid-history';
 import type { Db, Queryable } from '../../shared/db';
 import { AppError } from '../../shared/errors';
-import { isDue } from './rules';
+import { isDue, mustWaitForAnchor } from './rules';
 
 interface LotRow {
   id: string;
@@ -16,6 +16,7 @@ interface LotRow {
   current_amount_cents: number | null;
   head_seq: number;
   head_hash: string | null;
+  anchored_seq: number;
   settled_at: Date | null;
 }
 
@@ -31,9 +32,19 @@ interface WalletRow {
  * Returns true only when this call settled the lot.
  */
 export async function settleLot(db: Db, config: Config, lotId: string): Promise<boolean> {
+  // A cheap look first, with no lock and no chain check: a lot page is read every few seconds, and most of those reads find
+  // nothing to do (the lot is not over, already settled, cancelled, or waiting for its publication). Only a lot that may be
+  // settled takes the lock below, which judges it again, so this look can only skip work that would have done nothing.
+  const [peek] = await db.query<{ status: string; settled_at: Date | null; due: boolean; head_seq: number; anchored_seq: number }>(
+    'select status, settled_at, ends_at <= clock_timestamp() as due, head_seq, anchored_seq from public.lots where id = $1',
+    [lotId],
+  );
+  if (!peek || peek.status !== 'active' || peek.settled_at !== null || !peek.due) return false;
+  if (mustWaitForAnchor({ anchorMode: config.anchor.mode, anchoredSeq: peek.anchored_seq, headSeq: peek.head_seq })) return false;
+
   return db.tx(async (tx) => {
     const [lot] = await tx.query<LotRow>(
-      `select id, auctioneer_id, status, ends_at, leader_id, current_amount_cents, head_seq, head_hash, settled_at
+      `select id, auctioneer_id, status, ends_at, leader_id, current_amount_cents, head_seq, head_hash, anchored_seq, settled_at
        from public.lots where id = $1 for update`,
       [lotId],
     );
@@ -48,6 +59,11 @@ export async function settleLot(db: Db, config: Config, lotId: string): Promise<
       await tx.query("update public.lots set settled_at = $2, outcome = 'no_bids' where id = $1", [lotId, now]);
       return true;
     }
+
+    // D21, option B. The look above already sent a waiting lot away; this judges it again under the lock, as defence in depth for
+    // the money path (the look reads without a lock). For a lot that reaches here, the history is known to be intact first.
+    // Waiting is not a failure: the next run tries again.
+    if (mustWaitForAnchor({ anchorMode: config.anchor.mode, anchoredSeq: lot.anchored_seq, headSeq: lot.head_seq })) return false;
 
     // Wallets are locked in user-id order, the same order bidding uses, so the two cannot deadlock.
     const involved = [lot.leader_id, lot.auctioneer_id].sort();
