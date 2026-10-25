@@ -1,7 +1,8 @@
 import { randomBytes } from 'node:crypto';
 import type { Config } from '../../config';
 import { databaseNow } from '../../shared/clock';
-import { firstBrokenSeq, type StoredBid } from '../../shared/bid-chain';
+import { firstBrokenSeq } from '../../shared/bid-chain';
+import { readBids } from '../../shared/bid-history';
 import type { Db, Queryable } from '../../shared/db';
 import { AppError } from '../../shared/errors';
 import { isDue } from './rules';
@@ -81,19 +82,7 @@ export async function settleLot(db: Db, config: Config, lotId: string): Promise<
  * have no history at all, so a lot cannot be closed as "no bids" while bids sit in the chain.
  */
 async function assertHistoryIntact(tx: Queryable, lot: LotRow, secret: string): Promise<void> {
-  const rows = await tx.query<{ seq: number; bidder_id: string; amount_cents: number; placed_at: Date; prev_hash: string; hash: string }>(
-    'select seq, bidder_id, amount_cents, placed_at, prev_hash, hash from public.bids where lot_id = $1 order by seq',
-    [lot.id],
-  );
-  const bids: StoredBid[] = rows.map((row) => ({
-    lotId: lot.id,
-    seq: row.seq,
-    bidderId: row.bidder_id,
-    amountCents: row.amount_cents,
-    placedAt: row.placed_at,
-    prevHash: row.prev_hash,
-    hash: row.hash,
-  }));
+  const bids = await readBids(tx, lot.id);
   const last = bids.at(-1);
   const headMatches =
     last === undefined

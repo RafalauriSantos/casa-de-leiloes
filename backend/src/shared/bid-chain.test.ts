@@ -59,7 +59,7 @@ function history(count: number): StoredBid[] {
   let prevHash = genesis;
   for (let seq = 1; seq <= count; seq += 1) {
     const bid = { lotId: LOT, seq, bidderId: USER, amountCents: 50_000 + seq * 5_000, placedAt: new Date(Date.UTC(2030, 0, 1, 12, seq)), prevHash };
-    const stored = { ...bid, hash: bidHash(SECRET, bid) };
+    const stored = { ...bid, timeExact: true, hash: bidHash(SECRET, bid) };
     bids.push(stored);
     prevHash = stored.hash;
   }
@@ -126,8 +126,14 @@ describe('firstBrokenSeq: the lowest seq where the history and the lot head copy
   it('names a gap in the numbers even when links and hashes are consistent (only the seq check can see it)', () => {
     const bids = history(2);
     const skipped = { lotId: LOT, seq: 4, bidderId: USER, amountCents: 70_000, placedAt: new Date(Date.UTC(2030, 0, 1, 12, 4)), prevHash: bidAt(bids, 1).hash };
-    bids.push({ ...skipped, hash: bidHash(SECRET, skipped) });
+    bids.push({ ...skipped, timeExact: true, hash: bidHash(SECRET, skipped) });
     expect(broken(bids, { seq: 4, hash: bidAt(bids, 2).hash })).toBe(3);
+  });
+
+  it('names a bid whose stored time has a part finer than the millisecond the hash covers', () => {
+    const bids = history(4);
+    bids[1] = { ...bidAt(bids, 1), timeExact: false };
+    expect(broken(bids, headOf(history(4)))).toBe(2);
   });
 
   it('names a first bid that does not link to the lot genesis', () => {

@@ -29,6 +29,8 @@ export function bidHash(secret: string, bid: ChainedBid): string {
 
 export interface StoredBid extends ChainedBid {
   hash: string;
+  /** False when the stored time has a part finer than the millisecond the hash covers: the row was not written by the bid path. */
+  timeExact: boolean;
 }
 
 /** The lot's own copy of its head: the last bid's seq and hash, or 0 and null before any bid. */
@@ -39,13 +41,14 @@ export interface HeadCopy {
 
 /**
  * The first seq where the bids stop being a valid chain: a bid out of place (a gap, a swap, an insert), one that does
- * not link to the hash before it (the first to the genesis), or one whose stored hash does not recompute.
+ * not link to the hash before it (the first to the genesis), one whose stored time is finer than the hash covers,
+ * or one whose stored hash does not recompute.
  * The seq reported is the one expected at that place, so bids 1, 2, 4 give 3. Null when the chain holds.
  */
 function firstChainBreak(secret: string, lotId: string, bids: StoredBid[]): number | null {
   let prevHash = genesisHash(secret, lotId);
   for (const [index, bid] of bids.entries()) {
-    if (bid.seq !== index + 1 || bid.prevHash !== prevHash || bidHash(secret, bid) !== bid.hash) return index + 1;
+    if (bid.seq !== index + 1 || !bid.timeExact || bid.prevHash !== prevHash || bidHash(secret, bid) !== bid.hash) return index + 1;
     prevHash = bid.hash;
   }
   return null;
