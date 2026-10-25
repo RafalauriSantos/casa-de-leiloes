@@ -1,0 +1,105 @@
+{
+  "status": 200,
+  "headers": {
+    "content-type": "application/json; charset=utf-8"
+  },
+  "body": {
+    "name": "main",
+    "commit": {
+      "sha": "0000000000000000000000000000000000000000",
+      "node_id": "REDACTED",
+      "commit": {
+        "author": {
+          "name": "Test Author",
+          "email": "author@example.test",
+          "date": "2026-10-24T20:00:00Z"
+        },
+        "committer": {
+          "name": "Test Author",
+          "email": "author@example.test",
+          "date": "2026-10-24T20:00:00Z"
+        },
+        "message": "anchor 00000000-0000-4000-8000-000000000000 bids 1 to 3",
+        "tree": {
+          "sha": "0000000000000000000000000000000000000000",
+          "url": "https://api.github.com/repos/owner/anchor/git/trees/0000000000000000000000000000000000000000"
+        },
+        "url": "https://api.github.com/repos/owner/anchor/git/commits/0000000000000000000000000000000000000000",
+        "comment_count": 0,
+        "verification": {
+          "verified": false,
+          "reason": "unsigned",
+          "signature": null,
+          "payload": null,
+          "verified_at": null
+        }
+      },
+      "url": "https://api.github.com/repos/owner/anchor/commits/0000000000000000000000000000000000000000",
+      "html_url": "https://github.com/owner/anchor/commit/0000000000000000000000000000000000000000",
+      "comments_url": "https://api.github.com/repos/owner/anchor/commits/0000000000000000000000000000000000000000/comments",
+      "author": {
+        "login": "owner",
+        "id": 1,
+        "node_id": "REDACTED",
+        "avatar_url": "",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/owner",
+        "html_url": "https://github.com/owner",
+        "followers_url": "https://api.github.com/users/owner/followers",
+        "following_url": "https://api.github.com/users/owner/following{/other_user}",
+        "gists_url": "https://api.github.com/users/owner/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/owner/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/owner/subscriptions",
+        "organizations_url": "https://api.github.com/users/owner/orgs",
+        "repos_url": "https://api.github.com/users/owner/repos",
+        "events_url": "https://api.github.com/users/owner/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/owner/received_events",
+        "type": "User",
+        "user_view_type": "public",
+        "site_admin": false
+      },
+      "committer": {
+        "login": "owner",
+        "id": 1,
+        "node_id": "REDACTED",
+        "avatar_url": "",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/owner",
+        "html_url": "https://github.com/owner",
+        "followers_url": "https://api.github.com/users/owner/followers",
+        "following_url": "https://api.github.com/users/owner/following{/other_user}",
+        "gists_url": "https://api.github.com/users/owner/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/owner/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/owner/subscriptions",
+        "organizations_url": "https://api.github.com/users/owner/orgs",
+        "repos_url": "https://api.github.com/users/owner/repos",
+        "events_url": "https://api.github.com/users/owner/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/owner/received_events",
+        "type": "User",
+        "user_view_type": "public",
+        "site_admin": false
+      },
+      "parents": [
+        {
+          "sha": "0000000000000000000000000000000000000000",
+          "url": "https://api.github.com/repos/owner/anchor/commits/0000000000000000000000000000000000000000",
+          "html_url": "https://github.com/owner/anchor/commit/0000000000000000000000000000000000000000"
+        }
+      ]
+    },
+    "_links": {
+      "self": "https://api.github.com/repos/owner/anchor/branches/main",
+      "html": "https://github.com/owner/anchor/tree/main"
+    },
+    "protected": false,
+    "protection": {
+      "enabled": false,
+      "required_status_checks": {
+        "enforcement_level": "off",
+        "contexts": [],
+        "checks": []
+      }
+    },
+    "protection_url": "https://api.github.com/repos/owner/anchor/branches/main/protection"
+  }
+}

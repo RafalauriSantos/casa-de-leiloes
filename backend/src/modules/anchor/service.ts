@@ -4,6 +4,7 @@ import { readBids } from '../../shared/bid-history';
 import { databaseNow } from '../../shared/clock';
 import type { Db } from '../../shared/db';
 import { AnchorError, readAnchorFile, writeAnchorFile, type GithubTarget } from './github-client';
+import { MAX_ANCHOR_FILE_BYTES, parseAnchorFile } from './file';
 import { ANCHOR_HEADER, anchorLine, isStalePending, retryDelayMs, seqsToPublish } from './rules';
 
 /** A run stops starting new lots after this long; what is left waits for the next run. */
@@ -22,9 +23,6 @@ const LOTS_PER_RUN = 20;
 /** A run that takes a lot owns it for this long. Another run, or a crashed one, cannot publish the same lot meanwhile. */
 const CLAIM_MS = 2 * 60_000;
 
-/** GitHub reads a file of up to 1 MB through this API, and a write of this size must finish inside one call. A bigger file is never rewritten: it is an incident to look at. */
-const MAX_FILE_BYTES = 600_000;
-
 export interface PublishResult {
   mode: 'off' | 'github';
   published: number;
@@ -38,31 +36,6 @@ interface ClaimedLot {
 }
 
 const pathOf = (lotId: string) => `lots/${lotId}.csv`;
-
-/**
- * The hashes a file holds, by sequence number. Two different hashes for one bid, or a line of another lot,
- * are an incident.
- */
-function hashesInFile(content: string, lotId: string): Map<number, string> {
-  const held = new Map<number, string>();
-  for (const raw of content.split('\n')) {
-    // A file saved on Windows ends its lines with a carriage return; it is not part of the line.
-    const line = raw.endsWith('\r') ? raw.slice(0, -1) : raw;
-    if (line === '' || line === ANCHOR_HEADER) continue;
-    const fields = line.split(',');
-    const [lot, seq, hash] = fields;
-    if (fields.length !== 4 || lot !== lotId || seq === undefined || !/^[1-9]\d*$/.test(seq) || hash === undefined) {
-      throw new AnchorError('integrity', 'The anchor file of the lot holds a line that is not a bid line of this lot.');
-    }
-    const number = Number(seq);
-    const earlier = held.get(number);
-    if (earlier !== undefined && earlier !== hash) {
-      throw new AnchorError('integrity', `The anchor file holds two different hashes for bid ${String(number)}.`);
-    }
-    held.set(number, hash);
-  }
-  return held;
-}
 
 /**
  * The bids of a lot, read together with its head under a share lock on the lot, so that a bid placed
@@ -89,10 +62,10 @@ async function publishLot(db: Db, config: Config, github: GithubTarget, lotId: s
 
   const path = pathOf(lotId);
   const file = await readAnchorFile(github, path);
-  if (file !== null && Buffer.byteLength(file.content, 'utf8') > MAX_FILE_BYTES) {
+  if (file !== null && Buffer.byteLength(file.content, 'utf8') > MAX_ANCHOR_FILE_BYTES) {
     throw new AnchorError('too_large', 'The anchor file of the lot is too large to update.');
   }
-  const held = hashesInFile(file?.content ?? '', lotId);
+  const held = parseAnchorFile(file?.content ?? '', lotId);
   for (const seq of held.keys()) {
     if (seq > last.seq) throw new AnchorError('integrity', `The anchor holds bid ${String(seq)}, which the history of the lot does not have.`);
   }
@@ -113,7 +86,7 @@ async function publishLot(db: Db, config: Config, github: GithubTarget, lotId: s
     const existing = file === null || file.content.trim() === '' ? `${ANCHOR_HEADER}\n` : file.content.endsWith('\n') ? file.content : `${file.content}\n`;
     const lines = missing.map((bid) => anchorLine({ lotId, seq: bid.seq, hash: bid.hash, publishedAt: nowIso }));
     const content = `${existing}${lines.join('\n')}\n`;
-    if (Buffer.byteLength(content, 'utf8') > MAX_FILE_BYTES) throw new AnchorError('too_large', 'The anchor file of the lot is too large to update.');
+    if (Buffer.byteLength(content, 'utf8') > MAX_ANCHOR_FILE_BYTES) throw new AnchorError('too_large', 'The anchor file of the lot is too large to update.');
     const message = `anchor ${lotId} bids ${String(missing[0]?.seq)} to ${String(last.seq)}`;
     await writeAnchorFile(github, path, content, file?.sha, message);
   }
