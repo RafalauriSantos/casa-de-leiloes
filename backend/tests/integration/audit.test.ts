@@ -11,6 +11,8 @@ import { startTestServer, type TestServer } from '../helpers/server';
 
 let server: TestServer;
 let met: MetStub;
+/** Lots these tests tamper with fail the integrity check for ever; they are cancelled at the end so the settlement of later tests does not retry them. */
+const made: string[] = [];
 let auctioneer: TestUser;
 
 beforeAll(async () => {
@@ -19,6 +21,7 @@ beforeAll(async () => {
   auctioneer = await createAuctioneer(server);
 });
 afterAll(async () => {
+  await server.db.query("update public.lots set status = 'cancelled' where id = any($1::uuid[])", [made]);
   await server.close();
   await met.close();
 });
@@ -44,6 +47,7 @@ async function liveLot(): Promise<OwnLot> {
   });
   expect(created.status).toBe(201);
   const lot = (await created.json()) as OwnLot;
+  made.push(lot.id);
   const now = await dbNow(server);
   await server.db.query('update public.lots set starts_at = $2, ends_at = $3 where id = $1', [lot.id, new Date(now.getTime() - minutes(5)), new Date(now.getTime() + minutes(60))]);
   return lot;

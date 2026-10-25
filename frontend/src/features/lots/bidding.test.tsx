@@ -140,6 +140,21 @@ describe('live room: bidding in the UI', () => {
     expect(screen.queryByRole('form', { name: 'Dar lance' })).toBeNull();
   });
 
+  it('a full lot (1,000 bids) tells a bidder why they cannot bid and shows no bid form', async () => {
+    const auctioneer = await newAccount('auctioneer');
+    const lotId = await liveLotFor(auctioneer.token);
+    // Only what the room reads is set: the count of bids. The server refuses the 1,001st on its own (tested in the API).
+    await sql('update public.lots set bid_count = 1000 where id = $1', [lotId]);
+    const edna = await fundedBidder(1_000_000);
+    await signInAs(edna.id);
+
+    window.history.replaceState({}, '', `/lotes/${lotId}`);
+    render(<App />);
+
+    expect(await screen.findByText('Este lote atingiu o limite de 1.000 lances.')).toBeTruthy();
+    expect(screen.queryByRole('form', { name: 'Dar lance' })).toBeNull();
+  });
+
   it('an auctioneer sees the room and is told they cannot bid', async () => {
     const auctioneer = await newAccount('auctioneer');
     const lotId = await liveLotFor(auctioneer.token);

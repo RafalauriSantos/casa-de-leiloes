@@ -106,6 +106,7 @@ export async function placeBid(db: Db, config: Config, bidderId: string, lotId: 
         incrementCents: lot.increment_cents,
         currentAmountCents: lot.current_amount_cents,
         leaderId: lot.leader_id,
+        bidCount: lot.head_seq,
       },
       { totalCents: mine.total_cents, committedCents: mine.committed_cents },
       { bidderId, amountCents },

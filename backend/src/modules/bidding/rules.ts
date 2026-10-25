@@ -1,4 +1,4 @@
-import type { ErrorCode } from '@casa/contracts';
+import { BID_LIMIT_MESSAGE, MAX_BIDS_PER_LOT, type ErrorCode } from '@casa/contracts';
 import { formatBRL } from '../../shared/money';
 
 /** A bid in the last two minutes of a lot extends its end by two minutes (brief: "estende o fim do lote para +2 minutos"). */
@@ -12,6 +12,8 @@ export interface BidLot {
   incrementCents: number;
   currentAmountCents: number | null;
   leaderId: string | null;
+  /** The bids placed so far: the seq of the last one. */
+  bidCount: number;
 }
 
 export interface BidderWallet {
@@ -38,6 +40,9 @@ export function decideBid(lot: BidLot, wallet: BidderWallet, bid: BidAttempt, no
   if (lot.cancelled) return refuse('lot_cancelled', 'Este lote foi cancelado.');
   if (now.getTime() < lot.startsAt.getTime()) return refuse('lot_not_started', 'O lote ainda não começou.');
   if (now.getTime() >= lot.endsAt.getTime()) return refuse('lot_ended', 'Este lote já encerrou.');
+
+  // The lot is full: the same for everyone, so it is judged right after the lot's own state (D23).
+  if (lot.bidCount >= MAX_BIDS_PER_LOT) return refuse('bid_limit_reached', BID_LIMIT_MESSAGE);
 
   if (lot.leaderId === bid.bidderId) return refuse('already_leading', 'Você já está ganhando este lote.');
 

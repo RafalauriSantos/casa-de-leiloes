@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import type { OwnLot } from '@casa/contracts';
+import { MAX_BIDS_PER_LOT, type OwnLot } from '@casa/contracts';
 import { bidHash, genesisHash } from '../../src/shared/bid-chain';
 import { signUpUser, type TestUser } from '../helpers/auth';
 import { createAuctioneer, dbNow, lotBody, minutes } from '../helpers/lots';
@@ -342,4 +342,61 @@ describe('GET /api/lots/:id/live: the room\'s view', () => {
     expect(text).not.toContain(ana.id);
     expect(text).not.toContain(bruno.id);
   });
+});
+
+// D23: a lot takes at most MAX_BIDS_PER_LOT bids, so its anchor file always fits what the publisher accepts.
+describe('the limit of bids per lot', () => {
+  // These lots stay live for an hour with 1,000 bids each: the database is shared, so they are cancelled afterwards
+  // and cannot crowd the showcase of the tests that run after.
+  const made: string[] = [];
+  afterAll(async () => {
+    await server.db.query("update public.lots set status = 'cancelled' where id = any($1::uuid[])", [made]);
+  });
+
+  it('takes the 1,000th bid and refuses the 1,001st with bid_limit_reached, without moving any money', async () => {
+    const lot = await liveLot();
+    made.push(lot.id);
+    const [ana, bruno, carla] = await Promise.all([bidder(10_000_000), bidder(10_000_000), bidder(10_000_000)]);
+    for (let index = 0; index < MAX_BIDS_PER_LOT; index += 1) {
+      expect((await bid(lot.id, index % 2 === 0 ? ana : bruno, 50_000 + index * 5_000)).status).toBe(201);
+    }
+    const committed = async (user: TestUser) => (await server.db.query<{ committed_cents: number }>('select committed_cents from public.wallets where user_id = $1', [user.id]))[0]?.committed_cents;
+    const before = [await committed(ana), await committed(bruno), await committed(carla)];
+
+    const refused = await fetch(`${server.url}/api/lots/${lot.id}/bids`, { method: 'POST', headers: json(carla), body: JSON.stringify({ amountCents: 50_000 + MAX_BIDS_PER_LOT * 5_000 }) });
+
+    expect(refused.status).toBe(409);
+    expect(await refused.json()).toEqual({ code: 'bid_limit_reached', message: 'Este lote atingiu o limite de 1.000 lances.' });
+    expect([await committed(ana), await committed(bruno), await committed(carla)]).toEqual(before);
+    const [row] = await server.db.query<{ head_seq: number; bid_count: number }>('select head_seq, bid_count from public.lots where id = $1', [lot.id]);
+    expect(row).toEqual({ head_seq: MAX_BIDS_PER_LOT, bid_count: MAX_BIDS_PER_LOT });
+    const audit = (await (await fetch(`${server.url}/api/lots/${lot.id}/audit`)).json()) as { bids: unknown[]; chain: { status: string } };
+    expect(audit.bids).toHaveLength(MAX_BIDS_PER_LOT);
+    expect(audit.chain).toEqual({ status: 'intact' });
+  }, 180_000);
+
+  it('lets exactly one of two parallel bids take the last place', async () => {
+    const lot = await liveLot();
+    made.push(lot.id);
+    const [ana, bruno, carla, dani] = await Promise.all([bidder(10_000_000), bidder(10_000_000), bidder(10_000_000), bidder(10_000_000)]);
+    for (let index = 0; index < MAX_BIDS_PER_LOT - 1; index += 1) {
+      expect((await bid(lot.id, index % 2 === 0 ? ana : bruno, 50_000 + index * 5_000)).status).toBe(201);
+    }
+    const next = 50_000 + (MAX_BIDS_PER_LOT - 1) * 5_000;
+
+    const [one, two] = await Promise.all([
+      fetch(`${server.url}/api/lots/${lot.id}/bids`, { method: 'POST', headers: json(carla), body: JSON.stringify({ amountCents: next }) }),
+      fetch(`${server.url}/api/lots/${lot.id}/bids`, { method: 'POST', headers: json(dani), body: JSON.stringify({ amountCents: next + 5_000 }) }),
+    ]);
+
+    expect([one.status, two.status].filter((status) => status === 201)).toHaveLength(1);
+    // The limit is judged before the minimum, so whoever comes second is always refused for the limit, whatever it offered.
+    const loser = one.status === 201 ? two : one;
+    expect(loser.status).toBe(409);
+    expect(((await loser.json()) as { code: string }).code).toBe('bid_limit_reached');
+    const [row] = await server.db.query<{ head_seq: number }>('select head_seq from public.lots where id = $1', [lot.id]);
+    expect(row?.head_seq).toBe(MAX_BIDS_PER_LOT);
+    const [{ count } = { count: -1 }] = await server.db.query<{ count: number }>('select count(*)::int as count from public.bids where lot_id = $1', [lot.id]);
+    expect(count).toBe(MAX_BIDS_PER_LOT);
+  }, 180_000);
 });

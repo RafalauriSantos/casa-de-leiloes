@@ -1,4 +1,6 @@
+import { MAX_BIDS_PER_LOT } from '@casa/contracts';
 import { describe, expect, it } from 'vitest';
+import { MAX_ANCHOR_FILE_BYTES } from './file';
 import { ANCHOR_HEADER, anchorLine, isStalePending, retryDelayMs, seqsToPublish, STALE_PENDING_MS } from './rules';
 
 describe('ANCHOR_HEADER', () => {
@@ -63,5 +65,14 @@ describe('isStalePending', () => {
   it('is an incident at the limit and after it', () => {
     expect(isStalePending(0, STALE_PENDING_MS)).toBe(true);
     expect(isStalePending(0, STALE_PENDING_MS + 1)).toBe(true);
+  });
+});
+
+describe('the bid limit keeps every lot publishable (D23)', () => {
+  it('fits the anchor file of a full lot, with the longest line, in less than a quarter of what the publisher accepts', () => {
+    const longest = anchorLine({ lotId: '11111111-1111-4111-8111-111111111111', seq: MAX_BIDS_PER_LOT, hash: 'f'.repeat(64), publishedAt: '2030-12-31T23:59:59.999Z' });
+    const bytes = Buffer.byteLength(ANCHOR_HEADER, 'utf8') + 1 + MAX_BIDS_PER_LOT * (Buffer.byteLength(longest, 'utf8') + 1);
+
+    expect(bytes).toBeLessThan(MAX_ANCHOR_FILE_BYTES / 4);
   });
 });
