@@ -131,7 +131,7 @@ export async function publishPending(db: Db, config: Config, options: PublishOpt
   const candidates = await db.query<{ id: string }>(
     `select l.id from public.lots l
      left join public.bids b on b.lot_id = l.id and b.seq = l.anchored_seq + 1
-     where l.head_seq > l.anchored_seq and (l.anchor_retry_at is null or l.anchor_retry_at <= $1)
+     where l.status = 'active' and l.head_seq > l.anchored_seq and (l.anchor_retry_at is null or l.anchor_retry_at <= $1)
      order by b.placed_at asc nulls first, l.id
      limit ${String(LOTS_PER_RUN)}`,
     [now],
@@ -168,7 +168,7 @@ export async function publishPending(db: Db, config: Config, options: PublishOpt
   const waiting = await db.query<{ placed_at: Date | null }>(
     `select b.placed_at from public.lots l
      left join public.bids b on b.lot_id = l.id and b.seq = l.anchored_seq + 1
-     where l.head_seq > l.anchored_seq`,
+     where l.status = 'active' and l.head_seq > l.anchored_seq`,
   );
   const stale = waiting.filter((row) => row.placed_at === null || isStalePending(row.placed_at.getTime(), now.getTime())).length;
   if (stale > 0) console.error(`anchor: ${String(stale)} lot(s) have a bid hash pending for 10 minutes or more`);

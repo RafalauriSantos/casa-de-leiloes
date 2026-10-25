@@ -21,7 +21,7 @@ interface LotRow {
   ends_at: Date;
   starting_bid_cents: number;
   increment_cents: number;
-  status: 'active' | 'cancelled';
+  status: 'active' | 'cancelled' | 'integrity_cancelled';
   bid_count: number;
 }
 
@@ -29,7 +29,8 @@ const COLUMNS = `id, auctioneer_id, title, item_image_url, item_source_url, item
   starts_at, ends_at, starting_bid_cents, increment_cents, status, bid_count`;
 
 const stateFor = (row: LotRow, now: Date): LotState =>
-  stateOf({ startsAt: row.starts_at, endsAt: row.ends_at, cancelled: row.status === 'cancelled' }, now);
+  // Any status other than active is shown as cancelled: a lot released by the owner for tampering (D20) has no sale.
+  stateOf({ startsAt: row.starts_at, endsAt: row.ends_at, cancelled: row.status !== 'active' }, now);
 
 function toSummary(row: LotRow, now: Date): LotSummary {
   return {

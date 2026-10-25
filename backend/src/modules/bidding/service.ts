@@ -13,7 +13,7 @@ interface LotRow {
   id: string;
   starts_at: Date;
   ends_at: Date;
-  status: 'active' | 'cancelled';
+  status: 'active' | 'cancelled' | 'integrity_cancelled';
   starting_bid_cents: number;
   increment_cents: number;
   current_amount_cents: number | null;
@@ -101,7 +101,8 @@ export async function placeBid(db: Db, config: Config, bidderId: string, lotId: 
       {
         startsAt: lot.starts_at,
         endsAt: lot.ends_at,
-        cancelled: lot.status === 'cancelled',
+        // Anything but an open lot refuses bids: cancelled, or released by the owner for tampering (D20).
+        cancelled: lot.status !== 'active',
         startingBidCents: lot.starting_bid_cents,
         incrementCents: lot.increment_cents,
         currentAmountCents: lot.current_amount_cents,
