@@ -1,4 +1,4 @@
-import type { BidReceipt, LiveLot } from '@casa/contracts';
+import { BID_LIMIT_MESSAGE, MAX_BIDS_PER_LOT, type BidReceipt, type LiveLot } from '@casa/contracts';
 import { useEffect, useRef, useState, type SyntheticEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { ApiRequestError } from '@/lib/api-client';
@@ -138,7 +138,8 @@ export function LiveRoom({ lotId }: { lotId: string }) {
   if (load.status === 'error') return <p role="alert">{load.message}</p>;
   const { room } = load;
   const remaining = remainingMs(room, offset, now);
-  const canBid = room.state === 'live' && role === 'bidder';
+  const full = room.bidCount >= MAX_BIDS_PER_LOT;
+  const canBid = room.state === 'live' && role === 'bidder' && !full;
 
   return (
     <section aria-label="Sala do lote">
@@ -171,6 +172,7 @@ export function LiveRoom({ lotId }: { lotId: string }) {
           <button type="submit" disabled={busy || remaining <= 0}>{busy ? 'Enviando…' : 'Dar lance'}</button>
         </form>
       )}
+      {room.state === 'live' && full && <p>{BID_LIMIT_MESSAGE}</p>}
       {receipts.length > 0 && (
         <section aria-label="Seus recibos">
           <h3>Seus recibos</h3>

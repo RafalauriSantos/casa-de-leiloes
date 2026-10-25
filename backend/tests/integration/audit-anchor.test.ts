@@ -18,6 +18,8 @@ let github: GithubStub;
 let auctioneer: TestUser;
 let server: TestServer;
 let setup: TestServer;
+/** Lots these tests tamper with fail the integrity check for ever; they are cancelled at the end so the settlement of later tests does not retry them. */
+const made: string[] = [];
 
 const config = (): Config => ({
   ...testConfig(),
@@ -32,6 +34,7 @@ beforeAll(async () => {
   auctioneer = await createAuctioneer(setup);
 });
 afterAll(async () => {
+  await setup.db.query("update public.lots set status = 'cancelled' where id = any($1::uuid[])", [made]);
   await setup.close();
   await github.close();
   await met.close();
@@ -70,6 +73,7 @@ async function lotWithBids(count: number): Promise<OwnLot> {
   const created = await fetch(`${setup.url}/api/lots`, { method: 'POST', headers: json(auctioneer), body: JSON.stringify(lotBody(await dbNow(setup), { startingBidCents: 50_000, incrementCents: 5_000 })) });
   expect(created.status).toBe(201);
   const lot = (await created.json()) as OwnLot;
+  made.push(lot.id);
   const now = await dbNow(setup);
   await setup.db.query('update public.lots set starts_at = $2, ends_at = $3 where id = $1', [lot.id, new Date(now.getTime() - minutes(5)), new Date(now.getTime() + minutes(60))]);
   for (let index = 0; index < count; index += 1) await bidOn(lot.id, 50_000 + index * 5_000);

@@ -10,6 +10,7 @@ const STATUS: Record<ErrorCode, ContentfulStatusCode> = {
   not_found: 404,
   insufficient_funds: 409,
   already_leading: 409,
+  bid_limit_reached: 409,
   lot_not_started: 409,
   lot_ended: 409,
   lot_cancelled: 409,
