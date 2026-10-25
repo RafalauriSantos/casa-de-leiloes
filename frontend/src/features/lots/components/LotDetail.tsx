@@ -1,5 +1,6 @@
 import type { LotDetail as LotDetailView } from '@casa/contracts';
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { ApiRequestError } from '@/lib/api-client';
 import { formatBRL } from '@/lib/format';
 import { fetchLot } from '../api';
@@ -46,6 +47,7 @@ export function LotDetail({ id }: { id: string }) {
         ))}
       </dl>
       <p><a href={lot.sourceUrl} target="_blank" rel="noreferrer">Ver a obra na fonte (The Met)</a></p>
+      <p><Link to={`/auditoria/${lot.id}`}>Auditar o histórico deste lote</Link></p>
     </article>
   );
 }

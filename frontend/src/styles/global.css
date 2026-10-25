@@ -70,3 +70,18 @@ section[aria-labelledby] { margin-bottom: 1.5rem; }
   .catalog-results img { width: 64px; }
   .catalog-results button { grid-column: 1 / -1; }
 }
+
+/* Audit page */
+.audit-headline { border: 1px solid var(--line); border-left-width: 6px; border-radius: 10px; background: var(--card); padding: 0.9rem 1.1rem; margin: 1rem 0; }
+.audit-headline h2 { margin: 0 0 0.3rem; }
+.audit-headline p { margin: 0; color: var(--muted); }
+.audit-danger { border-color: var(--danger); }
+.audit-danger h2 { color: var(--danger); }
+.audit-warning { border-color: var(--accent); }
+.audit-ok { border-color: var(--live); }
+.audit-results { padding-left: 1.2rem; }
+.audit-note { color: var(--muted); font-size: 0.92rem; }
+.audit-scroll { overflow-x: auto; margin-top: 1rem; }
+.audit-scroll table { border-collapse: collapse; width: 100%; font-size: 0.92rem; }
+.audit-scroll th, .audit-scroll td { text-align: left; padding: 0.4rem 0.6rem; border-bottom: 1px solid var(--line); }
+.audit-hash { word-break: break-all; font-size: 0.78rem; }

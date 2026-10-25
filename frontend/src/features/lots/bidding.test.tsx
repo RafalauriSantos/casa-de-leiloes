@@ -164,6 +164,8 @@ describe('live room: bidding in the UI', () => {
     const receipts = await screen.findByRole('region', { name: 'Seus recibos' });
     const head = within(receipts).getByText(/^[0-9a-f]{64}$/).textContent;
     expect(within(receipts).getByText(/Lance nº 1/)).toBeTruthy();
+    // Each receipt links to the audit with its head, so the bidder can check it with one click.
+    expect(within(receipts).getByRole('link', { name: 'Conferir na auditoria' }).getAttribute('href')).toBe(`/auditoria/${lotId}?head=${head}`);
     first.unmount();
 
     render(<App />);
