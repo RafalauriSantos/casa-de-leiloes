@@ -197,6 +197,74 @@ describe('the anchor result of a lot', () => {
   });
 });
 
+describe('the headline, with the anchor read', () => {
+  const withHead = async (lotId: string, seq: number): Promise<AuditReport> => {
+    const hash = (await hashes(lotId)).find((row) => row.seq === seq)?.hash ?? '';
+    const response = await fetch(`${server.url}/api/lots/${lotId}/audit?head=${hash}`);
+    expect(response.status).toBe(200);
+    return (await response.json()) as AuditReport;
+  };
+
+  it('is intact only up to the seq of a receipt that was found, when the anchor is published', async () => {
+    const lot = await lotWithBids(3);
+    await setAnchored(lot.id, 3);
+    github.script(fileOf(lot.id), [await filesWith(lot.id, 3)]);
+
+    const report = await withHead(lot.id, 3);
+
+    expect(report.receiptHead).toEqual({ status: 'in_history', seq: 3 });
+    expect(report.headline).toEqual({ kind: 'intact_until', seq: 3 });
+  });
+
+  it('says the chain only, and how far the anchor goes, when the anchor is pending', async () => {
+    const lot = await lotWithBids(3);
+    await setAnchored(lot.id, 1);
+    github.script(fileOf(lot.id), [await filesWith(lot.id, 1)]);
+
+    expect((await withHead(lot.id, 3)).headline).toEqual({ kind: 'intact_chain_until', seq: 3, publishedThroughSeq: 1 });
+  });
+
+  it('says no divergence through the last published bid, never intact, when no head was sent', async () => {
+    const published = await lotWithBids(2);
+    await setAnchored(published.id, 2);
+    github.script(fileOf(published.id), [await filesWith(published.id, 2)]);
+    expect((await audit(published.id)).headline).toEqual({ kind: 'no_divergence_until', publishedThroughSeq: 2 });
+
+    const pending = await lotWithBids(2);
+    await setAnchored(pending.id, 1);
+    github.script(fileOf(pending.id), [await filesWith(pending.id, 1)]);
+    expect((await audit(pending.id)).headline).toEqual({ kind: 'no_divergence_until', publishedThroughSeq: 1 });
+  });
+
+  it('says tampered when the anchor is divergent, even when the receipt is found', async () => {
+    const lot = await lotWithBids(3);
+    await setAnchored(lot.id, 3);
+    const published = await filesWith(lot.id, 3);
+    await setup.db.tx(async (tx) => {
+      await tx.query('set local session_replication_role = replica');
+      await tx.query('delete from public.bids where lot_id = $1 and seq = 3', [lot.id]);
+      await tx.query('update public.lots set head_seq = 2, bid_count = 2, anchored_seq = 2, head_hash = (select hash from public.bids where lot_id = $1 and seq = 2) where id = $1', [lot.id]);
+    });
+    github.script(fileOf(lot.id), [published, published]);
+
+    const report = await audit(lot.id);
+
+    expect(report.chain).toEqual({ status: 'intact' });
+    expect(report.headline).toEqual({ kind: 'tampered' });
+  });
+
+  it('says the anchor was not verified, with the receipt result on its own, when GitHub cannot be read', async () => {
+    const lot = await lotWithBids(2);
+    github.script(fileOf(lot.id), [{ status: 503, headers: {}, body: { message: 'down' } }]);
+
+    const report = await withHead(lot.id, 2);
+
+    expect(report.anchor).toEqual({ status: 'unavailable' });
+    expect(report.receiptHead).toEqual({ status: 'in_history', seq: 2 });
+    expect(report.headline).toEqual({ kind: 'anchor_unverified' });
+  });
+});
+
 describe('the audit never claims what it could not read', () => {
   it('is unavailable when a missing file cannot be confirmed: a wrong repository or branch also answers 404', async () => {
     const lot = await lotWithBids(1);

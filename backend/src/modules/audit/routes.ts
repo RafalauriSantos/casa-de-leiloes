@@ -24,6 +24,6 @@ export function auditRoutes(deps: { db: Db; config: Config; options?: Partial<Au
     }
     const id = uuid.safeParse(c.req.param('id'));
     if (!id.success) throw new AppError('not_found', 'Lote não encontrado.');
-    return c.json(await auditReport(db, config, reader, options, id.data));
+    return c.json(await auditReport(db, config, reader, options, id.data, asked));
   });
 }

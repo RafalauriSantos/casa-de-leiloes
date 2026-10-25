@@ -1,4 +1,4 @@
-import type { AnchorResult, ChainResult } from '@casa/contracts';
+import type { AnchorResult, ChainResult, Headline, ReceiptHeadResult } from '@casa/contracts';
 import { isStalePending } from '../anchor';
 
 /** The public time of a bid: truncated to the second, never rounded up (D10). Takes an ISO string, so no clock or Date is needed. */
@@ -52,4 +52,32 @@ export function compareWithAnchor(bids: BidForComparison[], view: AnchorView, no
   // A history with no bid right after the published ones is broken, not slow: the chain result says so, and it is stale at once.
   const stale = oldestWaiting === undefined || isStalePending(oldestWaiting.placedAtMs, nowMs);
   return { status: 'pending', publishedThroughSeq: publishedThrough, stale };
+}
+
+/** Whether the head a bidder kept is the stored hash of one of the bids, and of which. A made-up head is simply not found. */
+export function receiptHeadResult(bids: { seq: number; hash: string }[], head: string): ReceiptHeadResult {
+  const found = bids.find((bid) => bid.hash === head);
+  return found ? { status: 'in_history', seq: found.seq } : { status: 'not_in_history' };
+}
+
+/**
+ * What the page may say about the lot as a whole, in the order of D22 (the first rule that applies wins):
+ * (1) tampered chain or divergent anchor: tampered, whatever the receipt says; (2) a head was sent and not found:
+ * unconfirmed (never tampered, so a made-up head cannot accuse a lot); (3) no bids; (4) a receipt was found: intact up to
+ * its seq; (5) no receipt: no divergence through the last published bid; (6) the anchor could not be read or is off.
+ * There is no lot-wide "intact": the anchor cannot catch the removal of a last bid before its publication.
+ */
+export function headlineOf(input: { chain: ChainResult; anchor: AnchorResult; receiptHead: ReceiptHeadResult | undefined; bidCount: number }): Headline {
+  const { chain, anchor, receiptHead, bidCount } = input;
+  if (chain.status === 'tampered' || anchor.status === 'divergent') return { kind: 'tampered' };
+  if (receiptHead?.status === 'not_in_history') return { kind: 'unconfirmed' };
+  const unread = anchor.status === 'unavailable' || anchor.status === 'off';
+  if (bidCount === 0) return { kind: 'no_bids', anchorUnverified: unread };
+  if (unread) return { kind: 'anchor_unverified' };
+  if (receiptHead?.status === 'in_history') {
+    return anchor.status === 'published'
+      ? { kind: 'intact_until', seq: receiptHead.seq }
+      : { kind: 'intact_chain_until', seq: receiptHead.seq, publishedThroughSeq: anchor.publishedThroughSeq };
+  }
+  return { kind: 'no_divergence_until', publishedThroughSeq: anchor.publishedThroughSeq };
 }
