@@ -29,10 +29,12 @@ describe('lot card: a live lot is evident, like a live badge on a video platform
     expect(badge?.querySelector('.live-dot')).not.toBeNull();
   });
 
-  it('shows no live badge for a scheduled or ended lot', () => {
-    const { container, unmount } = renderCard('scheduled');
-    expect(container.querySelector('.live-badge')).toBeNull();
-    unmount();
-    expect(renderCard('ended').container.querySelector('.live-badge')).toBeNull();
+  it('keeps the plain state label for every other state, with no live badge', () => {
+    for (const [state, label] of [['scheduled', 'Agendado'], ['ended', 'Encerrado'], ['cancelled', 'Cancelado']] as const) {
+      const { unmount } = renderCard(state);
+      expect(screen.getByText(label).classList.contains('state')).toBe(true);
+      expect(document.querySelector('.live-badge')).toBeNull();
+      unmount();
+    }
   });
 });

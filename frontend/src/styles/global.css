@@ -81,7 +81,9 @@ section[aria-labelledby] { margin-bottom: 1.5rem; }
 }
 @media (prefers-reduced-motion: reduce) { .live-dot { animation: none; } }
 .live-badge { display: inline-flex; align-items: center; gap: 0.4rem; background: #e62117; color: #fff; font-size: 0.78rem; font-weight: bold; letter-spacing: 0.06em; padding: 0.1rem 0.55rem; border-radius: 999px; }
-.live-badge .live-dot { box-shadow: none; background: #fff; }
+.live-badge .live-dot { box-shadow: none; background: #fff; animation: none; }
+
+
 /* Audit page */
 .audit-headline { border: 1px solid var(--line); border-left-width: 6px; border-radius: 10px; background: var(--card); padding: 0.9rem 1.1rem; margin: 1rem 0; }
 .audit-headline h2 { margin: 0 0 0.3rem; }
