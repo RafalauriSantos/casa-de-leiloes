@@ -73,7 +73,7 @@ export function headlineOf(input: { chain: ChainResult; anchor: AnchorResult; re
   if (receiptHead?.status === 'not_in_history') return { kind: 'unconfirmed' };
   const unread = anchor.status === 'unavailable' || anchor.status === 'off';
   if (bidCount === 0) return { kind: 'no_bids', anchorUnverified: unread };
-  if (anchor.status === 'unavailable' || anchor.status === 'off') return { kind: 'anchor_unverified' };
+  if (unread) return { kind: 'anchor_unverified' };
   if (receiptHead?.status === 'in_history') {
     return anchor.status === 'published'
       ? { kind: 'intact_until', seq: receiptHead.seq }
