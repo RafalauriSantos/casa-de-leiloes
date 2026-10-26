@@ -31,23 +31,29 @@ export function LotDetail({ id }: { id: string }) {
   return (
     <article aria-label="Lote">
       <h1>{lot.title}</h1>
-      <LiveRoom key={lot.id} lotId={lot.id} />
-      <img src={lot.imageUrl} alt={lot.title} className="lot-hero" />
-      <p><span className="state">{STATE_LABEL[lot.state]}</span></p>
-      <dl>
-        <div><dt>Lance inicial</dt><dd>{formatBRL(lot.startingBidCents)}</dd></div>
-        <div><dt>Incremento mínimo</dt><dd>{formatBRL(lot.incrementCents)}</dd></div>
-        <div><dt>Início</dt><dd>{formatWhen(lot.startsAt)}</dd></div>
-        <div><dt>Fim</dt><dd>{formatWhen(lot.endsAt)}</dd></div>
-      </dl>
-      <h2>Sobre o item</h2>
-      <dl>
-        {attributes.map(([key, value]) => (
-          <div key={key}><dt>{labels[key] ?? key}</dt><dd>{value}</dd></div>
-        ))}
-      </dl>
-      <p><a href={lot.sourceUrl} target="_blank" rel="noreferrer">Ver a obra na fonte (The Met)</a></p>
-      <p><Link to={`/auditoria/${lot.id}`}>Auditar o histórico deste lote</Link></p>
+      <div className="lot-layout">
+        <div className="lot-info">
+          <img src={lot.imageUrl} alt={lot.title} className="lot-hero" />
+          <p><span className="state">{STATE_LABEL[lot.state]}</span></p>
+          <dl>
+            <div><dt>Lance inicial</dt><dd>{formatBRL(lot.startingBidCents)}</dd></div>
+            <div><dt>Incremento mínimo</dt><dd>{formatBRL(lot.incrementCents)}</dd></div>
+            <div><dt>Início</dt><dd>{formatWhen(lot.startsAt)}</dd></div>
+            <div><dt>Fim</dt><dd>{formatWhen(lot.endsAt)}</dd></div>
+          </dl>
+          <h2>Sobre o item</h2>
+          <dl>
+            {attributes.map(([key, value]) => (
+              <div key={key}><dt>{labels[key] ?? key}</dt><dd>{value}</dd></div>
+            ))}
+          </dl>
+          <p><a href={lot.sourceUrl} target="_blank" rel="noreferrer">Ver a obra na fonte (The Met)</a></p>
+          <p><Link to={`/auditoria/${lot.id}`}>Auditar o histórico deste lote</Link></p>
+        </div>
+        <div className="lot-room">
+          <LiveRoom key={lot.id} lotId={lot.id} />
+        </div>
+      </div>
     </article>
   );
 }
