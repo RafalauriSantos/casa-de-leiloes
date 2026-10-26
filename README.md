@@ -2,7 +2,7 @@
 
 Casa de leilões online (teste técnico Verzel "Elite Dev"). **Em construção**: hoje existem cadastro, login, papéis, carteira com depósito simulado, e a vitrine com lotes publicados a partir do catálogo público do The Met. Lances, comprovante e auditoria entram nas próximas etapas.
 
-Decisões de design e seus tradeoffs: [docs/DECISIONS.md](docs/DECISIONS.md).
+Decisões de design e seus tradeoffs: [docs/DECISIONS.md](docs/DECISIONS.md). Onde e como a IA foi usada, e o que foi revisado: [docs/AI-USAGE.md](docs/AI-USAGE.md).
 
 ## Acesse
 
