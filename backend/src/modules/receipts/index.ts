@@ -1,0 +1,1 @@
+export { receiptRoutes } from './routes';

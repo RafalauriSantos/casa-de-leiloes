@@ -10,6 +10,7 @@ import { catalogRoutes } from './modules/catalog';
 import { lotRoutes } from './modules/lots';
 import { biddingRoutes } from './modules/bidding';
 import { auditRoutes, type AuditOptions } from './modules/audit';
+import { receiptRoutes } from './modules/receipts';
 
 export function createApp(deps: { config: Config; db: Db; audit?: Partial<AuditOptions> }): Hono {
   const { config, db } = deps;
@@ -23,6 +24,7 @@ export function createApp(deps: { config: Config; db: Db; audit?: Partial<AuditO
   app.route('/', biddingRoutes({ db, config }));
   app.route('/', auditRoutes({ db, config, options: deps.audit }));
   app.route('/', settlementRoutes({ db, config }));
+  app.route('/', receiptRoutes({ db, config }));
 
   app.onError(handleError);
   app.notFound(handleNotFound);

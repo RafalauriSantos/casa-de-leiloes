@@ -74,10 +74,10 @@ Each criterion of the brief's journeys (defined in phase 2 of the delivery proce
 
 | Criterion | Tests | Status |
 |---|---|---|
-| 6.1 list the lots bid on and won, with the receipt | None | **Open**: there is no "Meus arremates" page yet |
-| 6.2 shareable link with a random code, no login | None | **Open** |
-| 6.3 the receipt shows only pseudonyms | None | **Open** |
-| 6.4 nobody sees someone else's receipt | None | **Open** |
+| 6.1 list the lots bid on and won, with the receipt | `backend/tests/integration/receipts.test.ts` ("lists the lots a bidder bid on: a won lot with its receipt code, a lost one without"; "shows the highest amount the bidder offered, not the first one"); `backend/src/modules/receipts/rules.test.ts` (every outcome: won, cancelled, leading, settling, outbid, lost); `frontend/src/features/wins/wins.test.tsx` ("a winner sees the lot in Meus arremates ..."; "says so when the bidder has not bid on any lot yet") | Covered. Declared limit: the list shows at most 100 lots, with no note when there are more |
+| 6.2 shareable link with a random code, no login | `receipts.test.ts` ("opens the receipt by its code without login ..."); `wins.test.tsx` (the same link opens signed out) | Covered |
+| 6.3 the receipt shows only pseudonyms | `receipts.test.ts` ("opens the receipt by its code without login ..." asserts the winner's id and e-mail are absent, and that the label is the one the public audit shows for the winner's last bid) | Covered |
+| 6.4 nobody sees someone else's receipt | `receipts.test.ts` ("keeps a receipt behind its code and a list with its owner": 404 for a random or malformed code, 401 without token, 403 for an auctioneer, another bidder's list has no receipt) | Covered |
 
 ## J7: public audit (D22)
 
