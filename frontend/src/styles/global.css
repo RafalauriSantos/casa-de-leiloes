@@ -185,7 +185,7 @@ section[aria-label="Sala do lote"] dl dd { text-align: left; font-family: "Fraun
 header nav a:first-child::before { content: ""; display: inline-block; width: 0.9rem; height: 0.9rem; margin-right: 0.5rem; background: var(--brass); transform: rotate(45deg); }
 
 /* The remaining screens of the Claude Design canvas: sign-in, wallet, my wins, receipt, audit and the auctioneer panel. */
-.auth-page { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(440px, 100%), 1fr)); min-height: 70vh; }
+.auth-page { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(440px, 100%), 1fr)); min-height: 70vh; margin: -1.5rem -1rem -3rem; }
 .auth-aside { background: var(--ink); color: var(--paper); padding: 3rem 4rem; display: flex; flex-direction: column; justify-content: space-between; gap: 2rem; }
 .auth-aside p { margin: 0; color: var(--line); font-size: 1.05rem; }
 .auth-aside .auth-aside-title { font-family: "Fraunces", Georgia, serif; font-size: 2.6rem; line-height: 1.1; color: var(--paper); }
