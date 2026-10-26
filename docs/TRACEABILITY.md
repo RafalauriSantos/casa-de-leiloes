@@ -10,7 +10,10 @@ Each criterion of the brief's journeys (defined in phase 2 of the delivery proce
 | 0.2 login with one generic error | `auth.test.tsx` ("shows one generic message for a wrong login"); `frontend/src/features/auth/api.test.ts` ("gives one generic refusal for any sign-up error") | Covered |
 | 0.3 logout | `frontend/src/journey.test.tsx` ("signs up, sees an empty wallet, deposits once even on a double click, signs out and back in") | Covered |
 | 0.4 role guards on screen and API (401/403) | 401/403 cases in `catalog.test.ts`, `lots.test.ts`, `wallet.test.ts`, `bidding.test.ts`; `frontend/src/features/lots/lots.test.tsx` ("shows the role message to a bidder who opens it"); `journey.test.tsx` ("has no wallet: no menu entry ...") | Covered |
-| 0.5 identity only from the token | `me.test.ts` ("returns the identity taken from the token", "never lets a user pick a role through sign-up metadata"); `auth-claims.test.ts` | Covered |
+| 0.5 identity only from the token | `me.test.ts` ("returns the identity taken from the token"); `auth-claims.test.ts` | Covered |
+| 0.6 sign-up asks "Quero comprar" or "Quero vender" and the account gets that role (B14) | `me.test.ts` ("gives the role chosen at sign-up ..."); `journey.test.tsx` ("signs up choosing \"Quero vender\" and gets the auctioneer panel, not a wallet") | Covered |
+| 0.7 only those two roles are accepted at sign-up, and the role cannot change after it (B14) | `me.test.ts` ("accepts no other role at sign-up, and the role cannot change after it"), with two hand mutations (D24) | Covered |
+| 0.8 the login screen offers the demo accounts, and a shortcut is a real sign-in (B15) | `auth.test.tsx` ("offers the demo accounts, and a shortcut is a real sign-in"); the failed sign-in reuses the generic refusal path of 0.2 | Covered |
 
 ## J1: auctioneer (slice 2)
 
@@ -21,7 +24,7 @@ Each criterion of the brief's journeys (defined in phase 2 of the delivery proce
 | 1.3 item data copied into the database | `lots.test.ts` ("keeps the copy: the lot keeps its item even if the catalog later fails") | Covered |
 | 1.4 search with the API down shows a clear error | `catalog.test.ts` (503 `catalog_unavailable` cases); `frontend/src/features/lots/catalog-states.test.tsx` ("a failed item search says so on the screen, and a new search recovers") | Covered |
 | 1.5 edit only before the start and without bids | `lots.test.ts` (edit cases, 409 `lot_not_editable`); `rules.test.ts` | Covered |
-| 1.6 cancel only without bids | `lots.test.ts` (cancel cases); `rules.test.ts` | Covered |
+| 1.6 cancel a lot that has not ended; one with bids refunds the leader (9.1) | `lots.test.ts` (cancel cases); `rules.test.ts`; `cancel-refund.test.ts` | Covered |
 | 1.7 result of each ended lot and the total received | `backend/tests/integration/auctioneer-results.test.ts` (sold for how much, no bids, pending settlement, the total without other auctioneers' lots, 403 for a bidder); `frontend/src/features/lots/results.test.tsx` ("shows what each ended lot sold for, its no-bids state, and the total received") | Covered |
 | 1.8 only their own lots | `lots.test.ts` ("lists only the auctioneer's ...", "refuses to edit another auctioneer's ...", "refuses to cancel another auctioneer's ...") | Covered |
 | 1.9 an auctioneer cannot bid | `bidding.test.ts` ("refuses an anonymous visitor with 401 and an auctioneer with 403"); `frontend/src/features/lots/bidding.test.tsx` ("an auctioneer sees the room and is told they cannot bid") | Covered |
@@ -97,3 +100,14 @@ Each criterion of the brief's journeys (defined in phase 2 of the delivery proce
 | 8.2 public deploy | `make e2e-prod` (`backend/scripts/e2e-deployed.ts`) walks sign-up, deposit, the live lot, a refused and an accepted bid, "Meus arremates" and the public audit on the published URL; it passed on the production site (6 of 6). The receipt step needs the lot to end, so it is not in the script | Covered for the published site; the receipt is covered by the integration tests |
 | 8.3 README with the steps and the unexpected behaviors | README | Partial: the final review is pending |
 | 8.4 one error shape, never a fake success | `failures.test.ts`; `catalog.test.ts` (503 cases); the `code` assertions across the integration tests | Covered |
+| 8.5 the demo data also holds an ended lot with a receipt and a tampered lot (B17, B18) | `seed.test.ts` ("also leaves an ended lot with a winner and a receipt, and a settled lot whose history was changed"; "running it again creates nothing new") | Covered locally; the hosted run is pending (D9c) |
+
+## J9: optionals of the brief (section 05)
+
+| Criterion | Tests | Status |
+|---|---|---|
+| Search and filter of lots | see 2.3 | Covered |
+| Automated tests | `make ci` | Covered |
+| 9.1 cancelling a lot with bids refunds the committed money automatically (B19) | `backend/tests/integration/cancel-refund.test.ts`; `frontend/src/features/lots/results.test.tsx` ("asks to confirm, says the leader is refunded ..."); five hand mutations in D25 | Covered |
+| 9.2 Docker Compose runs the app (B20) | Checked by hand on 2026-10-26 (Linux): `make compose` built the image and served the site (200), `/api/health` (200, database ok) directly and through the site's proxy, and `/api/me` with a token from the local Auth (200). No automated test: it would need Docker inside the CI job (D26) | Covered by a manual check |
+| 9.3 light and dark theme, with a switch (B21) | `frontend/src/app/theme.test.tsx` ("switches to dark and back, and the choice survives a reload"); the colors are checked on screen | Covered |

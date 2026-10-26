@@ -51,7 +51,7 @@ export function lotRoutes(deps: { db: Db; config: Config }): Hono<AuthEnv> {
     .post('/lots/:id/cancel', ...guard, async (c) => {
       const id = uuid.safeParse(c.req.param('id'));
       if (!id.success) throw new AppError('not_found', 'Lote não encontrado.');
-      return c.json(await cancelLot(db, c.get('userId'), id.data));
+      return c.json(await cancelLot(db, config, c.get('userId'), id.data));
     })
     .get('/auctioneer/lots', ...guard, async (c) => c.json(await listOwnLots(db, c.get('userId'))))
     .get('/auctioneer/summary', ...guard, async (c) => c.json(await auctioneerSummary(db, c.get('userId'))));

@@ -57,11 +57,10 @@ describe('edit and cancel rules', () => {
     expect(editRefusal({ state: 'cancelled', bidCount: 0 })?.code).toBe('lot_not_editable');
   });
 
-  it('allows cancelling a scheduled or live lot without bids only', () => {
-    expect(cancelRefusal({ state: 'scheduled', bidCount: 0 })).toBeUndefined();
-    expect(cancelRefusal({ state: 'live', bidCount: 0 })).toBeUndefined();
-    expect(cancelRefusal({ state: 'live', bidCount: 3 })?.code).toBe('lot_not_editable');
-    expect(cancelRefusal({ state: 'ended', bidCount: 0 })?.code).toBe('lot_ended');
-    expect(cancelRefusal({ state: 'cancelled', bidCount: 0 })?.code).toBe('lot_not_editable');
+  it('allows cancelling a scheduled or live lot, with or without bids, but not an ended or cancelled one', () => {
+    expect(cancelRefusal({ state: 'scheduled' })).toBeUndefined();
+    expect(cancelRefusal({ state: 'live' })).toBeUndefined();
+    expect(cancelRefusal({ state: 'ended' })?.code).toBe('lot_ended');
+    expect(cancelRefusal({ state: 'cancelled' })?.code).toBe('lot_not_editable');
   });
 });

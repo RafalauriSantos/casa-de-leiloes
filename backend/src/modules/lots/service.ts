@@ -4,6 +4,7 @@ import { databaseNow } from '../../shared/clock';
 import { type Db, type Queryable } from '../../shared/db';
 import { AppError } from '../../shared/errors';
 import { fetchItem } from '../catalog';
+import { verifiedLead } from '../settlement';
 import { cancelRefusal, checkTiming, editRefusal, resultOf, stateOf } from './rules';
 import type { createLotInput, lotsQuery } from './schemas';
 import type { z } from 'zod';
@@ -157,13 +158,32 @@ export async function updateLot(db: Db, userId: string, lotId: string, input: Lo
   });
 }
 
-export async function cancelLot(db: Db, userId: string, lotId: string): Promise<OwnLot> {
+export async function cancelLot(db: Db, config: Config, userId: string, lotId: string): Promise<OwnLot> {
   return db.tx(async (tx) => {
     const current = await ownedLotForUpdate(tx, userId, lotId);
     const now = await databaseNow(tx);
-    const refusal = cancelRefusal({ state: stateFor(current, now), bidCount: current.bid_count });
+    const refusal = cancelRefusal({ state: stateFor(current, now) });
     if (refusal) throw new AppError(refusal.code, refusal.message);
 
+    // B19: the leader's committed money goes back to available in this transaction; outbid bidders were released when
+    // they were outbid. The lot row is already locked, so the wallet is locked after it: the order bidding uses.
+    // As before a payment, the history must verify and the lot's copy of its leader and amount must match it; and the
+    // wallet must still cover this lot plus the other lots the leader leads, so a refund never frees their money (D25).
+    // Whether a refund is due comes from the verified bids, not from the lot's `bid_count` copy, which a database writer
+    // could zero: skipping the refund would strand the money on a cancelled lot that the owner's release cannot reach.
+    const lead = await verifiedLead(tx, lotId, config.auditHmacSecret);
+    if (lead) {
+      const [wallet] = await tx.query<{ committed_cents: number }>('select committed_cents from public.wallets where user_id = $1 for update', [lead.leaderId]);
+      const [others] = await tx.query<{ amount: number }>(
+        `select coalesce(sum(current_amount_cents), 0)::bigint as amount from public.lots
+         where leader_id = $1 and status = 'active' and settled_at is null and id <> $2`,
+        [lead.leaderId, lotId],
+      );
+      if (!wallet || wallet.committed_cents < lead.amountCents + (others?.amount ?? 0)) {
+        throw new AppError('internal_error', 'O dinheiro comprometido de quem lidera não cobre este lote; o cancelamento foi recusado.');
+      }
+      await tx.query('update public.wallets set committed_cents = committed_cents - $2 where user_id = $1', [lead.leaderId, lead.amountCents]);
+    }
     await tx.query("update public.lots set status = 'cancelled' where id = $1", [lotId]);
     return toOwn({ ...current, status: 'cancelled' }, now);
   });

@@ -15,8 +15,11 @@ export function signUpOutcome(answer: { hasError: boolean; hasSession: boolean }
   return { ok: true };
 }
 
-export async function signUp(email: string, password: string, displayName: string): Promise<AuthResult> {
-  const { data, error } = await supabase.auth.signUp({ email, password, options: { data: { display_name: displayName } } });
+/** The role a new account asks for: "Quero comprar" or "Quero vender". The database reads it once, at creation (D24). */
+export type SignUpRole = 'bidder' | 'auctioneer';
+
+export async function signUp(email: string, password: string, displayName: string, role: SignUpRole): Promise<AuthResult> {
+  const { data, error } = await supabase.auth.signUp({ email, password, options: { data: { display_name: displayName, role } } });
   return signUpOutcome({ hasError: error !== null, hasSession: data.session !== null });
 }
 

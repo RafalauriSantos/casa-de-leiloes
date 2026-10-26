@@ -39,14 +39,17 @@ mutation per rule and the owner's "pode mergear"; **normal** needs one reviewer 
 | Showcase card shows the current bid once there are bids (it always showed the starting bid); card fields and the error state with retry tested | 2.2, 2.5 | normal | #42 |
 | Exact messages for "not started" and "ended" bid refusals are asserted (the messages were already sent) | 4.3 | normal | #43 |
 | The Ao vivo dot goes off on its own when the only live lot ends with the page open (the test closes open lots in the local database first) | 2.1 | normal | #43 |
+| Brief gaps: seed test reads the active demo lot (B13); sign-up chooses bidder or auctioneer (B14, migration 11); demo sign-in shortcuts (B15); README with the site and the demo accounts (B16); seed with an ended lot and a tampered lot (B17, B18); cancel with refund (B19, optional); Docker Compose (B20, optional); theme switch (B21, optional); AI usage notes (B22) | 0.6 to 0.8, 8.1, 8.5, 9.1 to 9.3 | D24, D25, D26 | #45 (waiting for "pode mergear") |
 
 ## To do (by priority)
 
 | # | Item | Criteria | Risk | Done when |
 |---|---|---|---|---|
-| B10 | Security headers (CSP and others) | | normal | the app answers with them and still works on Vercel |
+| B10 | Security headers (CSP and others) | | normal | the app answers with them and still works on Vercel (PR #44) |
 | B11 | Daily live test of the public anchor | | normal | planned in D21 |
-| B12 | README final review | 8.3 | normal | the steps match what exists and every unexpected behavior is declared |
+| B12 | README final review | 8.3 | normal | the steps match what exists and every unexpected behavior is declared (PR #44) |
+
+Owner actions (not code): make the repository public after checking its history for secrets; protect the `main` branch of the anchor repository (checked on 2026-10-26: not protected).
 
 ## Waiting for a decision
 
@@ -54,4 +57,3 @@ mutation per rule and the owner's "pode mergear"; **normal** needs one reviewer 
 |---|---|
 | Owner alert when a lot waits more than 10 minutes for publication | The owner chooses the channel (e-mail or other) |
 | Visual identity | The owner sends the references |
-| Branch protection on the anchor repository | An owner action on GitHub |

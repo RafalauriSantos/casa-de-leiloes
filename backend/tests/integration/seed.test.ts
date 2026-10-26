@@ -1,3 +1,4 @@
+import type { AuditReport } from '@casa/contracts';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { seedDemo, DEMO } from '../../src/seed/demo';
 import { signUpUser, promoteToAuctioneer } from '../helpers/auth';
@@ -14,6 +15,13 @@ let met: MetStub;
 beforeAll(async () => {
   met = await startMetStub();
   server = await startTestServer({ metApiUrl: met.baseUrl });
+  // The seed reuses a settled demo lot left by an earlier run of this shared database and skips creating it. Give those
+  // an old title, so every run walks the whole seed (8.5), not only the first run on a fresh database.
+  await server.db.query(
+    `update public.lots l set title = l.title || ' (run ' || l.id || ')' from auth.users a
+      where a.id = l.auctioneer_id and a.email = $1 and l.title = any($2::text[]) and l.settled_at is not null`,
+    [DEMO.auctioneer, [DEMO.endedLotTitle, DEMO.tamperedLotTitle]],
+  );
 });
 afterAll(async () => {
   await server.close();
@@ -27,19 +35,24 @@ const deps = () => ({
   anonKey: requireEnv('SUPABASE_ANON_KEY'),
 });
 
-/** The demo lot: the one this demo auctioneer owns, never another auctioneer's lot with the same title. */
+/**
+ * The demo lot: the active one this demo auctioneer owns, as the seed picks it. Older demo lots may exist, cancelled by
+ * the cleanup at the end of an earlier run, and another auctioneer may own a lot with the same title.
+ */
 const DEMO_LOT_SQL = `select l.id from public.lots l join auth.users u on u.id = l.auctioneer_id
-                       where l.title = $1 and u.email = '${DEMO.auctioneer}' order by l.created_at limit 1`;
+                       where l.title = $1 and u.email = '${DEMO.auctioneer}' and l.status = 'active' and l.ends_at > now()
+                       order by l.created_at desc limit 1`;
 const DEMO_LOT_ID = `(${DEMO_LOT_SQL.replace(/\s+/g, ' ')})`;
 
 async function counts() {
   const [row] = await server.db.query<{ accounts: number; lots: number; bids: number; deposited: number }>(
     `select (select count(*)::int from auth.users where email like '%@demo.example') as accounts,
-            (select count(*)::int from public.lots where title = $1) as lots,
-            (select count(*)::int from public.bids b join public.lots l on l.id = b.lot_id where l.title = $1) as bids,
+            (select count(*)::int from public.lots l join auth.users a on a.id = l.auctioneer_id where a.email = $1) as lots,
+            (select count(*)::int from public.bids b join public.lots l on l.id = b.lot_id
+               join auth.users a on a.id = l.auctioneer_id where a.email = $1) as bids,
             (select coalesce(sum(w.total_cents), 0)::int from public.wallets w join auth.users u on u.id = w.user_id
               where u.email like '%@demo.example') as deposited`,
-    [DEMO.lotTitle],
+    [DEMO.auctioneer],
   );
   if (!row) throw new Error('count query returned nothing');
   return row;
@@ -65,6 +78,27 @@ describe('the seed (B2, 8.1)', () => {
     );
     expect(seeded).toMatchObject({ auctioneers: 1, bidders: 2 });
     expect((await counts()).deposited).toBeGreaterThan(0);
+  });
+
+  it('also leaves an ended lot with a winner and a receipt, and a settled lot whose history was changed (8.5)', async () => {
+    await seedDemo(deps());
+    const [ended] = await server.db.query<{ code: string; winner: string }>(
+      `select r.code, w.email as winner from public.receipts r join public.lots l on l.id = r.lot_id
+         join auth.users a on a.id = l.auctioneer_id join auth.users w on w.id = r.winner_id
+        where a.email = $1 and l.title = $2`,
+      [DEMO.auctioneer, DEMO.endedLotTitle],
+    );
+    expect(ended?.winner).toBe(DEMO.bidders[0]);
+    expect((await fetch(`${server.url}/api/receipts/${ended?.code ?? 'none'}`)).status).toBe(200);
+
+    const [tampered] = await server.db.query<{ id: string; settled: boolean }>(
+      `select l.id, l.settled_at is not null as settled
+         from public.lots l join auth.users a on a.id = l.auctioneer_id where a.email = $1 and l.title = $2`,
+      [DEMO.auctioneer, DEMO.tamperedLotTitle],
+    );
+    expect(tampered).toMatchObject({ settled: true });
+    const audit = (await (await fetch(`${server.url}/api/lots/${tampered?.id ?? 'none'}/audit`)).json()) as AuditReport;
+    expect(audit.headline.kind).toBe('tampered');
   });
 
   it('leaves another auctioneer\'s open lot with the same title alone', async () => {
