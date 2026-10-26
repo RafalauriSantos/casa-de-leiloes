@@ -183,3 +183,53 @@ section[aria-label="Sala do lote"] dl dd { text-align: left; font-family: "Fraun
 .history li.mine { background: var(--paper); font-weight: 600; }
 .history li small { color: var(--muted); }
 header nav a:first-child::before { content: ""; display: inline-block; width: 0.9rem; height: 0.9rem; margin-right: 0.5rem; background: var(--brass); transform: rotate(45deg); }
+
+/* The remaining screens of the Claude Design canvas: sign-in, wallet, my wins, receipt, audit and the auctioneer panel. */
+.auth-page { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(440px, 100%), 1fr)); min-height: 70vh; margin: -1.5rem -1rem -3rem; }
+.auth-aside { background: var(--ink); color: var(--paper); padding: 3rem 4rem; display: flex; flex-direction: column; justify-content: space-between; gap: 2rem; }
+.auth-aside p { margin: 0; color: var(--line); font-size: 1.05rem; }
+.auth-aside .auth-aside-title { font-family: "Fraunces", Georgia, serif; font-size: 2.6rem; line-height: 1.1; color: var(--paper); }
+.auth-aside .auth-aside-note { font-size: 0.9rem; }
+.auth-form { align-self: center; justify-self: center; width: 100%; max-width: 26rem; padding: 2.5rem 1.5rem; }
+.auth-form fieldset { border: 0; padding: 0; }
+.auth-form fieldset > legend { margin-bottom: 0.5rem; }
+.auth-form fieldset label { display: none; }
+.auth-form fieldset input[type="radio"] { position: absolute; opacity: 0; }
+.auth-form fieldset > label, .auth-form fieldset { position: relative; }
+.auth-form fieldset label:has(input[type="radio"]) { display: flex; flex-direction: column; border: 1px solid #b9af9b; padding: 0.8rem 1rem; cursor: pointer; background: #fff; font-weight: 600; color: var(--ink); }
+.auth-form fieldset label:has(input[type="radio"]:checked) { border: 2px solid var(--ink); padding: calc(0.8rem - 1px) calc(1rem - 1px); }
+.auth-form fieldset label:has(input[type="radio"]) small { font-weight: 400; color: var(--muted); }
+.auth-form fieldset div { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+.auth-form fieldset div label { flex: 1 1 10rem; }
+
+[aria-label="Saldos"] { display: grid; grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr)); gap: 0; border: 1px solid var(--line); background: var(--card); max-width: none; }
+[aria-label="Saldos"] > div { flex-direction: column; border: 0; border-right: 1px solid var(--line); padding: 1.2rem 1.4rem; }
+[aria-label="Saldos"] > div:last-child { border-right: 0; }
+[aria-label="Saldos"] dd { text-align: left; font-family: "Fraunces", Georgia, serif; font-size: 1.7rem; font-weight: 600; font-variant-numeric: tabular-nums; margin: 0.15rem 0 0; }
+form[aria-labelledby="deposit-title"] { max-width: 28rem; border: 1px solid var(--line); background: var(--card); padding: 1.6rem; }
+form[aria-labelledby="deposit-title"] h2 { margin: 0; font-size: 1.5rem; }
+.chips { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.chip { background: transparent; color: var(--ink); border: 1px solid #b9af9b; min-height: 2.5rem; font-weight: 500; }
+.chip:hover { border-color: var(--ink); }
+
+.my-lots { list-style: none; padding: 0; display: grid; gap: 0.9rem; }
+.my-lots li { background: var(--card); border: 1px solid var(--line); padding: 1rem 1.2rem; display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.9rem; }
+.my-lots li > a:first-child { font-family: "Fraunces", Georgia, serif; font-size: 1.25rem; color: var(--ink); }
+
+.receipt { position: relative; background: var(--card); border: 1px solid var(--ink); padding: 0.6rem; max-width: 56rem; margin: 0 auto; }
+.receipt::before { content: ""; position: absolute; inset: 0.6rem; border: 1px solid var(--brass); pointer-events: none; }
+.receipt > * { position: relative; }
+.receipt-seal { position: absolute; top: 2.2rem; right: 2.2rem; width: 4.5rem; height: 4.5rem; color: var(--brass); }
+.receipt { padding: 2.6rem 2.8rem; }
+.receipt h1 { font-size: 2.6rem; }
+.receipt .lot-hero { max-height: 22rem; width: 100%; }
+.receipt dl { max-width: none; }
+
+.audit-headline { background: var(--card); padding: 1.6rem 2rem; }
+.audit-headline h2 { font-size: 2rem; }
+.audit-results { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); gap: 0.9rem; }
+.audit-results li { background: var(--card); border: 1px solid var(--line); padding: 1rem 1.2rem; margin: 0; }
+
+section[aria-label="Painel do leiloeiro"] > h1 { margin-bottom: 1rem; }
+section[aria-label="Painel do leiloeiro"] > section, section[aria-label="Painel do leiloeiro"] > form { background: var(--card); border: 1px solid var(--line); padding: 1.4rem; margin-bottom: 1.2rem; }
+.catalog-results li img { border-radius: 2px; }

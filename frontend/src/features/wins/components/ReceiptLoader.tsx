@@ -29,7 +29,12 @@ export function ReceiptLoader({ code }: { code: string }) {
       {state.status === 'loading' && <p>Carregando o comprovante…</p>}
       {state.status === 'error' && <p role="alert">{state.message}</p>}
       {state.status === 'ready' && (
-        <>
+        <div className="receipt">
+          <svg className="receipt-seal" viewBox="0 0 76 76" aria-hidden="true" fill="none">
+            <circle cx="38" cy="38" r="35" stroke="currentColor" strokeWidth="1.5" />
+            <circle cx="38" cy="38" r="29" stroke="currentColor" strokeWidth="1" />
+            <path d="M38 20l18 18-18 18-18-18z" fill="currentColor" />
+          </svg>
           <img className="lot-hero" src={state.receipt.imageUrl} alt={state.receipt.lotTitle} />
           <h2>{state.receipt.lotTitle}</h2>
           <dl>
@@ -42,7 +47,7 @@ export function ReceiptLoader({ code }: { code: string }) {
             <Link to={`/auditoria/${state.receipt.lotId}?head=${state.receipt.headHash}`}>Conferir este lote na auditoria pública</Link>
           </p>
           <p className="audit-note">Para compartilhar, envie o endereço desta página: ele abre o comprovante sem login.</p>
-        </>
+        </div>
       )}
     </section>
   );

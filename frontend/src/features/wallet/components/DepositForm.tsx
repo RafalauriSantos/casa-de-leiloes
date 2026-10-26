@@ -9,6 +9,7 @@ interface Props {
   onDeposited: (wallet: WalletResponse) => void;
 }
 
+const QUICK_AMOUNTS = [100, 250, 500, 1000];
 const LIMITS = `${formatBRL(DEPOSIT_MIN_CENTS)} a ${formatBRL(DEPOSIT_MAX_CENTS)}`;
 
 export function DepositForm({ token, onDeposited }: Props) {
@@ -56,6 +57,13 @@ export function DepositForm({ token, onDeposited }: Props) {
         Valor (R$)
         <input name="amount" value={amount} onChange={(e) => { setAmount(e.target.value); }} inputMode="decimal" autoComplete="off" placeholder="250,00" required />
       </label>
+      <div role="group" aria-label="Valores rápidos" className="chips">
+        {QUICK_AMOUNTS.map((cents) => (
+          <button key={cents} type="button" className="chip" onClick={() => { setAmount(`${String(cents)},00`); }}>
+            {formatBRL(cents * 100)}
+          </button>
+        ))}
+      </div>
       <small>Depósito simulado, de {LIMITS} por vez. Nenhum pagamento real é feito.</small>
       {error && <p role="alert">{error}</p>}
       {notice && <p role="status">{notice}</p>}
