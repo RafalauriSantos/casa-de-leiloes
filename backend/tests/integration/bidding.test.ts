@@ -137,14 +137,17 @@ describe('POST /api/lots/:id/bids: the rules and their exact messages', () => {
     await server.db.query("update public.lots set starts_at = now() + interval '1 hour', ends_at = now() + interval '2 hours' where id = $1", [lot.id]);
     const response = await bid(lot.id, await bidder(), 50_000);
     expect(response.status).toBe(409);
-    expect((await reason(response)).code).toBe('lot_not_started');
+    const body = await reason(response);
+    expect(body.code).toBe('lot_not_started');
+    expect(body.message).toBe('O lote ainda não começou.');
   });
 
   it('refuses a lot that has ended with lot_ended', async () => {
     const lot = await liveLot();
     await server.db.query("update public.lots set starts_at = now() - interval '2 hours', ends_at = now() - interval '1 minute' where id = $1", [lot.id]);
-    const response = await bid(lot.id, await bidder(), 50_000);
-    expect((await reason(response)).code).toBe('lot_ended');
+    const body = await reason(await bid(lot.id, await bidder(), 50_000));
+    expect(body.code).toBe('lot_ended');
+    expect(body.message).toBe('Este lote já encerrou.');
   });
 
   it('refuses a cancelled lot with lot_cancelled', async () => {
