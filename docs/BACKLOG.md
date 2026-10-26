@@ -25,12 +25,7 @@ mutation per rule and the owner's "pode mergear"; **normal** needs one reviewer 
 | Owner release of a lot whose history fails verification | 7.2 | D20 | #12, #25 |
 | Decision: no read-back of the anchor before payment | | D21 | #26 |
 | AO VIVO badge on live lots | 2.1 | | #27 |
-
-## In review
-
-| Item | Criteria | Risk | PR |
-|---|---|---|---|
-| The Ao vivo dot only while a lot is open; test runs leave no open lot behind | 2.1, 2.5 | normal | #28 |
+| The Ao vivo dot only while a lot is open; test runs leave no open lot behind | 2.1, 2.5 | | #28 |
 
 ## To do (by priority)
 
