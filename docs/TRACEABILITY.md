@@ -19,7 +19,7 @@ Each criterion of the brief's journeys (defined in phase 2 of the delivery proce
 | 1.1 search an item in the external API | `catalog.test.ts` ("returns the public-domain items with an image ..."); `lots.test.tsx` ("publishes a lot from a catalog item and manages it") | Covered |
 | 1.2 create a lot with validations | `backend/tests/integration/lots.test.ts` (creation and refusals); `backend/src/modules/lots/rules.test.ts`; `lots.test.tsx` ("refuses inverted times with the reason ...") | Covered |
 | 1.3 item data copied into the database | `lots.test.ts` ("keeps the copy: the lot keeps its item even if the catalog later fails") | Covered |
-| 1.4 search with the API down shows a clear error | `catalog.test.ts` (503 `catalog_unavailable` cases) | Partial: the API answer is tested, the message on the screen is not |
+| 1.4 search with the API down shows a clear error | `catalog.test.ts` (503 `catalog_unavailable` cases); `frontend/src/features/lots/catalog-states.test.tsx` ("a failed item search says so on the screen, and a new search recovers") | Covered |
 | 1.5 edit only before the start and without bids | `lots.test.ts` (edit cases, 409 `lot_not_editable`); `rules.test.ts` | Covered |
 | 1.6 cancel only without bids | `lots.test.ts` (cancel cases); `rules.test.ts` | Covered |
 | 1.7 result of each ended lot and the total received | `backend/tests/integration/auctioneer-results.test.ts` (sold for how much, no bids, pending settlement, the total without other auctioneers' lots, 403 for a bidder); `frontend/src/features/lots/results.test.tsx` ("shows what each ended lot sold for, its no-bids state, and the total received") | Covered |
@@ -31,10 +31,10 @@ Each criterion of the brief's journeys (defined in phase 2 of the delivery proce
 | Criterion | Tests | Status |
 |---|---|---|
 | 2.1 live, scheduled and ended tabs; cancelled hidden | `lots.test.ts` ("lists lots by state and hides cancelled ones"); `frontend/src/features/lots/showcase.test.tsx`; `LotCard.test.tsx` | Covered |
-| 2.2 card with image, title, current bid and time | `lots.test.tsx` ("lists a published lot under its state ...") | Partial: not every field of the card is asserted |
+| 2.2 card with image, title, current bid and time | `frontend/src/features/lots/showcase.test.tsx` ("shows the starting bid until a bid arrives, then the current bid"); `lots.test.tsx` ("lists a published lot under its state ...") | Covered |
 | 2.3 search and filter | `lots.test.ts` ("searches by title, ignoring case ..."; "refuses an unknown status filter with 422") | Covered |
 | 2.4 works with the external API down | `catalog.test.ts` ("keeps working for everything else when the catalog is down") | Covered |
-| 2.5 loading, empty and error states | `lots.test.tsx` ("shows the showcase loading and an empty state ...", "answers a missing lot with a message, not a blank page") | Partial: the showcase error state has no test |
+| 2.5 loading, empty and error states | `lots.test.tsx` ("shows the showcase loading and an empty state ...", "answers a missing lot with a message, not a blank page"); `catalog-states.test.tsx` ("a failed list shows the error with a retry, and the retry shows the list again") | Covered |
 
 ## J3: wallet (slice 1)
 
