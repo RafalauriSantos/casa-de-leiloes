@@ -1,6 +1,6 @@
 # Casa de Leilões
 
-Casa de leilões online (teste técnico Verzel "Elite Dev"). **Em construção**: hoje existem cadastro, login, papéis, carteira com depósito simulado, e a vitrine com lotes publicados a partir do catálogo público do The Met. Lances, comprovante e auditoria entram nas próximas etapas.
+Casa de leilões online (teste técnico Verzel "Elite Dev"). Hoje existem cadastro, login, papéis, carteira com depósito simulado, vitrine com lotes publicados a partir do catálogo público do The Met, lances ao vivo, comprovante de arremate e auditoria pública do histórico de lances.
 
 Decisões de design e seus tradeoffs: [docs/DECISIONS.md](docs/DECISIONS.md). Onde e como a IA foi usada, e o que foi revisado: [docs/AI-USAGE.md](docs/AI-USAGE.md).
 
@@ -41,6 +41,15 @@ make e2e-live   # bate na API real do The Met (não roda no ci; use antes de pub
 - Âncora pública do histórico (D21): `ANCHOR_MODE` é obrigatório (`github` em produção, `off` no desenvolvimento local e nos testes; sem ele o servidor não sobe). Com `github`, também são obrigatórios `ANCHOR_GITHUB_REPO` (`dono/repositorio`) e `ANCHOR_GITHUB_TOKEN` (token do GitHub só para esse repositório, permissão *Contents* com escrita; na Vercel, marcado como sensível). Opcionais: `ANCHOR_GITHUB_BRANCH` (padrão `main`) e `ANCHOR_GITHUB_API_URL`. Nos deploys de *Preview*, use `ANCHOR_MODE=off`. O mesmo cron de cada minuto liquida os lotes e depois publica as pontas pendentes; se uma publicação falhar ou ficar pendente por 10 minutos ou mais, o cron responde HTTP 500 (ninguém é avisado ainda por e-mail ou mensagem: o registro fica em `net._http_response` do Supabase). Ao ligar a âncora pela primeira vez, os lotes antigos com lances são publicados aos poucos, e o cron responde 500 por alguns minutos até terminar.
 - No Supabase: aplicar `supabase/migrations` em ordem (arquivo por arquivo, ou `npx supabase db push --db-url "$DATABASE_URL"`), desligar "Confirm email" (Auth > Sign In / Providers) e manter as chaves de assinatura assimétricas.
 - Encerramento agendado (a cada minuto): `DATABASE_URL=... CRON_SECRET=... APP_URL=https://<dominio> npx tsx backend/scripts/schedule-close-due.ts`. Guarda URL e segredo no Vault do Supabase. Um lote vencido também é liquidado quando alguém o abre, dá lance nele ou consulta a carteira de quem lidera. O endpoint do cron liquida os lotes vencidos que ninguém abriu: o vencedor paga, o leiloeiro recebe, quem foi superado já teve o valor liberado e um comprovante fica gravado. Um lote que não confere com o próprio histórico não é liquidado e a resposta do endpoint vem com HTTP 500 e o contador `failed` maior que zero. Um lote com falha continua vencido e é tentado de novo a cada minuto, até que a falha seja corrigida.
+
+### Cabeçalhos de segurança
+
+Definidos em `vercel.json` (`headers`) e aplicados a todas as respostas, do site e da API:
+
+- `Content-Security-Policy`: scripts e estilos só do próprio site (sem `unsafe-inline`); imagens de qualquer `https:` (os itens vêm de acervos públicos); conexões com o próprio site e com `*.supabase.co`; sem `frame-ancestors` de outras origens e sem `object-src`.
+- `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy` (câmera, microfone, localização e pagamento desligados).
+
+Limite conhecido: a sessão do Supabase fica no `localStorage` (padrão do Supabase Auth). A CSP reduz o risco de um script injetado, mas não impede que um script já presente na página leia essa sessão.
 
 ## Arquitetura e domínio (DDD, na medida do tamanho do projeto)
 

@@ -1,7 +1,9 @@
 import pg from 'pg';
+import { DEMO } from '../../src/seed/demo';
 
 /**
  * Cancels the unsettled lots created since `since` in the test database, so the next run starts with no open lot.
+ * The demo auctioneer's lots are kept: `make seed` made them and the demo needs them open.
  * Refuses to touch any database that is not on this machine: a test run must never cancel real lots.
  */
 export async function cancelLotsSince(databaseUrl: string | undefined, since: Date): Promise<void> {
@@ -17,8 +19,9 @@ export async function cancelLotsSince(databaseUrl: string | undefined, since: Da
   await client.connect();
   try {
     await client.query(
-      "update public.lots set status = 'cancelled' where status = 'active' and settled_at is null and created_at >= $1",
-      [since],
+      `update public.lots set status = 'cancelled' where status = 'active' and settled_at is null and created_at >= $1
+         and auctioneer_id not in (select id from auth.users where email = $2)`,
+      [since, DEMO.auctioneer],
     );
   } finally {
     await client.end();
