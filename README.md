@@ -31,6 +31,15 @@ make e2e-live   # bate na API real do The Met (não roda no ci; use antes de pub
 - No Supabase: aplicar `supabase/migrations` em ordem (arquivo por arquivo, ou `npx supabase db push --db-url "$DATABASE_URL"`), desligar "Confirm email" (Auth > Sign In / Providers) e manter as chaves de assinatura assimétricas.
 - Encerramento agendado (a cada minuto): `DATABASE_URL=... CRON_SECRET=... APP_URL=https://<dominio> npx tsx backend/scripts/schedule-close-due.ts`. Guarda URL e segredo no Vault do Supabase. Um lote vencido também é liquidado quando alguém o abre, dá lance nele ou consulta a carteira de quem lidera. O endpoint do cron liquida os lotes vencidos que ninguém abriu: o vencedor paga, o leiloeiro recebe, quem foi superado já teve o valor liberado e um comprovante fica gravado. Um lote que não confere com o próprio histórico não é liquidado e a resposta do endpoint vem com HTTP 500 e o contador `failed` maior que zero. Um lote com falha continua vencido e é tentado de novo a cada minuto, até que a falha seja corrigida.
 
+### Cabeçalhos de segurança
+
+Definidos em `vercel.json` (`headers`) e aplicados a todas as respostas, do site e da API:
+
+- `Content-Security-Policy`: scripts e estilos só do próprio site (sem `unsafe-inline`); imagens de qualquer `https:` (os itens vêm de acervos públicos); conexões com o próprio site e com `*.supabase.co`; sem `frame-ancestors` de outras origens e sem `object-src`.
+- `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy` (câmera, microfone, localização e pagamento desligados).
+
+Limite conhecido: a sessão do Supabase fica no `localStorage` (padrão do Supabase Auth). A CSP reduz o risco de um script injetado, mas não impede que um script já presente na página leia essa sessão.
+
 ## Arquitetura e domínio (DDD, na medida do tamanho do projeto)
 
 O código segue as ideias do DDD que valem a pena num projeto desse tamanho, sem as camadas que só adicionariam código:
