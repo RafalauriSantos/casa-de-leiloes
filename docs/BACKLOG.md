@@ -28,7 +28,9 @@ mutation per rule and the owner's "pode mergear"; **normal** needs one reviewer 
 | The Ao vivo dot only while a lot is open; test runs leave no open lot behind | 2.1, 2.5 | | #28 |
 | "Meus arremates" and the shareable win receipt | 6.1 to 6.4 | high | #30 |
 | Demo seed: one auctioneer, two funded bidders, one live lot with bids (D9c) | 8.1 | normal | #31 |
-| Auctioneer panel: result of each ended lot and the total received | 1.7 | normal | (PR pending) |
+| Auctioneer panel: result of each ended lot and the total received | 1.7 | normal | #33 |
+| Receipt head wraps on phones (no sideways scroll in the live room) | | normal | #32 |
+| Countdown in days when more than a day is left | | normal | #34 |
 
 ## To do (by priority)
 
