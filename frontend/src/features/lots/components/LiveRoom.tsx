@@ -12,7 +12,6 @@ const POLL_MS = 3_000;
 
 type Load = { status: 'loading' } | { status: 'error'; message: string } | { status: 'ready'; room: LiveLot };
 
-
 export function LiveRoom({ lotId }: { lotId: string }) {
   const auth = useAuth();
   const token = auth.status === 'signed-in' ? auth.token : undefined;
