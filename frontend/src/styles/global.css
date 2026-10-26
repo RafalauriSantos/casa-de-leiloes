@@ -270,3 +270,8 @@ section[aria-label="Painel do leiloeiro"] article > button { margin-top: 0.4rem;
 }
 .auth-form, .auth-aside, .auth-page { box-sizing: border-box; }
 .auth-form { min-width: 0; }
+.steps { display: flex; flex-wrap: wrap; gap: 0.5rem 2rem; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 0.6rem 0; margin-bottom: 1.2rem; }
+.steps a { display: inline-flex; align-items: center; gap: 0.6rem; color: var(--ink); text-decoration: none; font-weight: 500; min-height: 2.75rem; }
+.steps b { width: 1.9rem; height: 1.9rem; border-radius: 50%; border: 1px solid var(--ink); display: inline-flex; align-items: center; justify-content: center; font-family: "Fraunces", Georgia, serif; font-size: 0.95rem; font-weight: 400; }
+[aria-label="Saldos"] > div:first-child dd { font-size: 3rem; }
+@media (max-width: 600px) { [aria-label="Saldos"] > div:first-child dd { font-size: 2.4rem; } }

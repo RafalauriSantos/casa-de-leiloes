@@ -21,9 +21,16 @@ export function AuctioneerPanel({ token }: { token: string }) {
   return (
     <section aria-label="Painel do leiloeiro">
       <h1>Painel do leiloeiro</h1>
-      <CatalogSearch token={token} onPick={(picked) => { setItem(picked); setNotice(undefined); }} />
+      <nav aria-label="Etapas do painel" className="steps">
+        <a href="#buscar-item"><b>1</b>Buscar item</a>
+        <a href="#novo-lote"><b>2</b>Configurar o lote</a>
+        <a href="#meus-lotes"><b>3</b>Meus lotes</a>
+      </nav>
+      <div id="buscar-item">
+        <CatalogSearch token={token} onPick={(picked) => { setItem(picked); setNotice(undefined); }} />
+      </div>
       {item && (
-        <section aria-labelledby="new-lot-title">
+        <section aria-labelledby="new-lot-title" id="novo-lote">
           <h2 id="new-lot-title">2. Novo lote a partir de "{item.title}"</h2>
           <img src={item.imageUrl} alt={item.title} width={160} />
           <LotForm
@@ -40,7 +47,9 @@ export function AuctioneerPanel({ token }: { token: string }) {
         </section>
       )}
       {notice && <p role="status">{notice}</p>}
-      <OwnLots key={version} token={token} />
+      <div id="meus-lotes">
+        <OwnLots key={version} token={token} />
+      </div>
     </section>
   );
 }
