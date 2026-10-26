@@ -93,7 +93,7 @@ Each criterion of the brief's journeys (defined in phase 2 of the delivery proce
 
 | Criterion | Tests | Status |
 |---|---|---|
-| 8.1 seeds: one auctioneer, two bidders, one live lot with bids, credentials in the README | None | **Open** |
+| 8.1 seeds: one auctioneer, two bidders, one live lot with bids, credentials in the README | `backend/tests/integration/seed.test.ts` ("creates an auctioneer, two funded bidders and one live lot with bids"; "running it again creates nothing new"); the README lists the accounts | Covered. The end-to-end run against the deployed URL is criterion 8.2 |
 | 8.2 public deploy | Checked after each merge (the deploy is READY and the site answers) | Covered by hand; the end-to-end script against the deployed URL is open |
 | 8.3 README with the steps and the unexpected behaviors | README | Partial: the final review is pending |
 | 8.4 one error shape, never a fake success | `failures.test.ts`; `catalog.test.ts` (503 cases); the `code` assertions across the integration tests | Covered |

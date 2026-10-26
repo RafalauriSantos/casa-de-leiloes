@@ -4,7 +4,7 @@
 audit:
 	npm audit --omit=dev --audit-level=high
 
-.PHONY: audit install lint typecheck test build ci dev dev-api dev-web db-up db-down db-reset e2e-live
+.PHONY: audit install lint typecheck test build ci dev dev-api dev-web db-up db-down db-reset e2e-live seed
 
 install:
 	npm ci
@@ -30,6 +30,9 @@ dev:
 
 dev-api:
 	./scripts/with-local-env.sh npm run dev -w @casa/backend
+
+seed:
+	./scripts/with-local-env.sh sh -c 'cd backend && node --import tsx scripts/seed.ts'
 
 dev-web:
 	./scripts/with-local-env.sh npm run dev -w @casa/frontend

@@ -26,13 +26,13 @@ mutation per rule and the owner's "pode mergear"; **normal** needs one reviewer 
 | Decision: no read-back of the anchor before payment | | D21 | #26 |
 | AO VIVO badge on live lots | 2.1 | | #27 |
 | The Ao vivo dot only while a lot is open; test runs leave no open lot behind | 2.1, 2.5 | | #28 |
-| "Meus arremates" and the shareable win receipt | 6.1 to 6.4 | high | (PR pending) |
+| "Meus arremates" and the shareable win receipt | 6.1 to 6.4 | high | #30 |
+| Demo seed: one auctioneer, two funded bidders, one live lot with bids (D9c) | 8.1 | normal | (PR pending) |
 
 ## To do (by priority)
 
 | # | Item | Criteria | Risk | Done when |
 |---|---|---|---|---|
-| B2 | Seed | 8.1 | normal | `make seed` creates one auctioneer, two bidders with balance and one live lot with bids, without duplicating on a second run; the README lists the credentials |
 | B3 | Auctioneer panel: result of each ended lot and the total received | 1.7 | normal | 1.7 is Covered |
 | B4 | End-to-end script against the deployed URL | 8.2 | normal | a script walks sign-up, bid and receipt on the production URL and fails with a clear message when a step breaks |
 | B5 | Countdown from the server clock | 4.1, 4.9 | normal | 4.1 and 4.9 are Covered |
