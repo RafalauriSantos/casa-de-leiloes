@@ -36,9 +36,24 @@ jobs:
       - name: Install
         if: steps.scope.outputs.code == 'true'
         run: npm ci
+      # The Supabase containers are big downloads. Their images are kept in the Actions cache between runs, so a run
+      # loads them from the cache instead of pulling them again. The key follows the lockfile, which pins the Supabase CLI.
+      - name: Restore Supabase images
+        id: supabase-images
+        if: steps.scope.outputs.code == 'true'
+        uses: actions/cache@v4
+        with:
+          path: /tmp/supabase-images.tar
+          key: supabase-images-${{ hashFiles('package-lock.json') }}
+      - name: Load cached Supabase images
+        if: steps.scope.outputs.code == 'true' && steps.supabase-images.outputs.cache-hit == 'true'
+        run: docker load -i /tmp/supabase-images.tar
       - name: Start local Supabase (real Postgres and Auth)
         if: steps.scope.outputs.code == 'true'
         run: npx supabase start
+      - name: Save Supabase images for the next run
+        if: steps.scope.outputs.code == 'true' && steps.supabase-images.outputs.cache-hit != 'true'
+        run: docker save $(docker images --format '{{.Repository}}:{{.Tag}}' | grep -v '<none>') -o /tmp/supabase-images.tar
       - name: make ci
         if: steps.scope.outputs.code == 'true'
         run: make ci
