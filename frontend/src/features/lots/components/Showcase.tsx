@@ -47,7 +47,14 @@ export function Showcase() {
       </form>
       <nav aria-label="Estado dos lotes">
         {TABS.map((item) => (
-          <button key={item.value} type="button" aria-pressed={tab === item.value} onClick={() => { setTab(item.value); }}>
+          <button
+            key={item.value}
+            type="button"
+            className={item.value === 'live' ? 'tab-live' : undefined}
+            aria-pressed={tab === item.value}
+            onClick={() => { setTab(item.value); }}
+          >
+            {item.value === 'live' && <span className="live-dot" aria-hidden="true" />}
             {item.label}
           </button>
         ))}
