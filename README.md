@@ -25,6 +25,7 @@ make ci         # lint, tipos, build, testes com cobertura e npm audit (a única
 make e2e-live   # bate na API real do The Met (não roda no ci; use antes de publicar)
 ```
 
+- **Com Docker Compose (opcional):** depois de `make db-up`, rode `make compose` no lugar de `make dev`. Ele sobe a API (`localhost:8787`) e o site (`localhost:5173`) em contêineres, com as variáveis lidas do Supabase local. O Supabase continua pelo próprio CLI (também em Docker), e o Node continua necessário para ele. Os contêineres usam a rede do host: no Linux funciona direto; no Docker Desktop (Mac/Windows), ative "host networking" nas configurações (versão 4.34 ou mais nova). Para parar: `./scripts/with-local-env.sh docker compose down`.
 - `make test`, `make dev` e `make ci` exigem `make db-up` antes (portas 54321 da API/Auth e 54322 do Postgres).
 - `make db-reset` recria o banco local do zero a partir das migrations.
 - **Dados de demonstração:** com a API no ar (`make dev`), rode `make seed` em outro terminal. Ele cria um leiloeiro, dois licitantes com saldo e três lotes, sem duplicar nada numa segunda execução: um lote ao vivo com três lances; um lote encerrado que o licitante 1 arrematou, com comprovante (aparece em "Meus arremates"); e um lote encerrado cujo primeiro lance o seed alterou direto no banco, para a auditoria mostrar "adulterado" sem ninguém precisar mexer no banco. Contas (senha de demonstração `demo-leilao-2026`, só para estas contas):

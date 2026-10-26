@@ -4,7 +4,7 @@
 audit:
 	npm audit --omit=dev --audit-level=high
 
-.PHONY: audit install lint typecheck test build ci dev dev-api dev-web db-up db-down db-reset e2e-live seed e2e-prod
+.PHONY: audit install lint typecheck test build ci dev dev-api dev-web compose db-up db-down db-reset e2e-live seed e2e-prod
 
 install:
 	npm ci
@@ -39,6 +39,10 @@ seed:
 
 dev-web:
 	./scripts/with-local-env.sh npm run dev -w @casa/frontend
+
+# B20: the API and the site in Docker Compose, on top of `make db-up`.
+compose:
+	./scripts/with-local-env.sh docker compose up --build
 
 db-up:
 	npx supabase start
