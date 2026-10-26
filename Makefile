@@ -20,7 +20,7 @@ build:
 
 # Integration tests need the local Supabase stack (make db-up).
 test:
-	./scripts/with-local-env.sh npm test
+	./scripts/with-local-env.sh sh -c 'start=$$(date -u +%Y-%m-%dT%H:%M:%SZ); npm test; status=$$?; (cd backend && node --import tsx tests/cancel-run-lots.ts "$$start"); exit $$status'
 
 # The only definition of green. GitHub Actions runs exactly this.
 ci: lint typecheck build test audit
