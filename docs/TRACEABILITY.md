@@ -57,7 +57,7 @@ Each criterion of the brief's journeys (defined in phase 2 of the delivery proce
 | 4.6 | Anti-sniping: a bid in the last two minutes extends the end by two minutes | `rules.test.ts` ("anti-sniping ..." block, 6 cases); `bidding.test.ts` ("a lot ending in 90 seconds gets exactly two more minutes") | Covered |
 | 4.7 | Two bids at the same time: only one leads | `bidding.test.ts` ("one bidder firing ten requests at once ..."; "20 bidders at the same instant ...") | Covered |
 | 4.8 | Same balance in two lots at the same time never goes negative | `bidding.test.ts` ("one balance in two lots at once ..."; "bids crossing between two lots ...") | Covered |
-| 4.9 | Server clock: the countdown uses the server's time, not the browser's | 4.9 Server clock: the countdown uses the server's time, not the browser's | `frontend/src/features/lots/clock.test.ts` (the offset from the server time and the request midpoint; a browser clock an hour off still shows 10 minutes left; zero or less once the server says it ended). The sign was checked by mutation | Covered |
+| 4.9 | Server clock: the countdown uses the server's time, not the browser's | `frontend/src/features/lots/clock.test.ts` (the offset from the server time and the request midpoint; a browser clock an hour off still shows 10 minutes left; zero or less once the server says it ended). The sign was checked by mutation | Covered |
 
 ## J5: closing and settlement (slice 4)
 
