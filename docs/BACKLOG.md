@@ -29,15 +29,17 @@ mutation per rule and the owner's "pode mergear"; **normal** needs one reviewer 
 | "Meus arremates" and the shareable win receipt | 6.1 to 6.4 | high | #30 |
 | Demo seed: one auctioneer, two funded bidders, one live lot with bids (D9c) | 8.1 | normal | #31 |
 | Auctioneer panel: result of each ended lot and the total received | 1.7 | normal | #33 |
-| End-to-end script against the published site (`make e2e-prod`) | 8.2 | normal | (PR pending) |
+| End-to-end script against the published site (`make e2e-prod`) | 8.2 | normal | #36 |
 | Receipt head wraps on phones (no sideways scroll in the live room) | | normal | #32 |
 | Countdown in days when more than a day is left | | normal | #34 |
+| Countdown from the server clock (clock arithmetic in pure functions, tested) | 4.1, 4.9 | normal | #39 (review and CI in progress) |
+| CI on pull requests only, cancel superseded runs, skip tests for docs-only changes | | normal | #37 |
+| Supabase image cache (added in #38, removed in #40: it missed on every new branch) | | normal | #38, #40 |
 
 ## To do (by priority)
 
 | # | Item | Criteria | Risk | Done when |
 |---|---|---|---|---|
-| B5 | Countdown from the server clock | 4.1, 4.9 | normal | 4.1 and 4.9 are Covered |
 | B6 | Exact messages for "not started" and "ended" bid refusals | 4.3 | normal | 4.3 is Covered |
 | B7 | Clear message on the screen when the catalog is down | 1.4 | normal | 1.4 is Covered |
 | B8 | Showcase card fields and error state | 2.2, 2.5 | normal | 2.2 and 2.5 are Covered |
