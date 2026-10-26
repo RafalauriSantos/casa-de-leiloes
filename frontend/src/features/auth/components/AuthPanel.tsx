@@ -84,7 +84,7 @@ export function AuthPanel() {
         {mode === 'signin' ? 'Não tenho conta' : 'Já tenho conta'}
       </button>
       {mode === 'signin' && (
-        <section aria-label="Contas de demonstração">
+        <section aria-label="Contas de demonstração" className="demo-accounts">
           <p>Conhecer sem criar conta:</p>
           <button type="button" className="link" disabled={busy} onClick={() => void enterAs(DEMO_ACCOUNTS.auctioneer)}>
             Entrar como leiloeiro (demo)
