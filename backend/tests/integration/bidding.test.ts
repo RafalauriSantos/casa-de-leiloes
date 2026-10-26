@@ -170,13 +170,12 @@ describe('POST /api/lots/:id/bids: the rules and their exact messages', () => {
     expect((await wallet(ana)).committedCents).toBe(0);
   });
 
-  it('a locked lot stops editing and cancelling once it has bids (409 lot_not_editable)', async () => {
+  // Cancelling a lot with bids is allowed and refunds the leader (B19): see cancel-refund.test.ts.
+  it('a lot stops being editable once it has bids (409 lot_not_editable)', async () => {
     const lot = await liveLot();
     await bid(lot.id, await bidder(), 50_000);
     const edit = await fetch(`${server.url}/api/lots/${lot.id}`, { method: 'PATCH', headers: json(auctioneer), body: JSON.stringify(lotBody(await dbNow(server))) });
     expect(edit.status).toBe(409);
-    const cancel = await fetch(`${server.url}/api/lots/${lot.id}/cancel`, { method: 'POST', headers: json(auctioneer) });
-    expect(cancel.status).toBe(409);
   });
 });
 
