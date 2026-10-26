@@ -14,9 +14,9 @@ export function catalogRoutes(deps: { db: Queryable; config: Config }): Hono<Aut
     authMiddleware(config),
     requireRole(db, 'auctioneer', 'Apenas leiloeiros buscam itens para lotes.'),
     async (c) => {
-      const query = catalogSearchQuery.safeParse({ q: c.req.query('q') ?? '' });
+      const query = catalogSearchQuery.safeParse({ q: c.req.query('q') ?? '', page: c.req.query('page') ?? '1' });
       if (!query.success) throw new AppError('validation_error', query.error.issues.map((issue) => issue.message).join(' '));
-      return c.json(await searchItems(config.metApiUrl, query.data.q));
+      return c.json(await searchItems(config.metApiUrl, query.data.q, query.data.page));
     },
   );
 }

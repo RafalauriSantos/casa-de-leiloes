@@ -6,7 +6,7 @@ import { fetchItem, searchItems } from '../src/modules/catalog/met-client';
 
 const BASE = 'https://collectionapi.metmuseum.org/public/collection';
 
-const items = await searchItems(BASE, 'vase');
+const { items } = await searchItems(BASE, 'vase', 1);
 if (items.length === 0) throw new Error('live check: the Met returned no public-domain items with images for "vase"');
 for (const item of items) {
   if (!item.imageUrl.startsWith('https://')) throw new Error(`live check: item ${item.externalId} has no https image`);

@@ -1,4 +1,4 @@
-import type { AuctioneerSummary, BidAccepted, CreateLotInput, ItemSummary, LiveLot, LotDetail, LotInput, LotSummary, OwnLot } from '@casa/contracts';
+import type { AuctioneerSummary, BidAccepted, CatalogPage, CreateLotInput, LiveLot, LotDetail, LotInput, LotSummary, OwnLot } from '@casa/contracts';
 import { apiFetch } from '@/lib/api-client';
 
 export type ShowcaseStatus = 'live' | 'scheduled' | 'ended';
@@ -15,8 +15,8 @@ export function fetchLot(id: string): Promise<LotDetail> {
   return apiFetch<LotDetail>(`/api/lots/${id}`);
 }
 
-export function searchCatalog(token: string, q: string): Promise<ItemSummary[]> {
-  return apiFetch<ItemSummary[]>(`/api/catalog/search?${new URLSearchParams({ q }).toString()}`, { token });
+export function searchCatalog(token: string, q: string, page: number): Promise<CatalogPage> {
+  return apiFetch<CatalogPage>(`/api/catalog/search?${new URLSearchParams({ q, page: String(page) }).toString()}`, { token });
 }
 
 export function fetchAuctioneerSummary(token: string): Promise<AuctioneerSummary> {

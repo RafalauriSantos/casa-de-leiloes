@@ -1,3 +1,4 @@
+import type { CatalogPage } from '@casa/contracts';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { signUpUser, type TestUser } from '../helpers/auth';
 import { createAuctioneer } from '../helpers/lots';
@@ -20,10 +21,12 @@ afterAll(async () => {
   await met.close();
 });
 
-const search = (q: string | null, user: TestUser | 'anonymous' = auctioneer) => {
-  const url = q === null ? `${server.url}/api/catalog/search` : `${server.url}/api/catalog/search?${new URLSearchParams({ q }).toString()}`;
-  return fetch(url, { headers: user === 'anonymous' ? {} : { Authorization: `Bearer ${user.token}` } });
+const search = (q: string | null, user: TestUser | 'anonymous' = auctioneer, page?: number) => {
+  const params = new URLSearchParams({ ...(q === null ? {} : { q }), ...(page === undefined ? {} : { page: String(page) }) });
+  return fetch(`${server.url}/api/catalog/search?${params.toString()}`, { headers: user === 'anonymous' ? {} : { Authorization: `Bearer ${user.token}` } });
 };
+
+type SearchPage = CatalogPage;
 
 describe('GET /api/catalog/search (auctioneers only)', () => {
   it('refuses an anonymous visitor with 401', async () => {
@@ -44,7 +47,7 @@ describe('GET /api/catalog/search (auctioneers only)', () => {
   it('returns the public-domain items with an image, as the catalog presents them', async () => {
     const response = await search('vase');
     expect(response.status).toBe(200);
-    const items = (await response.json()) as Array<{ externalId: string; title: string; imageUrl: string; sourceUrl: string; attributes: { artist: string | null } }>;
+    const { items } = (await response.json()) as SearchPage;
     expect(items.length).toBeGreaterThanOrEqual(5);
     for (const item of items) {
       expect(item.imageUrl).toMatch(/^https:\/\//);
@@ -60,7 +63,40 @@ describe('GET /api/catalog/search (auctioneers only)', () => {
   it('answers an empty result for a query with no matches', async () => {
     const response = await search('nothing-matches-this');
     expect(response.status).toBe(200);
-    expect(await response.json()).toEqual([]);
+    expect(await response.json()).toEqual({ items: [], total: 0, page: 1, pages: 0, hasNext: false });
+  });
+
+  it('pages through every result: page 2 holds the next twelve of the search, and the total is the whole collection', async () => {
+    const response = await search('vase', auctioneer, 2);
+    expect(response.status).toBe(200);
+    const page = (await response.json()) as SearchPage;
+    expect(page.page).toBe(2);
+    expect(page.total).toBe(9229);
+    expect(page.pages).toBe(770);
+    expect(page.hasNext).toBe(true);
+    // The Met's own first object of page 2 (the search's 13th id) is in it; the first page's ids are not.
+    expect(page.items.map((i) => i.externalId)).toContain('9283');
+    expect(page.items.map((i) => i.externalId)).not.toContain('205482');
+  });
+
+  it('answers an empty page with no next page past the last one, without asking the catalog for any item', async () => {
+    const response = await search('vase', auctioneer, 800);
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ items: [], total: 9229, page: 800, pages: 770, hasNext: false });
+  });
+
+  it('answers the ninth page from the Met\'s own answer for that page: the objects it has an image for, and no more', async () => {
+    const response = await search('vase', auctioneer, 9);
+    const page = (await response.json()) as SearchPage;
+    expect(page.items.map((i) => i.externalId)).toEqual(expect.arrayContaining(['20012', '204671', '17732', '187353']));
+    // Seven of the twelve ids of this page have no small image in the Met's detail: they are left out, not shown broken.
+    expect(page.items.length).toBe(5);
+    expect(page.hasNext).toBe(true);
+  });
+
+  it('refuses a page that is not a positive whole number with 422', async () => {
+    expect((await search('vase', auctioneer, 0)).status).toBe(422);
+    expect((await fetch(`${server.url}/api/catalog/search?q=vase&page=1.5`, { headers: { Authorization: `Bearer ${auctioneer.token}` } })).status).toBe(422);
   });
 
   it('answers 503 catalog_unavailable when the catalog answers an error', async () => {
@@ -97,8 +133,8 @@ describe('GET /api/catalog/search (auctioneers only)', () => {
   });
 
   it('answers 503 when only some item details fail: a partial list is never a complete answer', async () => {
-    const baseline = (await (await search('vase')).json()) as Array<{ externalId: string }>;
-    const victim = Number(baseline[0]?.externalId);
+    const baseline = (await (await search('vase')).json()) as SearchPage;
+    const victim = Number(baseline.items[0]?.externalId);
     met.failObject(victim);
     try {
       const response = await search('vase');

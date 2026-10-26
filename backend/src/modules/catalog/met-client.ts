@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type { ItemSummary } from '@casa/contracts';
+import { CATALOG_PAGE_SIZE, CATALOG_SEARCH_WINDOW, type CatalogPage, type ItemSummary } from '@casa/contracts';
 import { AppError } from '../../shared/errors';
 
 /**
@@ -7,7 +7,6 @@ import { AppError } from '../../shared/errors';
  * an unexpected shape) becomes catalog_unavailable: it is never a fake success or an empty result.
  */
 const TIMEOUT_MS = 5_000;
-const SEARCH_RESULTS = 12;
 
 const unavailable = () => new AppError('catalog_unavailable', 'O catálogo de itens está indisponível. Tente de novo em instantes.');
 
@@ -67,18 +66,30 @@ async function fetchObject(baseUrl: string, id: number): Promise<ItemSummary | u
   return toItem(parsed.data);
 }
 
-export async function searchItems(baseUrl: string, q: string): Promise<ItemSummary[]> {
-  const params = new URLSearchParams({ hasImages: 'true', isPublicDomain: 'true', q });
+/**
+ * One page of the search. The Met pages its own answer (offset and limit), so only the ids of this page are asked for,
+ * and their details: the Met answers 100 ids by default, which is why the page size is sent (D28).
+ */
+export async function searchItems(baseUrl: string, q: string, page: number): Promise<CatalogPage> {
+  const params = new URLSearchParams({
+    hasImages: 'true',
+    isPublicDomain: 'true',
+    q,
+    offset: String((page - 1) * CATALOG_PAGE_SIZE),
+    limit: String(CATALOG_PAGE_SIZE),
+  });
   const { status, body } = await request(`${baseUrl}/v1.1/search?${params.toString()}`);
   if (status !== 200) throw unavailable();
   const parsed = searchBody.safeParse(body);
   if (!parsed.success) throw unavailable();
 
-  const ids = (parsed.data.objectIDs ?? []).slice(0, SEARCH_RESULTS);
-  // Any detail that fails (outage, timeout, broken body) fails the whole search: a shorter list would
+  const pageIds = (parsed.data.objectIDs ?? []).slice(0, CATALOG_PAGE_SIZE);
+  // Any detail that fails (outage, timeout, broken body) fails the whole page: a shorter list would
   // look like a complete answer. Only an item the catalog does not have (404) is simply left out.
-  const items = await Promise.all(ids.map((id) => fetchObject(baseUrl, id)));
-  return items.flatMap((item) => (item ? [item] : []));
+  const items = await Promise.all(pageIds.map((id) => fetchObject(baseUrl, id)));
+  const reachable = Math.min(parsed.data.total, CATALOG_SEARCH_WINDOW);
+  const pages = Math.ceil(reachable / CATALOG_PAGE_SIZE);
+  return { items: items.flatMap((item) => (item ? [item] : [])), total: parsed.data.total, page, pages, hasNext: page < pages };
 }
 
 /** The item a lot will copy. Used at lot creation only; nothing reads the catalog afterwards. */
