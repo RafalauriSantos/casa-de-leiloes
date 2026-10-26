@@ -111,3 +111,34 @@ describe('showcase: the Ao vivo dot shows only while a lot is open right now', (
     expect(liveDotOn('Encerrados')).toBe(false);
   });
 });
+
+describe('showcase: a lot card shows its image, title, bid and time (2.2)', () => {
+  /** Searches the showcase by the lot's unique title and returns the card that shows it. */
+  async function cardFor(id: string): Promise<HTMLElement> {
+    const [row] = await sql('select title from public.lots where id = $1', [id]);
+    const title = String(row?.title);
+    renderShowcase();
+    fireEvent.change(screen.getByLabelText('Buscar por título'), { target: { value: title } });
+    fireEvent.submit(screen.getByRole('search'));
+    const heading = await screen.findByRole('heading', { name: title });
+    const card = heading.closest('article');
+    if (!card) throw new Error('the lot is not in a card');
+    return card;
+  }
+
+  it('shows the starting bid until a bid arrives, then the current bid', async () => {
+    const bidless = await insertLot('-1 minute', '1 hour');
+    const bid = await insertLot('-1 minute', '1 hour');
+    await sql('update public.lots set current_amount_cents = 55000 where id = $1', [bid]);
+
+    const starting = await cardFor(bidless);
+    expect(starting.querySelector('img')?.getAttribute('src')).toBe('https://example.test/item.jpg');
+    expect(starting.textContent).toContain('Lance inicial R$ 500,00');
+    expect(starting.textContent).toContain('Termina em');
+    cleanup();
+
+    const current = await cardFor(bid);
+    expect(current.textContent).toContain('Lance atual R$ 550,00');
+    expect(current.textContent).toContain('Termina em');
+  });
+});

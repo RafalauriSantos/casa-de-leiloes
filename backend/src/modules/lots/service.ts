@@ -45,7 +45,7 @@ function toSummary(row: LotRow, now: Date): LotSummary {
     startingBidCents: row.starting_bid_cents,
     incrementCents: row.increment_cents,
     state: stateFor(row, now),
-    currentAmountCents: null,
+    currentAmountCents: row.current_amount_cents,
   };
 }
 

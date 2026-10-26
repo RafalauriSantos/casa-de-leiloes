@@ -27,7 +27,7 @@ export interface LotSummary {
   startingBidCents: number;
   incrementCents: number;
   state: LotState;
-  /** Null until the first bid; the bidding slice fills it in. */
+  /** Null until the first bid; the lot's row keeps it up to date in the same transaction as each bid. */
   currentAmountCents: number | null;
 }
 
