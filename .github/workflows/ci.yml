@@ -44,4 +44,4 @@ jobs:
         run: make ci
       - name: Docs only, nothing to test
         if: steps.scope.outputs.code == 'false'
-        run: echo "Only docs changed: the test run is skipped."
+        run: 'echo "Only docs changed: the test run is skipped."'
