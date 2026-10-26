@@ -1,0 +1,23 @@
+# B20 (D26): the API and the site in containers, on top of the local Supabase stack, which `make db-up` starts (it
+# runs on Docker too). Start with `make compose`: it fills the variables below from the running stack, as `make dev` does.
+# Host networking: the local Auth signs tokens for http://127.0.0.1:54321, and the API checks that issuer.
+services:
+  api:
+    build: .
+    command: npm run dev -w @casa/backend
+    network_mode: host
+    environment:
+      DATABASE_URL: ${DATABASE_URL:?run it through "make compose"}
+      SUPABASE_URL: ${SUPABASE_URL:?run it through "make compose"}
+      AUDIT_HMAC_SECRET: ${AUDIT_HMAC_SECRET:?run it through "make compose"}
+      CRON_SECRET: ${CRON_SECRET:?run it through "make compose"}
+      ANCHOR_MODE: "off"
+  web:
+    build: .
+    command: npm run dev -w @casa/frontend
+    network_mode: host
+    environment:
+      VITE_SUPABASE_URL: ${VITE_SUPABASE_URL:?run it through "make compose"}
+      VITE_SUPABASE_ANON_KEY: ${VITE_SUPABASE_ANON_KEY:?run it through "make compose"}
+    depends_on:
+      - api

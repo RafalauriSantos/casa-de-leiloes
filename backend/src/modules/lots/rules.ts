@@ -47,11 +47,10 @@ export function editRefusal(lot: EditState): Refusal | undefined {
   return undefined;
 }
 
-/** Cancel: only a lot without bids that has not ended yet. */
-export function cancelRefusal(lot: EditState): Refusal | undefined {
+/** Cancel: any lot that has not ended yet. A lot with bids has its committed money refunded in the same step (B19). */
+export function cancelRefusal(lot: Pick<EditState, 'state'>): Refusal | undefined {
   if (lot.state === 'cancelled') return { code: 'lot_not_editable', message: 'Este lote já foi cancelado.' };
   if (lot.state === 'ended') return { code: 'lot_ended', message: 'Lote encerrado não pode ser cancelado.' };
-  if (lot.bidCount > 0) return { code: 'lot_not_editable', message: 'Lote com lances não pode ser cancelado.' };
   return undefined;
 }
 

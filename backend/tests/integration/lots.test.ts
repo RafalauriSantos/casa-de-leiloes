@@ -358,14 +358,6 @@ describe('the auctioneer panel', () => {
     expect(((await response.json()) as OwnLot).state).toBe('cancelled');
   });
 
-  it('refuses to cancel a lot that has bids, with 409 lot_not_editable', async () => {
-    const lot = await newLot();
-    await server.db.query('update public.lots set bid_count = 2 where id = $1', [lot.id]);
-    const response = await fetch(`${server.url}/api/lots/${lot.id}/cancel`, { method: 'POST', headers: auth(auctioneer) });
-    expect(response.status).toBe(409);
-    expect(await errorCode(response)).toBe('lot_not_editable');
-  });
-
   it('refuses to cancel a lot that already ended, with 409 lot_ended', async () => {
     const lot = await newLot();
     await setTimes(lot.id, -90, -10);
