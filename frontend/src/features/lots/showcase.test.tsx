@@ -8,8 +8,9 @@ import { fetchLots } from './api';
 import { Showcase } from './components/Showcase';
 
 // The Ao vivo tab shows its live dot only while a lot is open right now. Real API and Postgres, as in the other
-// frontend tests. The shared database may hold lots from other tests, so the tests compare the dot with the live
-// list instead of emptying it, and they cancel only the lots they made.
+// frontend tests. The shared database may hold lots from other tests, so most tests compare the dot with the live
+// list, and they cancel only the lots they made. The last test is the exception: it closes the open lots of the local
+// database for its run and puts them back afterwards.
 
 const made: string[] = [];
 
@@ -140,5 +141,36 @@ describe('showcase: a lot card shows its image, title, bid and time (2.2)', () =
     const current = await cardFor(bid);
     expect(current.textContent).toContain('Lance atual R$ 550,00');
     expect(current.textContent).toContain('Termina em');
+  });
+});
+
+/**
+ * Closes every lot that is open right now in the local test database and returns their ids, so the dot can only be on
+ * because of the lot the test makes. It refuses to run against any host but this machine.
+ */
+async function closeOpenLotsLocally(): Promise<string[]> {
+  const url = new URL(process.env.DATABASE_URL ?? '');
+  const target = url.searchParams.get('host') ?? url.searchParams.get('hostaddr') ?? url.hostname;
+  if (url.searchParams.has('host') || url.searchParams.has('hostaddr') || (target !== '127.0.0.1' && target !== 'localhost')) {
+    throw new Error('refusing to close open lots: DATABASE_URL is not the local database');
+  }
+  const rows = await sql("update public.lots set status = 'cancelled' where status = 'active' and starts_at <= now() and ends_at > now() returning id");
+  return rows.map((row) => String(row.id));
+}
+
+describe('showcase: the Ao vivo dot goes off when a lot ends with the page open (2.1)', () => {
+  it('turns off on its own, without a reload, once the only live lot ends', async () => {
+    const closed = await closeOpenLotsLocally();
+    try {
+      // The lot is open now and ends in 3 seconds, while the page stays open. The check runs every 3 s, so the dot must
+      // go off within a few checks after the end. The bounds are real time, not a mocked clock.
+      await insertLot('-1 minute', '3 seconds');
+      renderShowcase();
+      await waitFor(() => { expect(liveDotOn('Ao vivo')).toBe(true); }, { timeout: 5_000 });
+      await waitFor(() => { expect(liveDotOn('Ao vivo')).toBe(false); }, { timeout: 15_000 });
+    } finally {
+      // Put back the lots this test closed, so the demo seed and the other tests find them as they were.
+      await sql("update public.lots set status = 'active' where id = any($1::uuid[])", [closed]);
+    }
   });
 });

@@ -30,7 +30,7 @@ Each criterion of the brief's journeys (defined in phase 2 of the delivery proce
 
 | Criterion | Tests | Status |
 |---|---|---|
-| 2.1 live, scheduled and ended tabs; cancelled hidden | `lots.test.ts` ("lists lots by state and hides cancelled ones"); `frontend/src/features/lots/showcase.test.tsx`; `LotCard.test.tsx` | Covered |
+| 2.1 live, scheduled and ended tabs; cancelled hidden | `lots.test.ts` ("lists lots by state and hides cancelled ones"); `frontend/src/features/lots/showcase.test.tsx` ("turns off on its own, without a reload, once the only live lot ends"); `LotCard.test.tsx` | Covered |
 | 2.2 card with image, title, current bid and time | `frontend/src/features/lots/showcase.test.tsx` ("shows the starting bid until a bid arrives, then the current bid"); `lots.test.tsx` ("lists a published lot under its state ...") | Covered |
 | 2.3 search and filter | `lots.test.ts` ("searches by title, ignoring case ..."; "refuses an unknown status filter with 422") | Covered |
 | 2.4 works with the external API down | `catalog.test.ts` ("keeps working for everything else when the catalog is down") | Covered |
