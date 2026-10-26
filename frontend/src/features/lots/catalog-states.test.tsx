@@ -1,6 +1,7 @@
 import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { randomBytes, randomUUID } from 'node:crypto';
+import pg from 'pg';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { supabase } from '@/lib/supabase';
@@ -15,11 +16,19 @@ const urlOf = (input: RequestInfo | URL): string => (typeof input === 'string' ?
 const failing = (message: string, status: number, code: string) =>
   new Response(JSON.stringify({ code, message }), { status, headers: { 'Content-Type': 'application/json' } });
 
-async function signedInToken(): Promise<string> {
+/** Only auctioneers may search the catalog, so the test signs in as one. */
+async function auctioneerToken(): Promise<string> {
   const email = `cat-${randomUUID()}@example.test`;
   const password = randomBytes(12).toString('hex');
-  const { error: signUpError } = await supabase.auth.signUp({ email, password });
-  if (signUpError) throw new Error(`sign-up failed: ${signUpError.message}`);
+  const { data: signUp, error: signUpError } = await supabase.auth.signUp({ email, password });
+  if (signUpError || !signUp.user) throw new Error(`sign-up failed: ${signUpError?.message ?? 'no user'}`);
+  const client = new pg.Client({ connectionString: process.env.DATABASE_URL });
+  await client.connect();
+  try {
+    await client.query("update public.profiles set role = 'auctioneer' where id = $1", [signUp.user.id]);
+  } finally {
+    await client.end();
+  }
   const { data, error } = await supabase.auth.signInWithPassword({ email, password });
   if (error) throw new Error(`sign-in failed: ${error.message}`);
   return data.session.access_token;
@@ -34,7 +43,7 @@ afterEach(async () => {
 describe('the catalog being down (1.4)', () => {
   it('a failed item search says so on the screen, and a new search recovers', async () => {
     const user = userEvent.setup();
-    const token = await signedInToken();
+    const token = await auctioneerToken();
     const real = globalThis.fetch;
     let down = true;
     // While the catalog is down, only the search fails with the API's own catalog_unavailable answer.
@@ -45,13 +54,16 @@ describe('the catalog being down (1.4)', () => {
     );
     render(<CatalogSearch token={token} onPick={() => {}} />);
 
-    await user.type(screen.getByLabelText('Palavra-chave'), 'vaso');
+    await user.type(screen.getByLabelText('Palavra-chave'), 'vase');
     await user.click(screen.getByRole('button', { name: 'Buscar' }));
     expect((await screen.findByRole('alert')).textContent).toBe('O catálogo de itens está indisponível. Tente de novo em instantes.');
 
     down = false;
     await user.click(screen.getByRole('button', { name: 'Buscar' }));
-    await waitFor(() => { expect(screen.queryByRole('alert')).toBeNull(); });
+    // Recovery means the real results are on the screen, not only that the alert is gone: the alert also goes away
+    // for a moment while the new search is loading.
+    expect((await screen.findAllByRole('button', { name: 'Usar este item' })).length).toBeGreaterThan(0);
+    expect(screen.queryByRole('alert')).toBeNull();
   });
 });
 
@@ -71,7 +83,10 @@ describe('the showcase error state (2.5)', () => {
     expect((await screen.findByRole('alert')).textContent).toBe('Não foi possível carregar os lotes.');
     down = false;
     await user.click(screen.getByRole('button', { name: 'Tentar de novo' }));
-    await waitFor(() => { expect(screen.queryByRole('alert')).toBeNull(); });
-    expect(screen.getByRole('button', { name: 'Ao vivo' })).toBeTruthy();
+    // The list is back when it shows a card or the empty hint; the alert alone also goes away while it loads.
+    await waitFor(() => {
+      expect(screen.queryAllByRole('article').length > 0 || screen.queryByText(/Nenhum lote ao vivo agora/) !== null).toBe(true);
+    });
+    expect(screen.queryByRole('alert')).toBeNull();
   });
 });
