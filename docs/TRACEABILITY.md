@@ -10,9 +10,9 @@ Each criterion of the brief's journeys (defined in phase 2 of the delivery proce
 | 0.2 login with one generic error | `auth.test.tsx` ("shows one generic message for a wrong login"); `frontend/src/features/auth/api.test.ts` ("gives one generic refusal for any sign-up error") | Covered |
 | 0.3 logout | `frontend/src/journey.test.tsx` ("signs up, sees an empty wallet, deposits once even on a double click, signs out and back in") | Covered |
 | 0.4 role guards on screen and API (401/403) | 401/403 cases in `catalog.test.ts`, `lots.test.ts`, `wallet.test.ts`, `bidding.test.ts`; `frontend/src/features/lots/lots.test.tsx` ("shows the role message to a bidder who opens it"); `journey.test.tsx` ("has no wallet: no menu entry ...") | Covered |
-| 0.5 identity only from the token | `me.test.ts` ("returns the identity taken from the token", "never lets a user pick a role through sign-up metadata"); `auth-claims.test.ts` | Covered |
-| 0.6 sign-up asks "Quero comprar" or "Quero vender" and the account gets that role (B14) | | Open |
-| 0.7 only those two roles are accepted at sign-up, and the role cannot change after it (B14) | | Open |
+| 0.5 identity only from the token | `me.test.ts` ("returns the identity taken from the token"); `auth-claims.test.ts` | Covered |
+| 0.6 sign-up asks "Quero comprar" or "Quero vender" and the account gets that role (B14) | `me.test.ts` ("gives the role chosen at sign-up ..."); `journey.test.tsx` ("signs up choosing \"Quero vender\" and gets the auctioneer panel, not a wallet") | Covered |
+| 0.7 only those two roles are accepted at sign-up, and the role cannot change after it (B14) | `me.test.ts` ("accepts no other role at sign-up, and the role cannot change after it"), with two hand mutations (D24) | Covered |
 | 0.8 the login screen offers the demo accounts, and a shortcut is a real sign-in (B15) | | Open |
 
 ## J1: auctioneer (slice 2)

@@ -96,6 +96,23 @@ describe('bidder journey', () => {
 });
 
 describe('auctioneer access', () => {
+  it('signs up choosing "Quero vender" and gets the auctioneer panel, not a wallet (0.6)', async () => {
+    const user = userEvent.setup();
+    const { email, password } = credentials();
+    render(<App />);
+
+    await user.click(await screen.findByRole('link', { name: 'Entrar' }));
+    await user.click(screen.getByRole('button', { name: 'Não tenho conta' }));
+    await user.type(screen.getByLabelText('Nome'), 'Vera Vendedora');
+    await user.click(screen.getByRole('radio', { name: 'Quero vender' }));
+    await user.type(screen.getByLabelText('E-mail'), email);
+    await user.type(screen.getByLabelText('Senha'), password);
+    await user.click(screen.getByRole('button', { name: 'Criar conta' }));
+
+    expect(await screen.findByRole('link', { name: 'Painel do leiloeiro' })).toBeTruthy();
+    expect(screen.queryByRole('link', { name: 'Carteira' })).toBeNull();
+  });
+
   it('has no wallet: no menu entry and the wallet screen explains it is for bidders', async () => {
     const { email, password } = credentials();
     const { data } = await supabase.auth.signUp({ email, password });

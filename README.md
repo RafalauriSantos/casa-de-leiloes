@@ -44,7 +44,7 @@ O código segue as ideias do DDD que valem a pena num projeto desse tamanho, sem
 
 - **Depósito simulado:** a carteira é só um saldo fictício, sem pagamento real. Cada depósito vai de R$ 1,00 a R$ 100.000,00.
 - **Depósito repetido:** cada depósito leva uma chave de idempotência. Clicar duas vezes ou repetir a requisição não credita duas vezes; usar a mesma chave com outro valor é recusado (409).
-- **Só licitante tem carteira:** leiloeiro recebe 403 na carteira e não vê o menu "Carteira". Contas novas são sempre de licitante; o leiloeiro de demonstração virá do seed, que **ainda não existe** (planejado para a etapa final).
+- **Só licitante tem carteira:** leiloeiro recebe 403 na carteira e não vê o menu "Carteira". No cadastro, a pessoa escolhe "Quero comprar" (licitante, o padrão) ou "Quero vender" (leiloeiro). O papel fica fixo: não dá para trocar depois, e quem quiser os dois precisa de duas contas. Qualquer pessoa pode abrir uma conta de leiloeiro, sem verificação (o dinheiro é simulado). O leiloeiro de demonstração vem do `make seed`.
 - **Chave de idempotência só na tela aberta:** ela vive na memória da página. Se o depósito foi creditado mas a resposta se perdeu, repetir o mesmo valor **sem recarregar a página** não credita de novo; recarregar a página antes de tentar outra vez gera uma chave nova e pode creditar duas vezes.
 - **Livro-caixa sem edição:** movimentos de dinheiro não podem ser alterados nem apagados, e um usuário com histórico de depósito não pode ser excluído.
 - **Cadastro sem confirmação de e-mail:** desligada de propósito para a demonstração; o provedor de e-mail do Supabase hospedado também recusa domínios reservados como `example.com`.

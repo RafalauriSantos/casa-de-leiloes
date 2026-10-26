@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { signUpUser } from '../helpers/auth';
 import { startTestServer, type TestServer } from '../helpers/server';
+import { requireEnv } from '../helpers/test-config';
 
 let server: TestServer;
 beforeAll(async () => {
@@ -11,6 +12,9 @@ afterAll(async () => {
 });
 
 const unauthenticated = { code: 'unauthenticated', message: expect.any(String) as string };
+
+const roleOf = async (token: string) =>
+  ((await (await fetch(`${server.url}/api/me`, { headers: { Authorization: `Bearer ${token}` } })).json()) as { role: string }).role;
 
 describe('GET /api/me', () => {
   it('rejects a request without a token', async () => {
@@ -52,9 +56,26 @@ describe('GET /api/me', () => {
     expect(rows).toEqual([{ total_cents: 0, committed_cents: 0 }]);
   });
 
-  it('never lets a user pick a role through sign-up metadata', async () => {
-    const user = await signUpUser({ metadata: { role: 'auctioneer' } });
-    const response = await fetch(`${server.url}/api/me`, { headers: { Authorization: `Bearer ${user.token}` } });
-    expect(((await response.json()) as { role: string }).role).toBe('bidder');
+  it('gives the role chosen at sign-up: "Quero vender" is an auctioneer, "Quero comprar" a bidder (0.6)', async () => {
+    const seller = await signUpUser({ metadata: { role: 'auctioneer' } });
+    const buyer = await signUpUser({ metadata: { role: 'bidder' } });
+    expect(await roleOf(seller.token)).toBe('auctioneer');
+    expect(await roleOf(buyer.token)).toBe('bidder');
+  });
+
+  it('accepts no other role at sign-up, and the role cannot change after it (0.7)', async () => {
+    const forged = await signUpUser({ metadata: { role: 'admin' } });
+    const silent = await signUpUser();
+    expect(await roleOf(forged.token)).toBe('bidder');
+    expect(await roleOf(silent.token)).toBe('bidder');
+
+    // A signed-in user can edit their own metadata; the role is read from the profile, written once at sign-up.
+    const changed = await fetch(`${requireEnv('SUPABASE_URL')}/auth/v1/user`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', apikey: requireEnv('SUPABASE_ANON_KEY'), Authorization: `Bearer ${silent.token}` },
+      body: JSON.stringify({ data: { role: 'auctioneer' } }),
+    });
+    expect(changed.ok).toBe(true);
+    expect(await roleOf(silent.token)).toBe('bidder');
   });
 });

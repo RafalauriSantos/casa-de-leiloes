@@ -27,7 +27,8 @@ export function AuthPanel() {
     setBusy(true);
     setError(undefined);
     setNotice(undefined);
-    const result = mode === 'signin' ? await signIn(email, password) : await signUp(email, password, field(form, 'displayName'));
+    const role = field(form, 'role') === 'auctioneer' ? 'auctioneer' : 'bidder';
+    const result = mode === 'signin' ? await signIn(email, password) : await signUp(email, password, field(form, 'displayName'), role);
     setBusy(false);
     if (!result.ok) setError(result.message);
     else if ('notice' in result) setNotice(result.notice);
@@ -37,10 +38,23 @@ export function AuthPanel() {
     <form onSubmit={(event) => void onSubmit(event)} aria-labelledby="auth-title">
       <h2 id="auth-title">{mode === 'signin' ? 'Entrar' : 'Criar conta de licitante'}</h2>
       {mode === 'signup' && (
-        <label>
-          Nome
-          <input name="displayName" required autoComplete="name" />
-        </label>
+        <>
+          <label>
+            Nome
+            <input name="displayName" required autoComplete="name" />
+          </label>
+          <fieldset>
+            <legend>Como você vai usar a casa de leilões?</legend>
+            <label>
+              <input type="radio" name="role" value="bidder" defaultChecked />
+              Quero comprar
+            </label>
+            <label>
+              <input type="radio" name="role" value="auctioneer" />
+              Quero vender
+            </label>
+          </fieldset>
+        </>
       )}
       <label>
         E-mail
