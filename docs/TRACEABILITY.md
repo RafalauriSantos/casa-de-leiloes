@@ -11,6 +11,9 @@ Each criterion of the brief's journeys (defined in phase 2 of the delivery proce
 | 0.3 logout | `frontend/src/journey.test.tsx` ("signs up, sees an empty wallet, deposits once even on a double click, signs out and back in") | Covered |
 | 0.4 role guards on screen and API (401/403) | 401/403 cases in `catalog.test.ts`, `lots.test.ts`, `wallet.test.ts`, `bidding.test.ts`; `frontend/src/features/lots/lots.test.tsx` ("shows the role message to a bidder who opens it"); `journey.test.tsx` ("has no wallet: no menu entry ...") | Covered |
 | 0.5 identity only from the token | `me.test.ts` ("returns the identity taken from the token", "never lets a user pick a role through sign-up metadata"); `auth-claims.test.ts` | Covered |
+| 0.6 sign-up asks "Quero comprar" or "Quero vender" and the account gets that role (B14) | | Open |
+| 0.7 only those two roles are accepted at sign-up, and the role cannot change after it (B14) | | Open |
+| 0.8 the login screen offers the demo accounts, and a shortcut is a real sign-in (B15) | | Open |
 
 ## J1: auctioneer (slice 2)
 
@@ -97,3 +100,14 @@ Each criterion of the brief's journeys (defined in phase 2 of the delivery proce
 | 8.2 public deploy | `make e2e-prod` (`backend/scripts/e2e-deployed.ts`) walks sign-up, deposit, the live lot, a refused and an accepted bid, "Meus arremates" and the public audit on the published URL; it passed on the production site (6 of 6). The receipt step needs the lot to end, so it is not in the script | Covered for the published site; the receipt is covered by the integration tests |
 | 8.3 README with the steps and the unexpected behaviors | README | Partial: the final review is pending |
 | 8.4 one error shape, never a fake success | `failures.test.ts`; `catalog.test.ts` (503 cases); the `code` assertions across the integration tests | Covered |
+| 8.5 the demo data also holds an ended lot with a receipt and a tampered lot (B17, B18) | | Open |
+
+## J9: optionals of the brief (section 05)
+
+| Criterion | Tests | Status |
+|---|---|---|
+| Search and filter of lots | see 2.3 | Covered |
+| Automated tests | `make ci` | Covered |
+| 9.1 cancelling a lot with bids refunds the committed money automatically (B19) | | Open |
+| 9.2 Docker Compose runs the app (B20) | | Open |
+| 9.3 light and dark theme, with a switch (B21) | | Open |

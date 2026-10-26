@@ -44,9 +44,21 @@ mutation per rule and the owner's "pode mergear"; **normal** needs one reviewer 
 
 | # | Item | Criteria | Risk | Done when |
 |---|---|---|---|---|
-| B10 | Security headers (CSP and others) | | normal | the app answers with them and still works on Vercel |
+| B10 | Security headers (CSP and others) | | normal | the app answers with them and still works on Vercel (PR #44) |
 | B11 | Daily live test of the public anchor | | normal | planned in D21 |
-| B12 | README final review | 8.3 | normal | the steps match what exists and every unexpected behavior is declared |
+| B12 | README final review | 8.3 | normal | the steps match what exists and every unexpected behavior is declared (PR #44) |
+| B13 | Test suites do not cancel each other's lots: the "Ao vivo" test spares the demo lot | 8.1 | normal | `seed.test.ts` and `showcase.test.tsx` pass in the same run, every run |
+| B14 | Sign-up with a role choice: "Quero comprar" (bidder) or "Quero vender" (auctioneer), fixed at creation | 0.6, 0.7 | high | a new account gets the role it chose, nothing else is accepted, and the role cannot change later |
+| B15 | Shortcuts on the login screen to the seeded demo accounts (a real sign-in) | 0.8 | high | each shortcut opens a real session with the account's role, and a failed sign-in says so |
+| B16 | README: the production URL and how to enter with the demo accounts | 8.3 | normal | the README names the URL and the accounts, and both work |
+| B17 | Seed: an ended lot with a winner and a receipt | 8.1, 6.1 | normal | the demo bidder sees a won lot with its receipt and link right after the seed |
+| B18 | Seed: a settled lot whose history was changed in the database, shown as tampered by the audit | 8.1, 7.2 | normal | its audit page says "adulterado", and no money or alert depends on it |
+| B19 | Optional: cancel a lot with bids, with an automatic refund of the committed money | 9.1 | high | the leader's committed money returns to available in the same transaction, nobody is charged |
+| B20 | Optional: Docker Compose | 9.2 | normal | `docker compose up` runs the app as the README says |
+| B21 | Optional: a light/dark theme switch | 9.3 | normal | the switch changes the theme and the choice survives a reload |
+| B22 | Notes on where and how AI was used, and what was reviewed (for the submission form) | | normal | the notes are in the repository and match the history |
+
+Owner actions (not code): make the repository public after checking its history for secrets; protect the `main` branch of the anchor repository (checked on 2026-10-26: not protected).
 
 ## Waiting for a decision
 
@@ -54,4 +66,3 @@ mutation per rule and the owner's "pode mergear"; **normal** needs one reviewer 
 |---|---|
 | Owner alert when a lot waits more than 10 minutes for publication | The owner chooses the channel (e-mail or other) |
 | Visual identity | The owner sends the references |
-| Branch protection on the anchor repository | An owner action on GitHub |
