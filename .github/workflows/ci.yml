@@ -1,23 +1,47 @@
 name: ci
 
+# Runs on pull requests only (not on every push, and not again after the merge: the PR already tested the same tree).
+# A cancelled older run is replaced by the newest push, so superseded commits do not spend minutes.
 on:
-  push:
+  pull_request:
   workflow_dispatch:
 
 permissions:
   contents: read
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   ci:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      # A change that touches only docs or markdown needs no test run. The job still reports, so the required check passes.
+      - id: scope
+        run: |
+          if git diff --name-only "${{ github.event.pull_request.base.sha || 'origin/main' }}" HEAD -- . ':!docs' ':!*.md' | grep -q .; then
+            echo "code=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "code=false" >> "$GITHUB_OUTPUT"
+          fi
       - uses: actions/setup-node@v4
+        if: steps.scope.outputs.code == 'true'
         with:
           node-version-file: .nvmrc
           cache: npm
-      - run: npm ci
+      - name: Install
+        if: steps.scope.outputs.code == 'true'
+        run: npm ci
       - name: Start local Supabase (real Postgres and Auth)
+        if: steps.scope.outputs.code == 'true'
         run: npx supabase start
       - name: make ci
+        if: steps.scope.outputs.code == 'true'
         run: make ci
+      - name: Docs only, nothing to test
+        if: steps.scope.outputs.code == 'false'
+        run: 'echo "Only docs changed: the test run is skipped."'
