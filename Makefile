@@ -4,7 +4,7 @@
 audit:
 	npm audit --omit=dev --audit-level=high
 
-.PHONY: audit install lint typecheck test build ci dev dev-api dev-web db-up db-down db-reset e2e-live seed
+.PHONY: audit install lint typecheck test build ci dev dev-api dev-web db-up db-down db-reset e2e-live seed e2e-prod
 
 install:
 	npm ci
@@ -30,6 +30,9 @@ dev:
 
 dev-api:
 	./scripts/with-local-env.sh npm run dev -w @casa/backend
+
+e2e-prod:
+	./scripts/with-local-env.sh sh -c 'cd backend && node --import tsx scripts/e2e-deployed.ts'
 
 seed:
 	./scripts/with-local-env.sh sh -c 'cd backend && node --import tsx scripts/seed.ts'
