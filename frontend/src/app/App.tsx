@@ -6,6 +6,8 @@ import { LotPage } from '@/pages/lot';
 import { ShowcasePage } from '@/pages/showcase';
 import { LoginPage } from '@/pages/login';
 import { WalletPage } from '@/pages/wallet';
+import { ReceiptPage } from '@/pages/receipt';
+import { WinsPage } from '@/pages/wins';
 import { AppLayout } from './AppLayout';
 
 export function App() {
@@ -20,6 +22,8 @@ export function App() {
             <Route path="leiloeiro" element={<AuctioneerPage />} />
             <Route path="entrar" element={<LoginPage />} />
             <Route path="carteira" element={<WalletPage />} />
+            <Route path="arremates" element={<WinsPage />} />
+            <Route path="comprovante/:code" element={<ReceiptPage />} />
             <Route path="*" element={<p>Página não encontrada.</p>} />
           </Route>
         </Routes>
