@@ -39,14 +39,15 @@ mutation per rule and the owner's "pode mergear"; **normal** needs one reviewer 
 | Showcase card shows the current bid once there are bids (it always showed the starting bid); card fields and the error state with retry tested | 2.2, 2.5 | normal | #42 |
 | Exact messages for "not started" and "ended" bid refusals are asserted (the messages were already sent) | 4.3 | normal | #43 |
 | The Ao vivo dot goes off on its own when the only live lot ends with the page open (the test closes open lots in the local database first) | 2.1 | normal | #43 |
+| README final review: steps and limits checked against the code; the intro no longer says bids and audit are coming | 8.3 | normal | this PR |
 
 ## To do (by priority)
 
 | # | Item | Criteria | Risk | Done when |
 |---|---|---|---|---|
-| B10 | Security headers (CSP and others) | | normal | the app answers with them and still works on Vercel |
+| B10 | Security headers (CSP and others): set in `vercel.json` in this PR; still open until the browser console shows no CSP error on the site and the preview's API answers | | normal | the app answers with them and still works on Vercel |
 | B11 | Daily live test of the public anchor | | normal | planned in D21 |
-| B12 | README final review | 8.3 | normal | the steps match what exists and every unexpected behavior is declared |
+
 
 ## Waiting for a decision
 

@@ -1,6 +1,6 @@
 # Casa de Leilões
 
-Casa de leilões online (teste técnico Verzel "Elite Dev"). **Em construção**: hoje existem cadastro, login, papéis, carteira com depósito simulado, e a vitrine com lotes publicados a partir do catálogo público do The Met. Lances, comprovante e auditoria entram nas próximas etapas.
+Casa de leilões online (teste técnico Verzel "Elite Dev"). Hoje existem cadastro, login, papéis, carteira com depósito simulado, vitrine com lotes publicados a partir do catálogo público do The Met, lances ao vivo, comprovante de arremate e auditoria pública do histórico de lances.
 
 Decisões de design e seus tradeoffs: [docs/DECISIONS.md](docs/DECISIONS.md).
 
@@ -53,7 +53,7 @@ O código segue as ideias do DDD que valem a pena num projeto desse tamanho, sem
 
 - **Depósito simulado:** a carteira é só um saldo fictício, sem pagamento real. Cada depósito vai de R$ 1,00 a R$ 100.000,00.
 - **Depósito repetido:** cada depósito leva uma chave de idempotência. Clicar duas vezes ou repetir a requisição não credita duas vezes; usar a mesma chave com outro valor é recusado (409).
-- **Só licitante tem carteira:** leiloeiro recebe 403 na carteira e não vê o menu "Carteira". Contas novas são sempre de licitante; o leiloeiro de demonstração virá do seed, que **ainda não existe** (planejado para a etapa final).
+- **Só licitante tem carteira:** leiloeiro recebe 403 na carteira e não vê o menu "Carteira". Contas novas são sempre de licitante; o leiloeiro de demonstração vem do `make seed`.
 - **Chave de idempotência só na tela aberta:** ela vive na memória da página. Se o depósito foi creditado mas a resposta se perdeu, repetir o mesmo valor **sem recarregar a página** não credita de novo; recarregar a página antes de tentar outra vez gera uma chave nova e pode creditar duas vezes.
 - **Livro-caixa sem edição:** movimentos de dinheiro não podem ser alterados nem apagados, e um usuário com histórico de depósito não pode ser excluído.
 - **Cadastro sem confirmação de e-mail:** desligada de propósito para a demonstração; o provedor de e-mail do Supabase hospedado também recusa domínios reservados como `example.com`.
