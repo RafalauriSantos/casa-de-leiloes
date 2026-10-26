@@ -35,8 +35,8 @@ mutation per rule and the owner's "pode mergear"; **normal** needs one reviewer 
 | Countdown from the server clock (clock arithmetic in pure functions, tested) | 4.1, 4.9 | normal | #39 (review and CI in progress) |
 | CI on pull requests only, cancel superseded runs, skip tests for docs-only changes | | normal | #37 |
 | Supabase image cache (added in #38, removed in #40: it missed on every new branch) | | normal | #38, #40 |
-| Catalog down: the search shows the server's message on the screen (test with the API's 503 answer) | 1.4 | normal | this PR |
-| Showcase card shows the current bid once there are bids (it always showed the starting bid); card fields and the error state with retry tested | 2.2, 2.5 | normal | this PR |
+| Catalog down: the search shows the server's message on the screen (test with the API's 503 answer) | 1.4 | normal | #42 |
+| Showcase card shows the current bid once there are bids (it always showed the starting bid); card fields and the error state with retry tested | 2.2, 2.5 | normal | #42 |
 
 ## To do (by priority)
 
