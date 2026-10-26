@@ -19,3 +19,15 @@ export function toLocalField(iso: string): string {
 }
 
 export const STATE_LABEL = { scheduled: 'Agendado', live: 'Ao vivo', ended: 'Encerrado', cancelled: 'Cancelado' } as const;
+
+/** The time left in a lot: hh:mm:ss under a day, then days before it. Zero or less means it is over. */
+export function formatRemaining(ms: number): string {
+  if (ms <= 0) return 'encerrado';
+  const total = Math.floor(ms / 1000);
+  const days = Math.floor(total / 86_400);
+  const clock = [Math.floor((total % 86_400) / 3600), Math.floor((total % 3600) / 60), total % 60]
+    .map((n) => String(n).padStart(2, '0'))
+    .join(':');
+  if (days === 0) return clock;
+  return `${String(days)} ${days === 1 ? 'dia' : 'dias'} ${clock}`;
+}
