@@ -71,8 +71,8 @@ describe('GET /api/catalog/search (auctioneers only)', () => {
     expect(response.status).toBe(200);
     const page = (await response.json()) as SearchPage;
     expect(page.page).toBe(2);
-    expect(page.total).toBe(9225);
-    expect(page.pages).toBe(769);
+    expect(page.total).toBe(9229);
+    expect(page.pages).toBe(770);
     expect(page.hasNext).toBe(true);
     // The Met's own first object of page 2 (the search's 13th id) is in it; the first page's ids are not.
     expect(page.items.map((i) => i.externalId)).toContain('9283');
@@ -82,7 +82,16 @@ describe('GET /api/catalog/search (auctioneers only)', () => {
   it('answers an empty page with no next page past the last one, without asking the catalog for any item', async () => {
     const response = await search('vase', auctioneer, 800);
     expect(response.status).toBe(200);
-    expect(await response.json()).toEqual({ items: [], total: 9225, page: 800, pages: 769, hasNext: false });
+    expect(await response.json()).toEqual({ items: [], total: 9229, page: 800, pages: 770, hasNext: false });
+  });
+
+  it('answers the ninth page from the Met\'s own answer for that page: the objects it has an image for, and no more', async () => {
+    const response = await search('vase', auctioneer, 9);
+    const page = (await response.json()) as SearchPage;
+    expect(page.items.map((i) => i.externalId)).toEqual(expect.arrayContaining(['20012', '204671', '17732', '187353']));
+    // Seven of the twelve ids of this page have no small image in the Met's detail: they are left out, not shown broken.
+    expect(page.items.length).toBe(5);
+    expect(page.hasNext).toBe(true);
   });
 
   it('refuses a page that is not a positive whole number with 422', async () => {

@@ -1,4 +1,4 @@
-import type { CatalogPage, ItemSummary } from '@casa/contracts';
+import { CATALOG_SEARCH_WINDOW, type CatalogPage, type ItemSummary } from '@casa/contracts';
 import { useState, type SyntheticEvent } from 'react';
 import { ApiRequestError } from '@/lib/api-client';
 import { searchCatalog } from '../api';
@@ -49,6 +49,7 @@ export function CatalogSearch({ token, onPick }: Props) {
         <>
           <p>
             {results.page.total.toLocaleString('pt-BR')} resultados · Página {results.page.page} de {results.page.pages}
+            {results.page.total > CATALOG_SEARCH_WINDOW && ' · o acervo deixa ver só os primeiros 10.000 resultados de cada busca'}
           </p>
           <ul className="catalog-results">
             {results.page.items.map((item) => (

@@ -38,6 +38,25 @@ export async function startMetStub(): Promise<MetStub> {
       const url = new URL(req.url ?? '/', 'http://stub');
       if (url.pathname === '/public/collection/v1.1/search') {
         const q = url.searchParams.get('q') ?? '';
+        const offset = url.searchParams.get('offset');
+        if (offset !== null) {
+          // A page of a query with no captured answers is the Met's empty answer. A page of a captured query that was not
+          // captured is a real 404: the test would otherwise pass on an answer the stub invented.
+          const name = q.toLowerCase().includes('painting') ? 'search-painting' : q.toLowerCase().includes('vase') ? 'search-vase' : undefined;
+          if (name === undefined) {
+            res.end(JSON.stringify({ total: 0, objectIDs: null }));
+            return;
+          }
+          const page = `${FIXTURES}/${name}-offset-${offset}-limit-${url.searchParams.get('limit') ?? ''}.json`;
+          const captured = await readFile(page, 'utf8').catch(() => undefined);
+          if (captured === undefined) {
+            res.statusCode = 404;
+            res.end('{"message":"not captured"}');
+            return;
+          }
+          res.end(captured);
+          return;
+        }
         const body = q.toLowerCase().includes('vase')
           ? await readFile(`${FIXTURES}/search-vase.json`, 'utf8')
           : JSON.stringify({ total: 0, objectIDs: null });
