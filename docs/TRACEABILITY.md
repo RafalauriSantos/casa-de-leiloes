@@ -94,6 +94,6 @@ Each criterion of the brief's journeys (defined in phase 2 of the delivery proce
 | Criterion | Tests | Status |
 |---|---|---|
 | 8.1 seeds: one auctioneer, two bidders, one live lot with bids, credentials in the README | `backend/tests/integration/seed.test.ts` ("creates an auctioneer, two funded bidders and one live lot with bids"; "running it again creates nothing new"); the README lists the accounts | Covered. The end-to-end run against the deployed URL is criterion 8.2 |
-| 8.2 public deploy | Checked after each merge (the deploy is READY and the site answers) | Covered by hand; the end-to-end script against the deployed URL is open |
+| 8.2 public deploy | `make e2e-prod` (`backend/scripts/e2e-deployed.ts`) walks sign-up, deposit, the live lot, a refused and an accepted bid, "Meus arremates" and the public audit on the published URL; it passed on the production site (6 of 6). The receipt step needs the lot to end, so it is not in the script | Covered for the published site; the receipt is covered by the integration tests |
 | 8.3 README with the steps and the unexpected behaviors | README | Partial: the final review is pending |
 | 8.4 one error shape, never a fake success | `failures.test.ts`; `catalog.test.ts` (503 cases); the `code` assertions across the integration tests | Covered |
