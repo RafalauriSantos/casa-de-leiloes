@@ -117,6 +117,18 @@ describe('cancelling a lot with bids refunds the committed money (9.1)', () => {
     expect(await committed([ana])).toBe(0);
   });
 
+  it('follows the verified history, not the bid_count copy: a copy rewritten to 0 still refunds the leader', async () => {
+    const ana = await bidder();
+    const lot = await liveLot();
+    expect((await bid(lot.id, ana, 50_000)).status).toBe(201);
+    // A database writer zeroes the count. Skipping the refund would strand the money on a cancelled lot, which the
+    // owner's release (D20) cannot reach, since it only takes active lots.
+    await server.db.query('update public.lots set bid_count = 0 where id = $1', [lot.id]);
+
+    expect((await cancel(lot.id)).status).toBe(200);
+    expect(await committed([ana])).toBe(0);
+  });
+
   it('refuses a forged bid whose lot copy was rewritten to match it: the chain does not verify', async () => {
     const [ana, beto] = [await bidder(), await bidder()];
     const lot = await liveLot();

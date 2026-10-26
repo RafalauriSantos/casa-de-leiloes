@@ -169,8 +169,10 @@ export async function cancelLot(db: Db, config: Config, userId: string, lotId: s
     // they were outbid. The lot row is already locked, so the wallet is locked after it: the order bidding uses.
     // As before a payment, the history must verify and the lot's copy of its leader and amount must match it; and the
     // wallet must still cover this lot plus the other lots the leader leads, so a refund never frees their money (D25).
-    if (current.bid_count > 0) {
-      const lead = await verifiedLead(tx, lotId, config.auditHmacSecret);
+    // Whether a refund is due comes from the verified bids, not from the lot's `bid_count` copy, which a database writer
+    // could zero: skipping the refund would strand the money on a cancelled lot that the owner's release cannot reach.
+    const lead = await verifiedLead(tx, lotId, config.auditHmacSecret);
+    if (lead) {
       const [wallet] = await tx.query<{ committed_cents: number }>('select committed_cents from public.wallets where user_id = $1 for update', [lead.leaderId]);
       const [others] = await tx.query<{ amount: number }>(
         `select coalesce(sum(current_amount_cents), 0)::bigint as amount from public.lots

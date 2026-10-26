@@ -110,10 +110,11 @@ async function assertHistoryIntact(tx: Queryable, lot: LotRow, secret: string): 
 }
 
 /**
- * The same check for money that moves outside the settlement: cancelling a lot with bids refunds its leader (B19, D25).
- * The caller has locked the lot. Returns the leader and the amount, which then agree with the verified chain.
+ * The same check for money that moves outside the settlement: cancelling a lot refunds its leader (B19, D25). The
+ * caller has locked the lot. Returns the leader and the amount, which then agree with the verified chain, or null when
+ * the verified history has no bids. The answer comes from the bids, never from the lot's `bid_count` copy.
  */
-export async function verifiedLead(tx: Queryable, lotId: string, secret: string): Promise<{ leaderId: string; amountCents: number }> {
+export async function verifiedLead(tx: Queryable, lotId: string, secret: string): Promise<{ leaderId: string; amountCents: number } | null> {
   const [lot] = await tx.query<LotRow>(
     `select id, auctioneer_id, status, ends_at, leader_id, current_amount_cents, head_seq, head_hash, anchored_seq, settled_at
      from public.lots where id = $1`,
@@ -121,9 +122,8 @@ export async function verifiedLead(tx: Queryable, lotId: string, secret: string)
   );
   if (!lot) throw new AppError('not_found', 'Lote não encontrado.');
   await assertHistoryIntact(tx, lot, secret);
-  if (lot.leader_id === null || lot.current_amount_cents === null) {
-    throw new AppError('internal_error', 'O histórico do lote não confere com a cópia da ponta.');
-  }
+  // An intact history with no bids has no leader (assertHistoryIntact checks it); with bids, the copy matches the last one.
+  if (lot.leader_id === null || lot.current_amount_cents === null) return null;
   return { leaderId: lot.leader_id, amountCents: lot.current_amount_cents };
 }
 
