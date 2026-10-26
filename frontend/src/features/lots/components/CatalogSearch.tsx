@@ -30,7 +30,7 @@ export function CatalogSearch({ token, onPick }: Props) {
       <form onSubmit={(event) => void search(event)} role="search">
         <label>
           Palavra-chave
-          <input value={q} onChange={(event) => { setQ(event.target.value); }} placeholder="vase, porcelana..." required minLength={2} />
+          <input value={q} onChange={(event) => { setQ(event.target.value); }} placeholder="relógio, espada, cadeira..." required minLength={2} />
         </label>
         <button type="submit" disabled={results.status === 'loading'}>Buscar</button>
       </form>

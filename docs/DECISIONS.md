@@ -251,3 +251,9 @@ Built so far: each accepted bid returns a bid receipt `{seq, head, placedAt}` in
 - **Why not Supabase inside the compose:** the app needs real Supabase Auth (sign-up, sessions, the JWKS the API checks). Rebuilding it by hand (the Supabase Postgres image, the Auth server, a proxy for `/auth/v1`, signing keys) would be a second copy of Supabase to keep in step with the hosted one, for no gain in what the app proves.
 - **Why host networking:** the local Auth signs tokens with the issuer `http://127.0.0.1:54321/auth/v1`, and the API refuses any other issuer (the JWT check, see "Supabase Auth" above). Inside a bridge network the API would reach Auth under another name and refuse every token.
 - **Tradeoff:** Node is still needed on the host, for the Supabase CLI (`npx supabase start`). Host networking works on Linux; on Docker Desktop (Mac, Windows) it must be turned on in its settings (version 4.34 or later). Production does not use this: it runs on Vercel.
+
+## D27. The demo catalog shows real variety (B23)
+- **Why:** the demo sold only vases, because the seed and the search example were vases. An evaluator would read the catalog as a single-item shop.
+- **How:** the seed adds six real objects from the Met's public API (clock, sword, chair, teapot, box with lid, clock), each copied into a lot that starts tomorrow with no bids, so they show under "Agendados" and do not change the bid or settlement scenarios. Their data (title, image, object link) was read from the API when the seed was written; the app copies items the same way at creation.
+- **Tradeoff:** the seed's items are fixed, so production shows them only after running the seed there. The search example now names other kinds of objects. The Met's data can change; the copy stays as it was when the lot was made, which is the rule of the brief.
+- **Test:** `seed.test.ts` ("sells real variety: at least nine different Met objects across the demo lots").

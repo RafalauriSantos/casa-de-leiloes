@@ -84,6 +84,7 @@ export async function seedDemo(deps: SeedDeps): Promise<string> {
   if (!first || !second) throw new Error('seed: the two demo bidders are missing');
 
   const liveLotId = await liveLot(deps, auctioneer.id, first, second);
+  for (const item of VARIETY_ITEMS) await scheduledLot(deps, auctioneer.id, item);
   await settledLot(deps, auctioneer.id, ENDED_ITEM, first, second);
   await tamperFirstBid(deps, await settledLot(deps, auctioneer.id, TAMPERED_ITEM, first, second));
   return liveLotId;
@@ -108,6 +109,19 @@ const ENDED_ITEM: DemoItem = {
   imageUrl: 'https://images.metmuseum.org/CRDImages/es/original/DP-15275-023.jpg',
   sourceUrl: 'https://www.metmuseum.org/art/collection/search/198685',
 };
+/**
+ * B23: real objects of other kinds, from the Met's public API (the same data the app copies when a lot is created).
+ * Each becomes a lot that starts tomorrow, so the catalog shows more than vases.
+ */
+const VARIETY_ITEMS: readonly DemoItem[] = [
+  { title: 'Carriage Clock', externalId: '1454', imageUrl: 'https://images.metmuseum.org/CRDImages/ad/web-large/233549.jpg', sourceUrl: 'https://www.metmuseum.org/art/collection/search/1454' },
+  { title: 'Sword', externalId: '27513', imageUrl: 'https://images.metmuseum.org/CRDImages/aa/web-large/LC-54_46_8-004.jpg', sourceUrl: 'https://www.metmuseum.org/art/collection/search/27513' },
+  { title: 'Chair', externalId: '14430', imageUrl: 'https://images.metmuseum.org/CRDImages/ad/web-large/DT181.jpg', sourceUrl: 'https://www.metmuseum.org/art/collection/search/14430' },
+  { title: 'Teapot', externalId: '8356', imageUrl: 'https://images.metmuseum.org/CRDImages/ad/web-large/DP164167.jpg', sourceUrl: 'https://www.metmuseum.org/art/collection/search/8356' },
+  { title: 'Box with lid', externalId: '316540', imageUrl: 'https://images.metmuseum.org/CRDImages/ao/web-large/vs1991_17_69.jpg', sourceUrl: 'https://www.metmuseum.org/art/collection/search/316540' },
+  { title: 'Clock', externalId: '14696', imageUrl: 'https://images.metmuseum.org/CRDImages/ad/web-large/ADA6141.jpg', sourceUrl: 'https://www.metmuseum.org/art/collection/search/14696' },
+];
+
 const TAMPERED_ITEM: DemoItem = {
   title: DEMO.tamperedLotTitle,
   externalId: '205922',
@@ -188,10 +202,23 @@ async function placeBids(deps: SeedDeps, lotId: string, bids: readonly (readonly
 
 /** A lot that started an hour ago and ends in 30 days. Its item is copied in, as the app does for every lot. */
 async function createLot(deps: SeedDeps, auctioneerId: string, item: DemoItem): Promise<string> {
+  return insertLot(deps, auctioneerId, item, "now() - interval '1 hour'");
+}
+
+/** B23: a real Met object that starts tomorrow, with no bids, so it shows under "Agendados". Idempotent per item. */
+async function scheduledLot(deps: SeedDeps, auctioneerId: string, item: DemoItem): Promise<string> {
+  const [existing] = await deps.db.query<{ id: string }>(
+    'select id from public.lots where auctioneer_id = $1 and external_id = $2 and status = $3 limit 1',
+    [auctioneerId, item.externalId, 'active'],
+  );
+  return existing?.id ?? insertLot(deps, auctioneerId, item, "now() + interval '1 day'");
+}
+
+async function insertLot(deps: SeedDeps, auctioneerId: string, item: DemoItem, startsAt: string): Promise<string> {
   const [row] = await deps.db.query<{ id: string }>(
     `insert into public.lots (auctioneer_id, external_id, title, item_image_url, item_source_url, item_attributes,
                               starts_at, ends_at, starting_bid_cents, increment_cents)
-     values ($1, $2, $3, $4, $5, '{}', now() - interval '1 hour', now() + interval '30 days', 50000, 5000)
+     values ($1, $2, $3, $4, $5, '{}', ${startsAt}, now() + interval '30 days', 50000, 5000)
      returning id`,
     [auctioneerId, item.externalId, item.title, item.imageUrl, item.sourceUrl],
   );

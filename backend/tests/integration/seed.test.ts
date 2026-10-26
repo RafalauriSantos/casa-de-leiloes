@@ -101,6 +101,16 @@ describe('the seed (B2, 8.1)', () => {
     expect(audit.headline.kind).toBe('tampered');
   });
 
+  it('sells real variety: at least nine different Met objects across the demo lots (B23)', async () => {
+    await seedDemo(deps());
+    const [row] = await server.db.query<{ objects: number }>(
+      `select count(distinct l.external_id)::int as objects from public.lots l join auth.users a on a.id = l.auctioneer_id
+        where a.email = $1`,
+      [DEMO.auctioneer],
+    );
+    expect(row?.objects).toBeGreaterThanOrEqual(9);
+  });
+
   it('leaves another auctioneer\'s open lot with the same title alone', async () => {
     const stranger = await signUpUser();
     await promoteToAuctioneer(server.db, stranger.id);
