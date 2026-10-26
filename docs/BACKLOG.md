@@ -46,7 +46,7 @@ mutation per rule and the owner's "pode mergear"; **normal** needs one reviewer 
 | # | Item | Criteria | Risk | Done when |
 |---|---|---|---|---|
 | B10 | Security headers (CSP and others): set in `vercel.json` in #44; still open until the browser console shows no CSP error on the site and the preview's API answers | | normal | the app answers with them and still works on Vercel |
-| B11 | Daily live test of the public anchor | | normal | planned in D21 |
+| B11 | Daily live test of the public anchor (postponed to 1 November: it spends Actions minutes before the monthly reset) | | normal | planned in D21 |
 
 
 ## Waiting for a decision
