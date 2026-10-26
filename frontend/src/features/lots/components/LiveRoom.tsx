@@ -6,16 +6,12 @@ import { formatBRL, parseReaisToCents } from '@/lib/format';
 import { useAuth } from '@/features/auth';
 import { fetchLive, placeBid } from '../api';
 import { addReceipt, readReceipts } from '../receipts';
-import { formatRemaining, formatWhen, STATE_LABEL } from '../time';
+import { clockOffset, formatRemaining, formatWhen, remainingMs, STATE_LABEL } from '../time';
 
 const POLL_MS = 3_000;
 
 type Load = { status: 'loading' } | { status: 'error'; message: string } | { status: 'ready'; room: LiveLot };
 
-/** Countdown from the server's clock: the offset between the server's `serverNow` and this browser's clock at the moment of the read. */
-function remainingMs(room: LiveLot, offsetMs: number, now: number): number {
-  return new Date(room.endsAt).getTime() - (now + offsetMs);
-}
 
 export function LiveRoom({ lotId }: { lotId: string }) {
   const auth = useAuth();
@@ -58,9 +54,7 @@ export function LiveRoom({ lotId }: { lotId: string }) {
         const room = await fetchLive(lotId, token);
         inFlight.current = false;
         if (!alive.current) return;
-        // The server's clock was read somewhere between sending and receiving: the midpoint is the best guess.
-        const midpoint = (sentAt + Date.now()) / 2;
-        setOffset(new Date(room.serverNow).getTime() - midpoint);
+        setOffset(clockOffset(room.serverNow, sentAt, Date.now()));
         // An answer to an older request must not overwrite a newer one.
         if (mine > applied.current) {
           applied.current = mine;
@@ -128,7 +122,7 @@ export function LiveRoom({ lotId }: { lotId: string }) {
   if (load.status === 'loading') return <p>Carregando a sala…</p>;
   if (load.status === 'error') return <p role="alert">{load.message}</p>;
   const { room } = load;
-  const remaining = remainingMs(room, offset, now);
+  const remaining = remainingMs(room.endsAt, offset, now);
   const full = room.bidCount >= MAX_BIDS_PER_LOT;
   const canBid = room.state === 'live' && role === 'bidder' && !full;
 

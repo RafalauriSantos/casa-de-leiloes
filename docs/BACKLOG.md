@@ -30,6 +30,7 @@ mutation per rule and the owner's "pode mergear"; **normal** needs one reviewer 
 | Demo seed: one auctioneer, two funded bidders, one live lot with bids (D9c) | 8.1 | normal | #31 |
 | Auctioneer panel: result of each ended lot and the total received | 1.7 | normal | #33 |
 | End-to-end script against the published site (`make e2e-prod`) | 8.2 | normal | (PR pending) |
+| Countdown from the server clock (pure functions tested) | 4.1, 4.9 | normal | (PR pending) |
 | Receipt head wraps on phones (no sideways scroll in the live room) | | normal | #32 |
 | Countdown in days when more than a day is left | | normal | #34 |
 
@@ -37,7 +38,6 @@ mutation per rule and the owner's "pode mergear"; **normal** needs one reviewer 
 
 | # | Item | Criteria | Risk | Done when |
 |---|---|---|---|---|
-| B5 | Countdown from the server clock | 4.1, 4.9 | normal | 4.1 and 4.9 are Covered |
 | B6 | Exact messages for "not started" and "ended" bid refusals | 4.3 | normal | 4.3 is Covered |
 | B7 | Clear message on the screen when the catalog is down | 1.4 | normal | 1.4 is Covered |
 | B8 | Showcase card fields and error state | 2.2, 2.5 | normal | 2.2 and 2.5 are Covered |
