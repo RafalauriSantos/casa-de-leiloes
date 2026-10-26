@@ -6,7 +6,7 @@ import { formatBRL, parseReaisToCents } from '@/lib/format';
 import { useAuth } from '@/features/auth';
 import { fetchLive, placeBid } from '../api';
 import { addReceipt, readReceipts } from '../receipts';
-import { formatWhen, STATE_LABEL } from '../time';
+import { formatRemaining, formatWhen, STATE_LABEL } from '../time';
 
 const POLL_MS = 3_000;
 
@@ -15,15 +15,6 @@ type Load = { status: 'loading' } | { status: 'error'; message: string } | { sta
 /** Countdown from the server's clock: the offset between the server's `serverNow` and this browser's clock at the moment of the read. */
 function remainingMs(room: LiveLot, offsetMs: number, now: number): number {
   return new Date(room.endsAt).getTime() - (now + offsetMs);
-}
-
-function formatRemaining(ms: number): string {
-  if (ms <= 0) return 'encerrado';
-  const total = Math.floor(ms / 1000);
-  const h = Math.floor(total / 3600);
-  const m = Math.floor((total % 3600) / 60);
-  const s = total % 60;
-  return [h, m, s].map((n) => String(n).padStart(2, '0')).join(':');
 }
 
 export function LiveRoom({ lotId }: { lotId: string }) {
