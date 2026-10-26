@@ -79,6 +79,10 @@ Implementation status (updated with each slice): slices 0 to 4 are built, and th
 - Outcome rule (`receipts/rules.ts`, pure): a receipt for the bidder means `won`; a lot that is not active means `cancelled`; a lot still running shows `leading` or `outbid`; an ended lot without a receipt shows `lost`, or `settling` when the bidder led at the end (the settlement waits for the publication of the last bid, D21). `settling` is shown as "Encerrado, aguardando o comprovante" with a refresh: it is held while the settlement is not done (a broken history, an anchor wait), so it is never shown as won.
 - `GET /api/receipts/{code}` is public by its random 128-bit code (D10). It names the winner by pseudonym only and carries no user id or e-mail.
 - Declared limit: more than 100 lots are not shown and the page says nothing about the rest. The screen's error and retry path is not covered by a test: proving it needs the list request to fail, which the project only simulates for the live check.
+## D9c. Demo data (B2, criterion 8.1)
+- `make seed` (CLI `backend/scripts/seed.ts`, logic in `src/seed/demo.ts`) creates one auctioneer, two bidders with balance and one live lot with three bids. Accounts are real Auth users, deposits and bids go through the API with fixed keys, so a second run changes nothing (tested).
+- **Exception to "no default secrets":** the demo accounts share one password, written in the README, because the brief asks for test credentials there. It is used only by these three accounts, and the seed refuses nothing else. The owner chose this on 2026-10-26.
+- The lot's item is copied in at the seed, as for every lot; the seed does not call the external catalog.
 
 ## D10. Privacy
 - Pseudonym = `HMAC(SECRET, "pseudonym|lot_id|user_id")` shortened: stable inside a lot, different across lots. Never name, email or id; the logged-in user sees "you".

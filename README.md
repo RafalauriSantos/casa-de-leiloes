@@ -18,6 +18,9 @@ make e2e-live   # bate na API real do The Met (não roda no ci; use antes de pub
 
 - `make test`, `make dev` e `make ci` exigem `make db-up` antes (portas 54321 da API/Auth e 54322 do Postgres).
 - `make db-reset` recria o banco local do zero a partir das migrations.
+- **Dados de demonstração:** com a API no ar (`make dev`), rode `make seed` em outro terminal. Ele cria um leiloeiro, dois licitantes com saldo e um lote ao vivo com três lances, sem duplicar nada numa segunda execução. Contas (senha de demonstração `demo-leilao-2026`, só para estas contas):
+  - leiloeiro: `leiloeiro@demo.example`
+  - licitantes: `licitante1@demo.example` e `licitante2@demo.example`
 - Os segredos locais (cadeia de auditoria e cron) são gerados uma vez em `.env.dev-secrets` (fora do Git); apague o arquivo para trocá-los. Variáveis já definidas no seu ambiente têm prioridade sobre o arquivo.
 
 ## Produção (Vercel + Supabase)
