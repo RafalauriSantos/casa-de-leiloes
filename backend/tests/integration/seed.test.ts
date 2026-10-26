@@ -27,9 +27,13 @@ const deps = () => ({
   anonKey: requireEnv('SUPABASE_ANON_KEY'),
 });
 
-/** The demo lot: the one this demo auctioneer owns, never another auctioneer's lot with the same title. */
+/**
+ * The demo lot: the active one this demo auctioneer owns, as the seed picks it. Older demo lots may exist, cancelled by
+ * the cleanup at the end of an earlier run, and another auctioneer may own a lot with the same title.
+ */
 const DEMO_LOT_SQL = `select l.id from public.lots l join auth.users u on u.id = l.auctioneer_id
-                       where l.title = $1 and u.email = '${DEMO.auctioneer}' order by l.created_at limit 1`;
+                       where l.title = $1 and u.email = '${DEMO.auctioneer}' and l.status = 'active' and l.ends_at > now()
+                       order by l.created_at desc limit 1`;
 const DEMO_LOT_ID = `(${DEMO_LOT_SQL.replace(/\s+/g, ' ')})`;
 
 async function counts() {

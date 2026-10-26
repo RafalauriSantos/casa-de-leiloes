@@ -47,7 +47,7 @@ mutation per rule and the owner's "pode mergear"; **normal** needs one reviewer 
 | B10 | Security headers (CSP and others) | | normal | the app answers with them and still works on Vercel (PR #44) |
 | B11 | Daily live test of the public anchor | | normal | planned in D21 |
 | B12 | README final review | 8.3 | normal | the steps match what exists and every unexpected behavior is declared (PR #44) |
-| B13 | Test suites do not cancel each other's lots: the "Ao vivo" test spares the demo lot | 8.1 | normal | `seed.test.ts` and `showcase.test.tsx` pass in the same run, every run |
+| B13 | The seed test reads the demo lot the seed returns, not the oldest one (a second local run failed on a lot cancelled by the previous run's cleanup) | 8.1 | normal | `seed.test.ts` passes on every run, not only on a fresh database |
 | B14 | Sign-up with a role choice: "Quero comprar" (bidder) or "Quero vender" (auctioneer), fixed at creation | 0.6, 0.7 | high | a new account gets the role it chose, nothing else is accepted, and the role cannot change later |
 | B15 | Shortcuts on the login screen to the seeded demo accounts (a real sign-in) | 0.8 | high | each shortcut opens a real session with the account's role, and a failed sign-in says so |
 | B16 | README: the production URL and how to enter with the demo accounts | 8.3 | normal | the README names the URL and the accounts, and both work |
