@@ -1,3 +1,4 @@
+import { DEMO_ACCOUNTS } from '@casa/contracts';
 import { useState, type SyntheticEvent } from 'react';
 import { Navigate } from 'react-router-dom';
 import { signIn, signUp } from '../api';
@@ -34,9 +35,19 @@ export function AuthPanel() {
     else if ('notice' in result) setNotice(result.notice);
   }
 
+  /** A real sign-in with a seeded demo account: the shortcut only saves typing the e-mail and the shared password. */
+  async function enterAs(email: string) {
+    setBusy(true);
+    setError(undefined);
+    setNotice(undefined);
+    const result = await signIn(email, DEMO_ACCOUNTS.password);
+    setBusy(false);
+    if (!result.ok) setError('A conta de demonstração não está disponível agora.');
+  }
+
   return (
     <form onSubmit={(event) => void onSubmit(event)} aria-labelledby="auth-title">
-      <h2 id="auth-title">{mode === 'signin' ? 'Entrar' : 'Criar conta de licitante'}</h2>
+      <h2 id="auth-title">{mode === 'signin' ? 'Entrar' : 'Criar conta'}</h2>
       {mode === 'signup' && (
         <>
           <label>
@@ -72,6 +83,19 @@ export function AuthPanel() {
       <button type="button" className="link" onClick={() => { setMode(mode === 'signin' ? 'signup' : 'signin'); setError(undefined); }}>
         {mode === 'signin' ? 'Não tenho conta' : 'Já tenho conta'}
       </button>
+      {mode === 'signin' && (
+        <section aria-label="Contas de demonstração">
+          <p>Conhecer sem criar conta:</p>
+          <button type="button" className="link" disabled={busy} onClick={() => void enterAs(DEMO_ACCOUNTS.auctioneer)}>
+            Entrar como leiloeiro (demo)
+          </button>
+          {DEMO_ACCOUNTS.bidders.map((email, index) => (
+            <button key={email} type="button" className="link" disabled={busy} onClick={() => void enterAs(email)}>
+              Entrar como licitante {index + 1} (demo)
+            </button>
+          ))}
+        </section>
+      )}
     </form>
   );
 }

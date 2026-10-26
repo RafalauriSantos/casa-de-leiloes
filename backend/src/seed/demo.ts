@@ -1,14 +1,13 @@
+import { DEMO_ACCOUNTS } from '@casa/contracts';
 import type { Db } from '../shared/db';
 
 /**
  * The demo data the brief asks for (criterion 8.1): one auctioneer, two bidders with balance, one live lot with bids.
- * Accounts are real Supabase Auth users and bids go through the real API, so the chain is valid. The password is
- * shared by these demo accounts only and is written in the README, as the brief requires; it is never used outside them.
+ * Accounts are real Supabase Auth users and bids go through the real API, so the chain is valid. The accounts and their
+ * shared password come from the contracts, because the login screen offers them too.
  */
 export const DEMO = {
-  password: 'demo-leilao-2026',
-  auctioneer: 'leiloeiro@demo.example',
-  bidders: ['licitante1@demo.example', 'licitante2@demo.example'] as const,
+  ...DEMO_ACCOUNTS,
   lotTitle: 'Vaso de demonstração (Sèvres)',
   depositCents: 1_000_000,
 } as const;

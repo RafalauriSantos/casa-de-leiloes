@@ -83,6 +83,7 @@ Implementation status (updated with each slice): slices 0 to 4 are built, and th
 - `make seed` (CLI `backend/scripts/seed.ts`, logic in `src/seed/demo.ts`) creates one auctioneer, two bidders with balance and one live lot with three bids. Accounts are real Auth users, deposits and bids go through the API with fixed keys, so a second run changes nothing (tested).
 - **Exception to "no default secrets":** the demo accounts share one password, written in the README, because the brief asks for test credentials there. It is used only by these three accounts, and the seed refuses nothing else. The owner chose this on 2026-10-26.
 - The lot's item is copied in at the seed, as for every lot; the seed does not call the external catalog.
+- **Login shortcuts (B15, 2026-10-26):** the login screen offers the three demo accounts. Each shortcut is a real sign-in with the shared password, which now also ships in the site's code (`DEMO_ACCOUNTS` in the contracts, used by the seed and the screen). That exposes nothing new: the README already publishes it, and it opens only these three accounts. A failed shortcut says the demo account is not available, never a fake session.
 
 ## D10. Privacy
 - Pseudonym = `HMAC(SECRET, "pseudonym|lot_id|user_id")` shortened: stable inside a lot, different across lots. Never name, email or id; the logged-in user sees "you".

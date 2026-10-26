@@ -5,3 +5,4 @@ export * from './lots';
 export * from './bidding';
 export * from './audit';
 export * from './receipts';
+export * from './demo';

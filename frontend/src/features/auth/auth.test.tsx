@@ -1,6 +1,7 @@
 import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { randomBytes, randomUUID } from 'node:crypto';
+import { DEMO_ACCOUNTS } from '@casa/contracts';
 import { afterEach, describe, expect, it } from 'vitest';
 import { supabase } from '@/lib/supabase';
 import { AuthPanel } from './index';
@@ -21,6 +22,21 @@ describe('AuthPanel', () => {
     await user.click(screen.getByRole('button', { name: 'Entrar' }));
 
     expect((await screen.findByRole('alert')).textContent).toBe('E-mail ou senha incorretos.');
+  });
+
+  it('offers the demo accounts, and a shortcut is a real sign-in (0.8)', async () => {
+    // The seed creates this account; make sure it exists when this file runs alone (a second sign-up is refused, harmlessly).
+    await supabase.auth.signUp({ email: DEMO_ACCOUNTS.auctioneer, password: DEMO_ACCOUNTS.password, options: { data: { role: 'auctioneer' } } });
+    await supabase.auth.signOut();
+    const user = userEvent.setup();
+    render(<AuthPanel />);
+
+    await user.click(screen.getByRole('button', { name: 'Entrar como leiloeiro (demo)' }));
+
+    await waitFor(async () => {
+      const { data } = await supabase.auth.getSession();
+      expect(data.session?.user.email).toBe(DEMO_ACCOUNTS.auctioneer);
+    });
   });
 
   it('creates a real account and opens a session', async () => {
