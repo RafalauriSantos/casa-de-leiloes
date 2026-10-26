@@ -39,6 +39,7 @@ mutation per rule and the owner's "pode mergear"; **normal** needs one reviewer 
 | Showcase card shows the current bid once there are bids (it always showed the starting bid); card fields and the error state with retry tested | 2.2, 2.5 | normal | #42 |
 | Exact messages for "not started" and "ended" bid refusals are asserted (the messages were already sent) | 4.3 | normal | #43 |
 | The Ao vivo dot goes off on its own when the only live lot ends with the page open (the test closes open lots in the local database first) | 2.1 | normal | #43 |
+| Brief gaps: seed test reads the active demo lot (B13); sign-up chooses bidder or auctioneer (B14, migration 11); demo sign-in shortcuts (B15); README with the site and the demo accounts (B16); seed with an ended lot and a tampered lot (B17, B18); cancel with refund (B19, optional); Docker Compose (B20, optional); theme switch (B21, optional); AI usage notes (B22) | 0.6 to 0.8, 8.1, 8.5, 9.1 to 9.3 | D24, D25, D26 | #45 (waiting for "pode mergear") |
 
 ## To do (by priority)
 
@@ -47,16 +48,6 @@ mutation per rule and the owner's "pode mergear"; **normal** needs one reviewer 
 | B10 | Security headers (CSP and others) | | normal | the app answers with them and still works on Vercel (PR #44) |
 | B11 | Daily live test of the public anchor | | normal | planned in D21 |
 | B12 | README final review | 8.3 | normal | the steps match what exists and every unexpected behavior is declared (PR #44) |
-| B13 | The seed test reads the demo lot the seed returns, not the oldest one (a second local run failed on a lot cancelled by the previous run's cleanup) | 8.1 | normal | `seed.test.ts` passes on every run, not only on a fresh database |
-| B14 | Sign-up with a role choice: "Quero comprar" (bidder) or "Quero vender" (auctioneer), fixed at creation | 0.6, 0.7 | high | a new account gets the role it chose, nothing else is accepted, and the role cannot change later |
-| B15 | Shortcuts on the login screen to the seeded demo accounts (a real sign-in) | 0.8 | high | each shortcut opens a real session with the account's role, and a failed sign-in says so |
-| B16 | README: the production URL and how to enter with the demo accounts | 8.3 | normal | the README names the URL and the accounts, and both work |
-| B17 | Seed: an ended lot with a winner and a receipt | 8.1, 6.1 | normal | the demo bidder sees a won lot with its receipt and link right after the seed |
-| B18 | Seed: a settled lot whose history was changed in the database, shown as tampered by the audit | 8.1, 7.2 | normal | its audit page says "adulterado", and no money or alert depends on it |
-| B19 | Optional: cancel a lot with bids, with an automatic refund of the committed money | 9.1 | high | the leader's committed money returns to available in the same transaction, nobody is charged |
-| B20 | Optional: Docker Compose | 9.2 | normal | `docker compose up` runs the app as the README says |
-| B21 | Optional: a light/dark theme switch | 9.3 | normal | the switch changes the theme and the choice survives a reload |
-| B22 | Notes on where and how AI was used, and what was reviewed (for the submission form) | | normal | the notes are in the repository and match the history |
 
 Owner actions (not code): make the repository public after checking its history for secrets; protect the `main` branch of the anchor repository (checked on 2026-10-26: not protected).
 
