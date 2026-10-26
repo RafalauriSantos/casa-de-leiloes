@@ -2,6 +2,49 @@
 
 Each criterion of the brief's journeys (defined in phase 2 of the delivery process; the notes are kept outside the repository) maps to the tests that prove it. A criterion with no test is listed as open, never omitted.
 
+## J0: access (slice 1)
+
+| Criterion | Tests | Status |
+|---|---|---|
+| 0.1 bidder sign-up | `frontend/src/features/auth/auth.test.tsx` ("creates a real account and opens a session"); `backend/tests/integration/me.test.ts` ("creates the profile and an empty wallet on sign-up") | Covered |
+| 0.2 login with one generic error | `auth.test.tsx` ("shows one generic message for a wrong login"); `frontend/src/features/auth/api.test.ts` ("gives one generic refusal for any sign-up error") | Covered |
+| 0.3 logout | `frontend/src/journey.test.tsx` ("signs up, sees an empty wallet, deposits once even on a double click, signs out and back in") | Covered |
+| 0.4 role guards on screen and API (401/403) | 401/403 cases in `catalog.test.ts`, `lots.test.ts`, `wallet.test.ts`, `bidding.test.ts`; `frontend/src/features/lots/lots.test.tsx` ("shows the role message to a bidder who opens it"); `journey.test.tsx` ("has no wallet: no menu entry ...") | Covered |
+| 0.5 identity only from the token | `me.test.ts` ("returns the identity taken from the token", "never lets a user pick a role through sign-up metadata"); `auth-claims.test.ts` | Covered |
+
+## J1: auctioneer (slice 2)
+
+| Criterion | Tests | Status |
+|---|---|---|
+| 1.1 search an item in the external API | `catalog.test.ts` ("returns the public-domain items with an image ..."); `lots.test.tsx` ("publishes a lot from a catalog item and manages it") | Covered |
+| 1.2 create a lot with validations | `backend/tests/integration/lots.test.ts` (creation and refusals); `backend/src/modules/lots/rules.test.ts`; `lots.test.tsx` ("refuses inverted times with the reason ...") | Covered |
+| 1.3 item data copied into the database | `lots.test.ts` ("keeps the copy: the lot keeps its item even if the catalog later fails") | Covered |
+| 1.4 search with the API down shows a clear error | `catalog.test.ts` (503 `catalog_unavailable` cases) | Partial: the API answer is tested, the message on the screen is not |
+| 1.5 edit only before the start and without bids | `lots.test.ts` (edit cases, 409 `lot_not_editable`); `rules.test.ts` | Covered |
+| 1.6 cancel only without bids | `lots.test.ts` (cancel cases); `rules.test.ts` | Covered |
+| 1.7 result of each ended lot and the total received | None | **Open** |
+| 1.8 only their own lots | `lots.test.ts` ("lists only the auctioneer's ...", "refuses to edit another auctioneer's ...", "refuses to cancel another auctioneer's ...") | Covered |
+| 1.9 an auctioneer cannot bid | `bidding.test.ts` ("refuses an anonymous visitor with 401 and an auctioneer with 403"); `frontend/src/features/lots/bidding.test.tsx` ("an auctioneer sees the room and is told they cannot bid") | Covered |
+
+## J2: public showcase (slice 2)
+
+| Criterion | Tests | Status |
+|---|---|---|
+| 2.1 live, scheduled and ended tabs; cancelled hidden | `lots.test.ts` ("lists lots by state and hides cancelled ones"); `frontend/src/features/lots/showcase.test.tsx`; `LotCard.test.tsx` | Covered |
+| 2.2 card with image, title, current bid and time | `lots.test.tsx` ("lists a published lot under its state ...") | Partial: not every field of the card is asserted |
+| 2.3 search and filter | `lots.test.ts` ("searches by title, ignoring case ..."; "refuses an unknown status filter with 422") | Covered |
+| 2.4 works with the external API down | `catalog.test.ts` ("keeps working for everything else when the catalog is down") | Covered |
+| 2.5 loading, empty and error states | `lots.test.tsx` ("shows the showcase loading and an empty state ...", "answers a missing lot with a message, not a blank page") | Partial: the showcase error state has no test |
+
+## J3: wallet (slice 1)
+
+| Criterion | Tests | Status |
+|---|---|---|
+| 3.1 total, committed, available and deposit | `frontend/src/features/wallet/wallet.test.tsx` ("shows total, committed and available in reais"); `journey.test.tsx` | Covered |
+| 3.2 available = total - committed, never negative | `backend/src/modules/wallet/rules.test.ts`; `wallet.test.ts` ("refuses committed above total even when written directly", "refuses a negative balance when written directly") | Covered |
+| 3.3 deposit limits and validation | `wallet.test.ts` ("accepts exactly the minimum and the maximum deposit"); `journey.test.tsx` ("refuses a deposit below the minimum ...") | Covered |
+| 3.4 simultaneous deposits add up | `wallet.test.ts` ("sums simultaneous deposits with different keys", "credits exactly once when many identical requests race with the same key") | Covered |
+
 ## J4: live room and bids (slice 3)
 
 | Criterion | What it requires | Tests | Status |
@@ -26,3 +69,31 @@ Each criterion of the brief's journeys (defined in phase 2 of the delivery proce
 | 5.4 settles once under parallel triggers | `settlement.test.ts`, "5.4" (ten parallel cron calls) | Covered |
 | 5.5 the money only moves, the lot's ledger nets to zero | `settlement.test.ts`, "5.5" | Covered |
 | Settlement refuses a head copy that does not match the chain (D6) | `settlement.test.ts`, "a settlement that cannot prove its history" | Covered |
+
+## J6: my wins and the win receipt
+
+| Criterion | Tests | Status |
+|---|---|---|
+| 6.1 list the lots bid on and won, with the receipt | None | **Open**: there is no "Meus arremates" page yet |
+| 6.2 shareable link with a random code, no login | None | **Open** |
+| 6.3 the receipt shows only pseudonyms | None | **Open** |
+| 6.4 nobody sees someone else's receipt | None | **Open** |
+
+## J7: public audit (D22)
+
+| Criterion | Tests | Status |
+|---|---|---|
+| 7.1 full history with pseudonyms | `backend/tests/integration/audit.test.ts` ("is public, lists every bid oldest first with its hash ...", "shows the same pseudonym as the live room ..."); `frontend/src/features/audit/audit.test.tsx` | Covered |
+| 7.2 intact or tampered, and where it breaks | `audit.test.ts` ("names ..." cases); `audit.test.tsx` ("shows the tampered headline in an alert, with where the chain breaks") | Covered |
+| 7.3 detects an edited value, a bid removed in the middle, the last bid removed, an inserted bid, a swapped order, a direct database change | `audit.test.ts` ("names an edited amount, bidder and time", "names the seq expected where a bid was removed from the middle", "names the head_seq when the last bid was removed ...", "names a forged bid added at the end", "names two bids whose order was swapped"); `backend/src/shared/bid-chain.test.ts` | Covered, with a declared limit: a last bid removed with the head rewritten before its publication is caught only by the bidder's receipt (README, D22) |
+| 7.4 no personal data, not even indirect | `audit.test.ts` ("exposes no name, e-mail, user id or secret", "truncates every time to the second") | Covered |
+| 7.5 the technique explained in the README | README, "Histórico de lances" and "Auditoria pública" | Covered (documentation, no test) |
+
+## J8: cross-cutting
+
+| Criterion | Tests | Status |
+|---|---|---|
+| 8.1 seeds: one auctioneer, two bidders, one live lot with bids, credentials in the README | None | **Open** |
+| 8.2 public deploy | Checked after each merge (the deploy is READY and the site answers) | Covered by hand; the end-to-end script against the deployed URL is open |
+| 8.3 README with the steps and the unexpected behaviors | README | Partial: the final review is pending |
+| 8.4 one error shape, never a fake success | `failures.test.ts`; `catalog.test.ts` (503 cases); the `code` assertions across the integration tests | Covered |
