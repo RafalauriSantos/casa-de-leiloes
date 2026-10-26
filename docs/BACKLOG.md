@@ -37,12 +37,12 @@ mutation per rule and the owner's "pode mergear"; **normal** needs one reviewer 
 | Supabase image cache (added in #38, removed in #40: it missed on every new branch) | | normal | #38, #40 |
 | Catalog down: the search shows the server's message on the screen (test with the API's 503 answer) | 1.4 | normal | #42 |
 | Showcase card shows the current bid once there are bids (it always showed the starting bid); card fields and the error state with retry tested | 2.2, 2.5 | normal | #42 |
+| Exact messages for "not started" and "ended" bid refusals are asserted (the messages were already sent) | 4.3 | normal | this PR |
 
 ## To do (by priority)
 
 | # | Item | Criteria | Risk | Done when |
 |---|---|---|---|---|
-| B6 | Exact messages for "not started" and "ended" bid refusals | 4.3 | normal | 4.3 is Covered |
 | B9 | The Ao vivo dot goes off when a lot ends with the page open | 2.1 | normal | a deterministic test proves it |
 | B10 | Security headers (CSP and others) | | normal | the app answers with them and still works on Vercel |
 | B11 | Daily live test of the public anchor | | normal | planned in D21 |
