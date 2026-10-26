@@ -1,0 +1,53 @@
+# Backlog
+
+The work items of the project, done and to do. The acceptance criteria are not repeated here: each item points to
+the criteria in `docs/TRACEABILITY.md` (J0 to J8, taken from the brief) and to the decisions in `docs/DECISIONS.md`.
+An item is done when its criteria are Covered there.
+
+Risk levels: **high** (money, bids, settlement, authentication, permissions, migrations) needs both reviewers, a
+mutation per rule and the owner's "pode mergear"; **normal** needs one reviewer and merges on green CI.
+
+## Done
+
+| Item | Criteria | Decisions | PRs |
+|---|---|---|---|
+| Walking skeleton: monorepo, CI, Supabase, Vercel deploy, per-minute scheduler | 8.2 | D1, D2 | #1 |
+| Access and wallet: role guard, idempotent simulated deposit, append-only ledger | 0.1 to 0.5, 3.1 to 3.4 | D3, D9 | #2, #3 |
+| Catalog search, lots and the public showcase | 1.1 to 1.3, 1.5, 1.6, 1.8, 2.1, 2.3, 2.4 | D17 | #4, #5, #9 |
+| Bids, the live room and the hash-chained bid history | 1.9, 4.2, 4.4 to 4.8 | D4, D18 | #6, #7 |
+| Quality bar and the traceability map | | | #8 |
+| Settlement: due lots, receipts, on-demand triggers, refusal of a broken history | 5.1 to 5.5 | D6 | #10, #11 |
+| Bid receipt with the chain head | 7.3 | D21 | #13 |
+| Public anchor on GitHub: rules and publisher | 7.3 | D21 | #14, #15 |
+| Public audit: route, first broken bid, anchor, receipt head, headline, page | 7.1 to 7.5 | D22 | #16 to #22 |
+| Limit of 1,000 bids per lot | | D23 | #23 |
+| Payment waits for the publication of the last bid | | D21 | #24 |
+| Owner release of a lot whose history fails verification | 7.2 | D20 | #12, #25 |
+| Decision: no read-back of the anchor before payment | | D21 | #26 |
+| AO VIVO badge on live lots | 2.1 | | #27 |
+| The Ao vivo dot only while a lot is open; test runs leave no open lot behind | 2.1, 2.5 | | #28 |
+
+## To do (by priority)
+
+| # | Item | Criteria | Risk | Done when |
+|---|---|---|---|---|
+| B1 | "Meus arremates" page and the shareable win receipt | 6.1 to 6.4 | high (who can see a receipt) | the four criteria are Covered |
+| B2 | Seed | 8.1 | normal | `make seed` creates one auctioneer, two bidders with balance and one live lot with bids, without duplicating on a second run; the README lists the credentials |
+| B3 | Auctioneer panel: result of each ended lot and the total received | 1.7 | normal | 1.7 is Covered |
+| B4 | End-to-end script against the deployed URL | 8.2 | normal | a script walks sign-up, bid and receipt on the production URL and fails with a clear message when a step breaks |
+| B5 | Countdown from the server clock | 4.1, 4.9 | normal | 4.1 and 4.9 are Covered |
+| B6 | Exact messages for "not started" and "ended" bid refusals | 4.3 | normal | 4.3 is Covered |
+| B7 | Clear message on the screen when the catalog is down | 1.4 | normal | 1.4 is Covered |
+| B8 | Showcase card fields and error state | 2.2, 2.5 | normal | 2.2 and 2.5 are Covered |
+| B9 | The Ao vivo dot goes off when a lot ends with the page open | 2.1 | normal | a deterministic test proves it |
+| B10 | Security headers (CSP and others) | | normal | the app answers with them and still works on Vercel |
+| B11 | Daily live test of the public anchor | | normal | planned in D21 |
+| B12 | README final review | 8.3 | normal | the steps match what exists and every unexpected behavior is declared |
+
+## Waiting for a decision
+
+| Item | What is needed |
+|---|---|
+| Owner alert when a lot waits more than 10 minutes for publication | The owner chooses the channel (e-mail or other) |
+| Visual identity | The owner sends the references |
+| Branch protection on the anchor repository | An owner action on GitHub |
