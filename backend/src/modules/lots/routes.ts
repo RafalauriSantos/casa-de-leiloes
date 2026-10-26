@@ -7,7 +7,7 @@ import { AppError } from '../../shared/errors';
 import { requireRole } from '../identity';
 import { settleIfEnded } from '../settlement';
 import { createLotInput, lotInput, lotsQuery } from './schemas';
-import { cancelLot, createLot, getPublicLot, listOwnLots, listPublicLots, updateLot } from './service';
+import { auctioneerSummary, cancelLot, createLot, getPublicLot, listOwnLots, listPublicLots, updateLot } from './service';
 
 const uuid = z.uuid();
 
@@ -53,5 +53,6 @@ export function lotRoutes(deps: { db: Db; config: Config }): Hono<AuthEnv> {
       if (!id.success) throw new AppError('not_found', 'Lote não encontrado.');
       return c.json(await cancelLot(db, c.get('userId'), id.data));
     })
-    .get('/auctioneer/lots', ...guard, async (c) => c.json(await listOwnLots(db, c.get('userId'))));
+    .get('/auctioneer/lots', ...guard, async (c) => c.json(await listOwnLots(db, c.get('userId'))))
+    .get('/auctioneer/summary', ...guard, async (c) => c.json(await auctioneerSummary(db, c.get('userId'))));
 }
