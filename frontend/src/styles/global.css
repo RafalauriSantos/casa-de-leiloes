@@ -129,7 +129,6 @@ section[aria-labelledby] { margin-bottom: 1.5rem; }
 .audit-hash { word-break: break-all; font-size: 0.78rem; }
 
 /* Showcase and live room, redesigned (slice 1 of the Claude Design screens). */
-.lot-hero { max-width: none; }
 .featured { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(440px, 100%), 1fr)); gap: 2.5rem; align-items: center; padding-bottom: 2.5rem; border-bottom: 1px solid var(--line); margin-bottom: 2rem; }
 .featured img { width: 100%; aspect-ratio: 4 / 3; object-fit: contain; background: var(--card); border: 1px solid var(--line); }
 .featured .featured-body { display: flex; flex-direction: column; align-items: flex-start; gap: 1rem; }
