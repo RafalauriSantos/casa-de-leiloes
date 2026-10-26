@@ -41,12 +41,16 @@ export function LotDetail({ id }: { id: string }) {
             <div><dt>Início</dt><dd>{formatWhen(lot.startsAt)}</dd></div>
             <div><dt>Fim</dt><dd>{formatWhen(lot.endsAt)}</dd></div>
           </dl>
-          <h2>Sobre o item</h2>
-          <dl>
-            {attributes.map(([key, value]) => (
-              <div key={key}><dt>{labels[key] ?? key}</dt><dd>{value}</dd></div>
-            ))}
-          </dl>
+          {attributes.length > 0 && (
+            <>
+              <h2>Sobre o item</h2>
+              <dl>
+                {attributes.map(([key, value]) => (
+                  <div key={key}><dt>{labels[key] ?? key}</dt><dd>{value}</dd></div>
+                ))}
+              </dl>
+            </>
+          )}
           <p><a href={lot.sourceUrl} target="_blank" rel="noreferrer">Ver a obra na fonte (The Met)</a></p>
           <p><Link to={`/auditoria/${lot.id}`}>Auditar o histórico deste lote</Link></p>
         </div>

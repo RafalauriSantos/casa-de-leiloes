@@ -185,7 +185,7 @@ section[aria-label="Sala do lote"] dl dd { text-align: left; font-family: "Fraun
 header nav a:first-child::before { content: ""; display: inline-block; width: 0.9rem; height: 0.9rem; margin-right: 0.5rem; background: var(--brass); transform: rotate(45deg); }
 
 /* The remaining screens of the Claude Design canvas: sign-in, wallet, my wins, receipt, audit and the auctioneer panel. */
-.auth-page { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(440px, 100%), 1fr)); min-height: 70vh; margin: -1.5rem -1rem -3rem; }
+.auth-page { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(440px, 100%), 1fr)); min-height: 70vh; }
 .auth-aside { background: var(--ink); color: var(--paper); padding: 3rem 4rem; display: flex; flex-direction: column; justify-content: space-between; gap: 2rem; }
 .auth-aside p { margin: 0; color: var(--line); font-size: 1.05rem; }
 .auth-aside .auth-aside-title { font-family: "Fraunces", Georgia, serif; font-size: 2.6rem; line-height: 1.1; color: var(--paper); }
@@ -247,3 +247,26 @@ section[aria-label="Sala do lote"] input { width: 100%; box-sizing: border-box; 
 .bid-head button.link { white-space: nowrap; }
 section[aria-label="Painel do leiloeiro"] article button + button { margin-left: 0.6rem; }
 section[aria-label="Painel do leiloeiro"] article > button { margin-top: 0.4rem; }
+
+/* Phone width: the header, sign-in, wallet and room stack cleanly without sideways scroll. */
+@media (max-width: 600px) {
+  header nav { gap: 0.4rem 0.9rem; padding: 0.6rem 0.8rem; font-size: 0.95rem; }
+  header nav a:first-child { flex-basis: 100%; font-size: 1.3rem; margin-right: 0; }
+  .auth-page { grid-template-columns: minmax(0, 1fr); margin: 0; }
+  .auth-aside { padding: 2rem 1.25rem; gap: 1.25rem; }
+  .auth-aside .auth-aside-title { font-size: 2rem; }
+  .auth-form { max-width: none; padding: 2rem 1rem; justify-self: stretch; }
+  .auth-form input, .auth-form button { min-width: 0; }
+  [aria-label="Saldos"] { grid-template-columns: minmax(0, 1fr); }
+  [aria-label="Saldos"] > div { border-right: 0; border-bottom: 1px solid #3a3730; }
+  [aria-label="Saldos"] > div:last-child { border-bottom: 0; }
+  .chips { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .chip { white-space: nowrap; flex: none; }
+  .receipt { padding: 1.4rem 1.1rem; }
+  .receipt h1 { font-size: 2rem; }
+  .receipt-seal { width: 3.2rem; height: 3.2rem; top: 1rem; right: 1rem; }
+  section[aria-label="Sala do lote"] { padding: 1.1rem; }
+  .countdown-time { font-size: 2.6rem; }
+}
+.auth-form, .auth-aside, .auth-page { box-sizing: border-box; }
+.auth-form { min-width: 0; }
