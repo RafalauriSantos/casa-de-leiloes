@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { ApiRequestError } from '@/lib/api-client';
 import { formatBRL, parseReaisToCents } from '@/lib/format';
 import { useAuth } from '@/features/auth';
+import { fetchWallet } from '@/features/wallet';
 import { fetchLive, placeBid } from '../api';
 import { addReceipt, readReceipts } from '../receipts';
 import { clockOffset, formatRemaining, formatWhen, remainingMs, STATE_LABEL } from '../time';
@@ -25,6 +26,8 @@ export function LiveRoom({ lotId }: { lotId: string }) {
   const [amount, setAmount] = useState('');
   const [busy, setBusy] = useState(false);
   const [bidError, setBidError] = useState<string>();
+  /** The bidder's available balance, shown under the bid form (the canvas's "Disponível para lances"). */
+  const [available, setAvailable] = useState<number>();
   // The receipts belong to the user named in `owner`, so another user never sees them, not even for one render.
   const [stored, setStored] = useState<{ owner: string | undefined; list: BidReceipt[] }>({ owner: undefined, list: [] });
   const receipts = stored.owner === userId ? stored.list : [];
@@ -82,6 +85,16 @@ export function LiveRoom({ lotId }: { lotId: string }) {
       document.removeEventListener('visibilitychange', onVisible);
     };
   }, [lotId, token]);
+
+  // The available balance, read when the bidder opens the room and again after each accepted bid.
+  useEffect(() => {
+    if (!token || role !== 'bidder') return;
+    let cancelled = false;
+    fetchWallet(token)
+      .then((wallet) => { if (!cancelled) setAvailable(wallet.availableCents); })
+      .catch(() => { if (!cancelled) setAvailable(undefined); });
+    return () => { cancelled = true; };
+  }, [token, role, load.status === 'ready' ? load.room.bidCount : 0]);
 
   // Re-render every second so the countdown moves.
   useEffect(() => {
@@ -173,6 +186,9 @@ export function LiveRoom({ lotId }: { lotId: string }) {
           <input id="bid-amount" value={amount} onChange={(event) => { setAmount(event.target.value); }} inputMode="decimal" required />
           {bidError && <p role="alert">{bidError}</p>}
           <button type="submit" disabled={busy || remaining <= 0}>{busy ? 'Enviando…' : 'Dar lance'}</button>
+          {available !== undefined && (
+            <p className="room-available">Disponível para lances: <strong>{formatBRL(available)}</strong></p>
+          )}
         </form>
       )}
       {room.state === 'live' && full && <p>{BID_LIMIT_MESSAGE}</p>}

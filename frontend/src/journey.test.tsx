@@ -46,7 +46,7 @@ describe('bidder journey', () => {
     // Empty wallet
     await user.click(screen.getByRole('link', { name: 'Carteira' }));
     expect(await screen.findByRole('heading', { name: 'Carteira' })).toBeTruthy();
-    await waitFor(() => { expect(screen.getAllByText('R$ 0,00')).toHaveLength(3); });
+    await waitFor(() => { expect(within(screen.getByLabelText('Saldos')).getAllByText('R$ 0,00')).toHaveLength(3); });
 
     // Deposit
     await user.type(screen.getByLabelText('Valor (R$)'), '250,00');

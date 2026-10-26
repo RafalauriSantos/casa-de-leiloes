@@ -275,3 +275,12 @@ section[aria-label="Painel do leiloeiro"] article > button { margin-top: 0.4rem;
 .steps b { width: 1.9rem; height: 1.9rem; border-radius: 50%; border: 1px solid var(--ink); display: inline-flex; align-items: center; justify-content: center; font-family: "Fraunces", Georgia, serif; font-size: 0.95rem; font-weight: 400; }
 [aria-label="Saldos"] > div:first-child dd { font-size: 3rem; }
 @media (max-width: 600px) { [aria-label="Saldos"] > div:first-child dd { font-size: 2.4rem; } }
+
+/* Header balance, wallet bar and the room's available line (the canvas's balance details). */
+.header-balance { display: inline-flex; flex-direction: column; align-items: flex-end; line-height: 1.15; text-decoration: none; }
+.header-balance span { font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.header-balance strong { font-family: "Fraunces", Georgia, serif; font-size: 1.05rem; font-variant-numeric: tabular-nums; }
+.balance-bar { display: flex; height: 0.6rem; background: var(--line); margin: 1rem 0 0; }
+.balance-bar span { display: block; background: var(--ink); height: 100%; }
+.room-available { font-size: 0.9rem; color: var(--muted); margin: 0; }
+.room-available strong { color: var(--ink); font-variant-numeric: tabular-nums; }

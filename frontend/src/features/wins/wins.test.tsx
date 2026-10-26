@@ -89,7 +89,8 @@ describe('my wins and the win receipt (J6)', () => {
 
     expect(await screen.findByRole('heading', { name: 'Comprovante de arremate' })).toBeTruthy();
     expect(await screen.findByText(title)).toBeTruthy();
-    expect(screen.getByText(/R\$\s*500,00/)).toBeTruthy();
+    // The header shows the available balance too, so the amount may appear more than once.
+    expect(screen.getAllByText(/R\$\s*500,00/).length).toBeGreaterThan(0);
     const receiptPath = window.location.pathname;
 
     cleanup();
