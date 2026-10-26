@@ -31,3 +31,16 @@ export function formatRemaining(ms: number): string {
   if (days === 0) return clock;
   return `${String(days)} ${days === 1 ? 'dia' : 'dias'} ${clock}`;
 }
+
+/**
+ * The offset between the server's clock and this browser's, read at the midpoint of the request: the server answered
+ * somewhere between sending and receiving, so the midpoint is the best guess.
+ */
+export function clockOffset(serverNowIso: string, sentAt: number, receivedAt: number): number {
+  return new Date(serverNowIso).getTime() - (sentAt + receivedAt) / 2;
+}
+
+/** Time left in a lot, in milliseconds, on the server's clock: the browser's clock plus the offset. */
+export function remainingMs(endsAtIso: string, offsetMs: number, browserNow: number): number {
+  return new Date(endsAtIso).getTime() - (browserNow + offsetMs);
+}
