@@ -22,7 +22,7 @@ Each criterion of the brief's journeys (defined in phase 2 of the delivery proce
 | 1.4 search with the API down shows a clear error | `catalog.test.ts` (503 `catalog_unavailable` cases) | Partial: the API answer is tested, the message on the screen is not |
 | 1.5 edit only before the start and without bids | `lots.test.ts` (edit cases, 409 `lot_not_editable`); `rules.test.ts` | Covered |
 | 1.6 cancel only without bids | `lots.test.ts` (cancel cases); `rules.test.ts` | Covered |
-| 1.7 result of each ended lot and the total received | None | **Open** |
+| 1.7 result of each ended lot and the total received | `backend/tests/integration/auctioneer-results.test.ts` (sold for how much, no bids, pending settlement, the total without other auctioneers' lots, 403 for a bidder); `frontend/src/features/lots/results.test.tsx` ("shows what each ended lot sold for, its no-bids state, and the total received") | Covered |
 | 1.8 only their own lots | `lots.test.ts` ("lists only the auctioneer's ...", "refuses to edit another auctioneer's ...", "refuses to cancel another auctioneer's ...") | Covered |
 | 1.9 an auctioneer cannot bid | `bidding.test.ts` ("refuses an anonymous visitor with 401 and an auctioneer with 403"); `frontend/src/features/lots/bidding.test.tsx` ("an auctioneer sees the room and is told they cannot bid") | Covered |
 

@@ -1,12 +1,20 @@
-import type { LotInput, OwnLot } from '@casa/contracts';
+import type { AuctioneerSummary, LotInput, OwnLot } from '@casa/contracts';
 import { useEffect, useState } from 'react';
 import { ApiRequestError } from '@/lib/api-client';
 import { formatBRL } from '@/lib/format';
-import { cancelLot, fetchOwnLots, updateLot } from '../api';
+import { cancelLot, fetchAuctioneerSummary, fetchOwnLots, updateLot } from '../api';
 import { formatWhen, STATE_LABEL } from '../time';
 import { LotForm, valuesOf } from './LotForm';
 
-type Load = { status: 'loading' } | { status: 'error'; message: string } | { status: 'ready'; lots: OwnLot[] };
+type Load = { status: 'loading' } | { status: 'error'; message: string } | { status: 'ready'; lots: OwnLot[]; summary: AuctioneerSummary };
+
+/** The line under an ended lot: what it sold for, or that nobody bid, or that its settlement is still pending. */
+function resultText(lot: OwnLot): string | undefined {
+  if (!lot.result) return undefined;
+  if (lot.result.outcome === 'sold') return `Arrematado por ${formatBRL(lot.result.amountCents ?? 0)}`;
+  if (lot.result.outcome === 'no_bids') return 'Encerrado sem lances';
+  return 'Encerrado · aguardando liquidação';
+}
 
 export function OwnLots({ token }: { token: string }) {
   const [load, setLoad] = useState<Load>({ status: 'loading' });
@@ -16,8 +24,8 @@ export function OwnLots({ token }: { token: string }) {
 
   useEffect(() => {
     let cancelled = false;
-    fetchOwnLots(token)
-      .then((lots) => { if (!cancelled) setLoad({ status: 'ready', lots }); })
+    Promise.all([fetchOwnLots(token), fetchAuctioneerSummary(token)])
+      .then(([lots, summary]) => { if (!cancelled) setLoad({ status: 'ready', lots, summary }); })
       .catch((error: unknown) => {
         if (!cancelled) setLoad({ status: 'error', message: error instanceof Error ? error.message : 'Erro inesperado.' });
       });
@@ -53,6 +61,11 @@ export function OwnLots({ token }: { token: string }) {
         </>
       )}
       {load.status === 'ready' && load.lots.length === 0 && <p>Você ainda não publicou lotes.</p>}
+      {load.status === 'ready' && load.lots.length > 0 && (
+        <p>
+          Total recebido: {formatBRL(load.summary.totalReceivedCents)} · {load.summary.soldLots} de {load.summary.endedLots} lote(s) encerrado(s) vendido(s)
+        </p>
+      )}
       {load.status === 'ready' && load.lots.map((lot) => (
         <article key={lot.id} className="own-lot">
           <h3>{lot.title}</h3>
@@ -60,6 +73,7 @@ export function OwnLots({ token }: { token: string }) {
             <span className="state">{STATE_LABEL[lot.state]}</span> · lance inicial {formatBRL(lot.startingBidCents)} · incremento {formatBRL(lot.incrementCents)}
           </p>
           <p><small>De {formatWhen(lot.startsAt)} até {formatWhen(lot.endsAt)} · {lot.bidCount} lance(s)</small></p>
+          {resultText(lot) && <p><strong>{resultText(lot)}</strong></p>}
           {lot.canEdit && editing !== lot.id && (
             <button type="button" onClick={() => { setEditing(lot.id); }}>Editar</button>
           )}

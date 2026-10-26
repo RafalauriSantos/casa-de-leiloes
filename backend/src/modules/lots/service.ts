@@ -1,10 +1,10 @@
-import type { ItemAttributes, LotDetail, LotState, LotSummary, OwnLot, LotInput } from '@casa/contracts';
+import type { AuctioneerSummary, ItemAttributes, LotDetail, LotState, LotSummary, OwnLot, LotInput } from '@casa/contracts';
 import type { Config } from '../../config';
 import { databaseNow } from '../../shared/clock';
 import { type Db, type Queryable } from '../../shared/db';
 import { AppError } from '../../shared/errors';
 import { fetchItem } from '../catalog';
-import { cancelRefusal, checkTiming, editRefusal, stateOf } from './rules';
+import { cancelRefusal, checkTiming, editRefusal, resultOf, stateOf } from './rules';
 import type { createLotInput, lotsQuery } from './schemas';
 import type { z } from 'zod';
 
@@ -23,10 +23,13 @@ interface LotRow {
   increment_cents: number;
   status: 'active' | 'cancelled' | 'integrity_cancelled';
   bid_count: number;
+  settled_at: Date | null;
+  outcome: 'sold' | 'no_bids' | null;
+  current_amount_cents: number | null;
 }
 
 const COLUMNS = `id, auctioneer_id, title, item_image_url, item_source_url, item_attributes,
-  starts_at, ends_at, starting_bid_cents, increment_cents, status, bid_count`;
+  starts_at, ends_at, starting_bid_cents, increment_cents, status, bid_count, settled_at, outcome, current_amount_cents`;
 
 const stateFor = (row: LotRow, now: Date): LotState =>
   // Any status other than active is shown as cancelled: a lot released by the owner for tampering (D20) has no sale.
@@ -57,6 +60,7 @@ function toOwn(row: LotRow, now: Date): OwnLot {
     bidCount: row.bid_count,
     canEdit: editRefusal(state) === undefined,
     canCancel: cancelRefusal(state) === undefined,
+    result: resultOf({ state: state.state, settled: row.settled_at !== null, outcome: row.outcome, amountCents: row.current_amount_cents }),
   };
 }
 
@@ -163,4 +167,17 @@ export async function cancelLot(db: Db, userId: string, lotId: string): Promise<
     await tx.query("update public.lots set status = 'cancelled' where id = $1", [lotId]);
     return toOwn({ ...current, status: 'cancelled' }, now);
   });
+}
+
+/** What this auctioneer received in total, from the win receipts of their own lots, and how many lots ended (1.7). */
+export async function auctioneerSummary(db: Queryable, userId: string): Promise<AuctioneerSummary> {
+  const [row] = await db.query<{ total: number; sold: number; ended: number }>(
+    `select coalesce((select sum(r.amount_cents) from public.receipts r join public.lots l on l.id = r.lot_id
+                       where l.auctioneer_id = $1), 0)::bigint as total,
+            (select count(*)::int from public.receipts r join public.lots l on l.id = r.lot_id where l.auctioneer_id = $1) as sold,
+            (select count(*)::int from public.lots where auctioneer_id = $1 and outcome is not null) as ended`,
+    [userId],
+  );
+  if (!row) throw new Error('auctioneer summary query returned no row');
+  return { totalReceivedCents: row.total, soldLots: row.sold, endedLots: row.ended };
 }

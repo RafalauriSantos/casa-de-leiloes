@@ -41,6 +41,21 @@ export interface OwnLot extends LotDetail {
   bidCount: number;
   canEdit: boolean;
   canCancel: boolean;
+  /** How an ended lot ended; null while the lot is not over (or was cancelled). */
+  result: LotResult | null;
+}
+
+/** `pending`: the lot is over and its settlement is not done yet. `sold`: the amount paid. `no_bids`: nobody bid. */
+export interface LotResult {
+  outcome: 'pending' | 'sold' | 'no_bids';
+  amountCents: number | null;
+}
+
+/** What the auctioneer received: the sum of the win receipts of their lots (1.7). */
+export interface AuctioneerSummary {
+  totalReceivedCents: number;
+  soldLots: number;
+  endedLots: number;
 }
 
 /** The fields an auctioneer sets. Times are ISO strings with an explicit offset. */
