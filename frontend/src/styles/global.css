@@ -284,3 +284,13 @@ section[aria-label="Painel do leiloeiro"] article > button { margin-top: 0.4rem;
 .balance-bar span { display: block; background: var(--ink); height: 100%; }
 .room-available { font-size: 0.9rem; color: var(--muted); margin: 0; }
 .room-available strong { color: var(--ink); font-variant-numeric: tabular-nums; }
+
+/* Long unbroken values (codes, hashes) wrap inside their column instead of pushing the page wider. */
+dd { overflow-wrap: anywhere; min-width: 0; }
+dl > div { min-width: 0; }
+
+/* The bid table keeps its columns and scrolls sideways in its box on phones, instead of squeezing every cell. */
+.audit-scroll table { min-width: 42rem; }
+.audit-scroll td, .audit-scroll th { white-space: nowrap; }
+.audit-scroll .audit-hash { white-space: normal; }
+.history li strong { white-space: nowrap; }
