@@ -100,7 +100,7 @@ Each criterion of the brief's journeys (defined in phase 2 of the delivery proce
 | 8.2 public deploy | `make e2e-prod` (`backend/scripts/e2e-deployed.ts`) walks sign-up, deposit, the live lot, a refused and an accepted bid, "Meus arremates" and the public audit on the published URL; it passed on the production site (6 of 6). The receipt step needs the lot to end, so it is not in the script | Covered for the published site; the receipt is covered by the integration tests |
 | 8.3 README with the steps and the unexpected behaviors | README | Partial: the final review is pending |
 | 8.4 one error shape, never a fake success | `failures.test.ts`; `catalog.test.ts` (503 cases); the `code` assertions across the integration tests | Covered |
-| 8.5 the demo data also holds an ended lot with a receipt and a tampered lot (B17, B18) | | Open |
+| 8.5 the demo data also holds an ended lot with a receipt and a tampered lot (B17, B18) | `seed.test.ts` ("also leaves an ended lot with a winner and a receipt, and a settled lot whose history was changed"; "running it again creates nothing new") | Covered locally; the hosted run is pending (D9c) |
 
 ## J9: optionals of the brief (section 05)
 

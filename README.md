@@ -27,7 +27,7 @@ make e2e-live   # bate na API real do The Met (não roda no ci; use antes de pub
 
 - `make test`, `make dev` e `make ci` exigem `make db-up` antes (portas 54321 da API/Auth e 54322 do Postgres).
 - `make db-reset` recria o banco local do zero a partir das migrations.
-- **Dados de demonstração:** com a API no ar (`make dev`), rode `make seed` em outro terminal. Ele cria um leiloeiro, dois licitantes com saldo e um lote ao vivo com três lances, sem duplicar nada numa segunda execução. Contas (senha de demonstração `demo-leilao-2026`, só para estas contas):
+- **Dados de demonstração:** com a API no ar (`make dev`), rode `make seed` em outro terminal. Ele cria um leiloeiro, dois licitantes com saldo e três lotes, sem duplicar nada numa segunda execução: um lote ao vivo com três lances; um lote encerrado que o licitante 1 arrematou, com comprovante (aparece em "Meus arremates"); e um lote encerrado cujo primeiro lance o seed alterou direto no banco, para a auditoria mostrar "adulterado" sem ninguém precisar mexer no banco. Contas (senha de demonstração `demo-leilao-2026`, só para estas contas):
   - leiloeiro: `leiloeiro@demo.example`
   - licitantes: `licitante1@demo.example` e `licitante2@demo.example`
   - A tela de login também tem atalhos ("Entrar como leiloeiro (demo)" e os dois licitantes): é o mesmo login real, sem precisar digitar.
