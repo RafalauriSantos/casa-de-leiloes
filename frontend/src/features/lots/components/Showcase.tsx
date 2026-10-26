@@ -1,6 +1,9 @@
 import type { LotSummary } from '@casa/contracts';
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { formatBRL } from '@/lib/format';
 import { fetchLots, type ShowcaseStatus } from '../api';
+import { formatWhen } from '../time';
 import { LotCard } from './LotCard';
 
 /** Same cadence as the live room: a lot that ends or starts while the page is open changes the dot within this time. */
@@ -28,6 +31,8 @@ export function Showcase() {
   const [attempt, setAttempt] = useState(0);
   /** Whether a lot is open right now. Unknown or failed reads count as none: the tab never claims a live lot it has not seen. */
   const [hasLive, setHasLive] = useState(false);
+  /** The first lot open right now, shown as the featured lot of the showcase. */
+  const [liveLot, setLiveLot] = useState<LotSummary>();
 
   useEffect(() => {
     let cancelled = false;
@@ -47,8 +52,18 @@ export function Showcase() {
     const check = () => {
       const request = ++latest;
       fetchLots({ status: 'live' })
-        .then((lots) => { if (!cancelled && request === latest) setHasLive(lots.length > 0); })
-        .catch(() => { if (!cancelled && request === latest) setHasLive(false); });
+        .then((lots) => {
+          if (!cancelled && request === latest) {
+            setHasLive(lots.length > 0);
+            setLiveLot(lots[0]);
+          }
+        })
+        .catch(() => {
+          if (!cancelled && request === latest) {
+            setHasLive(false);
+            setLiveLot(undefined);
+          }
+        });
     };
     check();
     const timer = setInterval(check, LIVE_CHECK_MS);
@@ -61,10 +76,26 @@ export function Showcase() {
   return (
     <section aria-label="Vitrine">
       <h1>Lotes</h1>
+      {liveLot && (
+        <section className="featured" aria-label="Lote ao vivo em destaque">
+          <img src={liveLot.imageUrl} alt="" />
+          <div className="featured-body">
+            <span className="live-badge"><span className="live-dot" aria-hidden="true" />AO VIVO</span>
+            <p className="serif">{liveLot.title}</p>
+            <p>Lance atual</p>
+            <p className="featured-amount">{formatBRL(liveLot.currentAmountCents ?? liveLot.startingBidCents)}</p>
+            <p>Termina em {formatWhen(liveLot.endsAt)}</p>
+            <div className="featured-actions">
+              <Link to={`/lotes/${liveLot.id}`}>Entrar na sala e dar lance</Link>
+              <Link to={`/auditoria/${liveLot.id}`}>Auditar histórico</Link>
+            </div>
+          </div>
+        </section>
+      )}
       <form onSubmit={(event) => { event.preventDefault(); setQuery(search.trim()); }} role="search">
         <label>
           Buscar por título
-          <input value={search} onChange={(event) => { setSearch(event.target.value); }} placeholder="vaso, jarra..." />
+          <input value={search} onChange={(event) => { setSearch(event.target.value); }} placeholder="Buscar por título: vaso, jarra…" />
         </label>
         <button type="submit">Buscar</button>
       </form>
