@@ -87,6 +87,7 @@ export function Showcase() {
             <p>Termina em {formatWhen(liveLot.endsAt)}</p>
             <div className="featured-actions">
               <Link to={`/lotes/${liveLot.id}`}>Entrar na sala e dar lance</Link>
+              <Link to={`/auditoria/${liveLot.id}`}>Auditar histórico</Link>
             </div>
           </div>
         </section>
@@ -94,7 +95,7 @@ export function Showcase() {
       <form onSubmit={(event) => { event.preventDefault(); setQuery(search.trim()); }} role="search">
         <label>
           Buscar por título
-          <input value={search} onChange={(event) => { setSearch(event.target.value); }} placeholder="vaso, jarra..." />
+          <input value={search} onChange={(event) => { setSearch(event.target.value); }} placeholder="Buscar por título: vaso, jarra…" />
         </label>
         <button type="submit">Buscar</button>
       </form>

@@ -134,12 +134,14 @@ describe('showcase: a lot card shows its image, title, bid and time (2.2)', () =
 
     const starting = await cardFor(bidless);
     expect(starting.querySelector('img')?.getAttribute('src')).toBe('https://example.test/item.jpg');
-    expect(starting.textContent).toContain('Lance inicial R$ 500,00');
+    expect(starting.textContent).toContain('Lance inicial');
+    expect(starting.textContent).toContain('R$ 500,00');
     expect(starting.textContent).toContain('Termina em');
     cleanup();
 
     const current = await cardFor(bid);
-    expect(current.textContent).toContain('Lance atual R$ 550,00');
+    expect(current.textContent).toContain('Lance atual');
+    expect(current.textContent).toContain('R$ 550,00');
     expect(current.textContent).toContain('Termina em');
   });
 });

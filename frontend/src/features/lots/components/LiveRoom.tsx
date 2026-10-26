@@ -128,13 +128,19 @@ export function LiveRoom({ lotId }: { lotId: string }) {
   return (
     <section aria-label="Sala do lote">
       <h2>Sala ao vivo</h2>
-      <p>
-        <span className="state">{STATE_LABEL[room.state]}</span>{' '}
-        {room.state === 'live' && remaining > 0 && <strong>Termina em {formatRemaining(remaining)}</strong>}
-        {room.state === 'live' && remaining <= 0 && <strong>Encerrando…</strong>}
-        {room.state === 'scheduled' && <>Começa em {formatWhen(room.startsAt)}</>}
-        {room.state === 'ended' && <>Encerrado em {formatWhen(room.endsAt)}</>}
+      <p className="room-status">
+        <span className="state">{STATE_LABEL[room.state]}</span>
+        {room.state === 'live' && <span className="room-refresh">Atualiza a cada 3 s</span>}
       </p>
+      {room.state === 'live' && remaining > 0 && (
+        <div className="countdown">
+          <span className="label">Termina em</span>
+          <span className="countdown-time">{formatRemaining(remaining)}</span>
+        </div>
+      )}
+      {room.state === 'live' && remaining <= 0 && <p><strong>Encerrando…</strong></p>}
+      {room.state === 'scheduled' && <p>Começa em {formatWhen(room.startsAt)}</p>}
+      {room.state === 'ended' && <p>Encerrado em {formatWhen(room.endsAt)}</p>}
       {stale && <p role="status">Conexão instável: a tela pode estar atrasada. Tentando de novo…</p>}
 
       <dl>
@@ -143,15 +149,28 @@ export function LiveRoom({ lotId }: { lotId: string }) {
         <div><dt>Lances</dt><dd>{room.bidCount}</dd></div>
       </dl>
 
-      {room.position === 'leading' && <p role="status" className="position leading">Você está ganhando.</p>}
-      {room.position === 'outbid' && <p role="alert" className="position outbid">Você foi superado.</p>}
+      {room.position === 'leading' && (
+        <p role="status" className="position leading">
+          <strong>Você está ganhando.</strong>
+          <span>Seu lance lidera e esse valor fica reservado na carteira.</span>
+        </p>
+      )}
+      {room.position === 'outbid' && (
+        <p role="alert" className="position outbid">
+          <strong>Você foi superado.</strong>
+          <span>Dê um novo lance para voltar à frente.</span>
+        </p>
+      )}
 
       {canBid && (
         <form onSubmit={(event) => void submit(event)} aria-label="Dar lance">
-          <label>
-            Seu lance (R$)
-            <input value={amount} onChange={(event) => { setAmount(event.target.value); }} inputMode="decimal" required />
-          </label>
+          <div className="bid-head">
+            <label htmlFor="bid-amount">Seu lance (R$)</label>
+            <button type="button" className="link" onClick={() => { setAmount((room.nextMinimumCents / 100).toFixed(2).replace('.', ',')); }}>
+              Usar o mínimo
+            </button>
+          </div>
+          <input id="bid-amount" value={amount} onChange={(event) => { setAmount(event.target.value); }} inputMode="decimal" required />
           {bidError && <p role="alert">{bidError}</p>}
           <button type="submit" disabled={busy || remaining <= 0}>{busy ? 'Enviando…' : 'Dar lance'}</button>
         </form>
@@ -180,9 +199,10 @@ export function LiveRoom({ lotId }: { lotId: string }) {
       ) : (
         <ol className="history">
           {room.history.map((entry) => (
-            <li key={entry.seq}>
-              <span>{entry.mine ? 'Você' : `Licitante ${entry.bidderLabel.slice(0, 6)}`}</span>{' '}
-              <strong>{formatBRL(entry.amountCents)}</strong> <small>{formatWhen(entry.placedAt)}</small>
+            <li key={entry.seq} className={entry.mine ? 'mine' : undefined}>
+              <span className="history-who">{entry.mine ? 'Você' : `Licitante ${entry.bidderLabel.slice(0, 6)}`}</span>
+              <strong>{formatBRL(entry.amountCents)}</strong>
+              <small>{formatWhen(entry.placedAt)}</small>
             </li>
           ))}
         </ol>
