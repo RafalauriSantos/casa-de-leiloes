@@ -21,6 +21,8 @@ export function OwnLots({ token }: { token: string }) {
   const [editing, setEditing] = useState<string>();
   const [notice, setNotice] = useState<string>();
   const [attempt, setAttempt] = useState(0);
+  /** The lot with bids whose cancellation waits for a second click: it refunds the leader (B19). */
+  const [confirming, setConfirming] = useState<string>();
 
   useEffect(() => {
     let cancelled = false;
@@ -40,9 +42,10 @@ export function OwnLots({ token }: { token: string }) {
   };
 
   async function cancel(lot: OwnLot) {
+    setConfirming(undefined);
     try {
       await cancelLot(token, lot.id);
-      setNotice(`Lote "${lot.title}" cancelado.`);
+      setNotice(lot.bidCount > 0 ? `Lote "${lot.title}" cancelado. O valor do lance líder voltou para o licitante.` : `Lote "${lot.title}" cancelado.`);
       reload();
     } catch (error: unknown) {
       fail(error);
@@ -77,7 +80,16 @@ export function OwnLots({ token }: { token: string }) {
           {lot.canEdit && editing !== lot.id && (
             <button type="button" onClick={() => { setEditing(lot.id); }}>Editar</button>
           )}
-          {lot.canCancel && <button type="button" onClick={() => void cancel(lot)}>Cancelar lote</button>}
+          {lot.canCancel && confirming !== lot.id && (
+            <button type="button" onClick={() => { if (lot.bidCount > 0) setConfirming(lot.id); else void cancel(lot); }}>Cancelar lote</button>
+          )}
+          {confirming === lot.id && (
+            <div>
+              <p>Este lote tem lances. Cancelar devolve na hora o valor comprometido de quem lidera, e ninguém paga nada.</p>
+              <button type="button" onClick={() => void cancel(lot)}>Confirmar cancelamento</button>
+              <button type="button" onClick={() => { setConfirming(undefined); }}>Manter o lote</button>
+            </div>
+          )}
           {editing === lot.id && (
             <LotForm
               initial={valuesOf(lot)}

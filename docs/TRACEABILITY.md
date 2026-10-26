@@ -24,7 +24,7 @@ Each criterion of the brief's journeys (defined in phase 2 of the delivery proce
 | 1.3 item data copied into the database | `lots.test.ts` ("keeps the copy: the lot keeps its item even if the catalog later fails") | Covered |
 | 1.4 search with the API down shows a clear error | `catalog.test.ts` (503 `catalog_unavailable` cases); `frontend/src/features/lots/catalog-states.test.tsx` ("a failed item search says so on the screen, and a new search recovers") | Covered |
 | 1.5 edit only before the start and without bids | `lots.test.ts` (edit cases, 409 `lot_not_editable`); `rules.test.ts` | Covered |
-| 1.6 cancel only without bids | `lots.test.ts` (cancel cases); `rules.test.ts` | Covered |
+| 1.6 cancel a lot that has not ended; one with bids refunds the leader (9.1) | `lots.test.ts` (cancel cases); `rules.test.ts`; `cancel-refund.test.ts` | Covered |
 | 1.7 result of each ended lot and the total received | `backend/tests/integration/auctioneer-results.test.ts` (sold for how much, no bids, pending settlement, the total without other auctioneers' lots, 403 for a bidder); `frontend/src/features/lots/results.test.tsx` ("shows what each ended lot sold for, its no-bids state, and the total received") | Covered |
 | 1.8 only their own lots | `lots.test.ts` ("lists only the auctioneer's ...", "refuses to edit another auctioneer's ...", "refuses to cancel another auctioneer's ...") | Covered |
 | 1.9 an auctioneer cannot bid | `bidding.test.ts` ("refuses an anonymous visitor with 401 and an auctioneer with 403"); `frontend/src/features/lots/bidding.test.tsx` ("an auctioneer sees the room and is told they cannot bid") | Covered |
@@ -108,6 +108,6 @@ Each criterion of the brief's journeys (defined in phase 2 of the delivery proce
 |---|---|---|
 | Search and filter of lots | see 2.3 | Covered |
 | Automated tests | `make ci` | Covered |
-| 9.1 cancelling a lot with bids refunds the committed money automatically (B19) | | Open |
+| 9.1 cancelling a lot with bids refunds the committed money automatically (B19) | `backend/tests/integration/cancel-refund.test.ts`; `frontend/src/features/lots/results.test.tsx` ("asks to confirm, says the leader is refunded ..."); hand mutation in D25 | Covered |
 | 9.2 Docker Compose runs the app (B20) | | Open |
 | 9.3 light and dark theme, with a switch (B21) | | Open |

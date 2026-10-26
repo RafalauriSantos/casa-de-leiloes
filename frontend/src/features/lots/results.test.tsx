@@ -1,4 +1,5 @@
-import { cleanup, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { randomBytes, randomUUID } from 'node:crypto';
 import pg from 'pg';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -89,5 +90,37 @@ describe('the auctioneer panel shows the results (B3, 1.7)', () => {
     await waitFor(() => { expect(screen.getByText(/Arrematado por R\$\s*550,00/)).toBeTruthy(); });
     expect(screen.getByText(/Encerrado sem lances/)).toBeTruthy();
     expect(screen.getByText(/Encerrado · aguardando liquidação/)).toBeTruthy();
+  });
+});
+
+describe('cancelling a lot with bids from the panel (B19, 9.1)', () => {
+  it('asks to confirm, says the leader is refunded, and the leader gets the committed money back', async () => {
+    const auctioneer = await newAccount('auctioneer');
+    const bidder = await newAccount();
+    const title = `Refund ${randomUUID().slice(0, 6)}`;
+    const later = (ms: number) => new Date(Date.now() + ms).toISOString();
+    const created = await api('/api/lots', auctioneer.token, {
+      method: 'POST',
+      body: { externalId: '205482', title, startsAt: later(3_600_000), endsAt: later(7_200_000), startingBidCents: 50_000, incrementCents: 5_000 },
+    });
+    const lot = (await created.json()) as { id: string };
+    await sql("update public.lots set starts_at = now() - interval '5 minutes', ends_at = now() + interval '1 hour' where id = $1", [lot.id]);
+    expect((await api('/api/wallet/deposits', bidder.token, { method: 'POST', body: { amountCents: 1_000_000 }, key: randomUUID() })).status).toBe(201);
+    expect((await api(`/api/lots/${lot.id}/bids`, bidder.token, { method: 'POST', body: { amountCents: 55_000 } })).status).toBe(201);
+
+    expect((await supabase.auth.signInWithPassword({ email: auctioneer.email, password: auctioneer.password })).error).toBeNull();
+    window.history.replaceState({}, '', '/leiloeiro');
+    render(<App />);
+    const user = userEvent.setup();
+    const card = (await screen.findByRole('heading', { name: title })).closest('article');
+    if (!card) throw new Error('the lot card is missing');
+
+    await user.click(within(card).getByRole('button', { name: 'Cancelar lote' }));
+    expect(within(card).getByText(/devolve na hora o valor comprometido de quem lidera/)).toBeTruthy();
+    await user.click(within(card).getByRole('button', { name: 'Confirmar cancelamento' }));
+
+    expect(await screen.findByText(`Lote "${title}" cancelado. O valor do lance líder voltou para o licitante.`)).toBeTruthy();
+    const wallet = (await (await api('/api/wallet', bidder.token)).json()) as { committedCents: number };
+    expect(wallet.committedCents).toBe(0);
   });
 });

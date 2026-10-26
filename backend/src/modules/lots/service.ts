@@ -161,9 +161,16 @@ export async function cancelLot(db: Db, userId: string, lotId: string): Promise<
   return db.tx(async (tx) => {
     const current = await ownedLotForUpdate(tx, userId, lotId);
     const now = await databaseNow(tx);
-    const refusal = cancelRefusal({ state: stateFor(current, now), bidCount: current.bid_count });
+    const refusal = cancelRefusal({ state: stateFor(current, now) });
     if (refusal) throw new AppError(refusal.code, refusal.message);
 
+    // B19: the leader's committed money goes back to available in this transaction; outbid bidders were released when
+    // they were outbid. The lot row is already locked, so the wallet is locked after it: the order bidding uses.
+    await tx.query(
+      `update public.wallets w set committed_cents = w.committed_cents - l.current_amount_cents
+         from public.lots l where l.id = $1 and w.user_id = l.leader_id and l.current_amount_cents is not null`,
+      [lotId],
+    );
     await tx.query("update public.lots set status = 'cancelled' where id = $1", [lotId]);
     return toOwn({ ...current, status: 'cancelled' }, now);
   });
