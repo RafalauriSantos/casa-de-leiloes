@@ -233,3 +233,17 @@ form[aria-labelledby="deposit-title"] h2 { margin: 0; font-size: 1.5rem; }
 section[aria-label="Painel do leiloeiro"] > h1 { margin-bottom: 1rem; }
 section[aria-label="Painel do leiloeiro"] > section, section[aria-label="Painel do leiloeiro"] > form { background: var(--card); border: 1px solid var(--line); padding: 1.4rem; margin-bottom: 1.2rem; }
 .catalog-results li img { border-radius: 2px; }
+.my-lots a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+.my-lots li .state { white-space: nowrap; }
+[aria-label="Saldos"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+[aria-label="Saldos"] > div { border-right-color: #3a3730; }
+[aria-label="Saldos"] dt { color: #c9c2b2; font-size: 0.8rem; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 600; }
+[aria-label="Saldos"] dd { color: var(--paper); }
+form[aria-labelledby="deposit-title"] .chip { flex: 1 1 6rem; }
+a { color: var(--ink); text-underline-offset: 3px; }
+header nav a, .nav a { text-decoration: none; }
+.receipt-seal { z-index: 2; }
+section[aria-label="Sala do lote"] input { width: 100%; box-sizing: border-box; min-width: 0; }
+.bid-head button.link { white-space: nowrap; }
+section[aria-label="Painel do leiloeiro"] article button + button { margin-left: 0.6rem; }
+section[aria-label="Painel do leiloeiro"] article > button { margin-top: 0.4rem; }
