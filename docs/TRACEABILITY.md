@@ -108,6 +108,6 @@ Each criterion of the brief's journeys (defined in phase 2 of the delivery proce
 |---|---|---|
 | Search and filter of lots | see 2.3 | Covered |
 | Automated tests | `make ci` | Covered |
-| 9.1 cancelling a lot with bids refunds the committed money automatically (B19) | `backend/tests/integration/cancel-refund.test.ts`; `frontend/src/features/lots/results.test.tsx` ("asks to confirm, says the leader is refunded ..."); hand mutation in D25 | Covered |
+| 9.1 cancelling a lot with bids refunds the committed money automatically (B19) | `backend/tests/integration/cancel-refund.test.ts`; `frontend/src/features/lots/results.test.tsx` ("asks to confirm, says the leader is refunded ..."); five hand mutations in D25 | Covered |
 | 9.2 Docker Compose runs the app (B20) | Checked by hand on 2026-10-26 (Linux): `make compose` built the image and served the site (200), `/api/health` (200, database ok) directly and through the site's proxy, and `/api/me` with a token from the local Auth (200). No automated test: it would need Docker inside the CI job (D26) | Covered by a manual check |
 | 9.3 light and dark theme, with a switch (B21) | `frontend/src/app/theme.test.tsx` ("switches to dark and back, and the choice survives a reload"); the colors are checked on screen | Covered |

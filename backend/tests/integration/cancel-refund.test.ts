@@ -88,6 +88,77 @@ describe('cancelling a lot with bids refunds the committed money (9.1)', () => {
     expect(await committed([ana, beto])).toBe(0);
   });
 
+  it('refunds only the cancelled lot: the leader keeps the money committed on another lot they lead', async () => {
+    const ana = await bidder();
+    const [first, second] = [await liveLot(), await liveLot()];
+    expect((await bid(first.id, ana, 50_000)).status).toBe(201);
+    expect((await bid(second.id, ana, 70_000)).status).toBe(201);
+    expect(await committed([ana])).toBe(120_000);
+
+    expect((await cancel(first.id)).status).toBe(200);
+    expect(await committed([ana])).toBe(70_000);
+  });
+
+  it('refuses to cancel when the lot\'s copy of the leader or amount disagrees with its last bid, and moves no money', async () => {
+    const [ana, beto] = [await bidder(), await bidder()];
+    const lot = await liveLot();
+    expect((await bid(lot.id, ana, 50_000)).status).toBe(201);
+    expect((await bid(lot.id, beto, 55_000)).status).toBe(201);
+    // Someone with database access rewrites the copy's amount. The wallet check alone would not stop this refund: it
+    // frees 50,000 of the 55,000 the leader holds, so only a comparison with the last bid refuses it.
+    await server.db.query('update public.lots set current_amount_cents = 50000 where id = $1', [lot.id]);
+
+    const response = await cancel(lot.id);
+    expect(response.status).toBe(500);
+    expect(((await response.json()) as { code: string }).code).toBe('internal_error');
+    const [row] = await server.db.query<{ status: string }>('select status from public.lots where id = $1', [lot.id]);
+    expect(row?.status).toBe('active');
+    expect(await committed([beto])).toBe(55_000);
+    expect(await committed([ana])).toBe(0);
+  });
+
+  it('refuses a forged bid whose lot copy was rewritten to match it: the chain does not verify', async () => {
+    const [ana, beto] = [await bidder(), await bidder()];
+    const lot = await liveLot();
+    expect((await bid(lot.id, ana, 50_000)).status).toBe(201);
+    expect((await bid(lot.id, beto, 55_000)).status).toBe(201);
+    await server.db.tx(async (tx) => {
+      await tx.query('set local session_replication_role = replica');
+      await tx.query('update public.bids set amount_cents = 50000 where lot_id = $1 and seq = 2', [lot.id]);
+      await tx.query('update public.lots set current_amount_cents = 50000 where id = $1', [lot.id]);
+    });
+
+    expect((await cancel(lot.id)).status).toBe(500);
+    expect(await committed([beto])).toBe(55_000);
+  });
+
+  it('refuses a refund the leader\'s wallet cannot cover together with the other lots they lead', async () => {
+    const ana = await bidder();
+    const [first, second] = [await liveLot(), await liveLot()];
+    expect((await bid(first.id, ana, 50_000)).status).toBe(201);
+    expect((await bid(second.id, ana, 70_000)).status).toBe(201);
+    // The wallet was changed directly: it no longer holds the second lot's money, so this refund would take from it.
+    await server.db.query('update public.wallets set committed_cents = committed_cents - 70000 where user_id = $1', [ana.id]);
+
+    expect((await cancel(first.id)).status).toBe(500);
+    expect(await committed([ana])).toBe(50_000);
+  });
+
+  it('refuses to cancel a lot with bids that has ended, or one the owner already released, and moves no money', async () => {
+    const ana = await bidder();
+    const [ended, released] = [await liveLot(), await liveLot()];
+    expect((await bid(ended.id, ana, 50_000)).status).toBe(201);
+    expect((await bid(released.id, ana, 60_000)).status).toBe(201);
+    await server.db.query("update public.lots set ends_at = now() - interval '1 second' where id = $1", [ended.id]);
+    await server.db.query("update public.lots set status = 'integrity_cancelled' where id = $1", [released.id]);
+
+    const late = await cancel(ended.id);
+    expect(late.status).toBe(409);
+    expect(((await late.json()) as { code: string }).code).toBe('lot_ended');
+    expect((await cancel(released.id)).status).toBe(409);
+    expect(await committed([ana])).toBe(110_000);
+  });
+
   it('leaves no committed money behind when a cancel races with many bids', async () => {
     const bidders = await Promise.all(Array.from({ length: 6 }, () => bidder()));
     const lot = await liveLot();

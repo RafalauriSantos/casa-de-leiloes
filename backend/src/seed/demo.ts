@@ -147,6 +147,10 @@ async function settledLot(deps: SeedDeps, auctioneerId: string, item: DemoItem, 
     [item.title, auctioneerId],
   );
   if (existing?.settled) return existing.id;
+  // A run that died between the two bids left a lot that would end with the wrong winner: stop instead of settling it.
+  if (existing && existing.bid_count !== 0 && existing.bid_count !== 2) {
+    throw new Error(`seed: the lot ${existing.id} has ${String(existing.bid_count)} bid(s) from an interrupted run; cancel it and run the seed again`);
+  }
 
   const lotId = existing?.id ?? (await createLot(deps, auctioneerId, item));
   if (!existing || existing.bid_count === 0) await placeBids(deps, lotId, [[second, 50_000], [first, 55_000]]);
