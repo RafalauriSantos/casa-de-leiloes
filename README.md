@@ -4,6 +4,15 @@ Casa de leilões online (teste técnico Verzel "Elite Dev"). **Em construção**
 
 Decisões de design e seus tradeoffs: [docs/DECISIONS.md](docs/DECISIONS.md).
 
+## Acesse
+
+- Site publicado: **https://casadeleiloes.vercel.app**
+- Entre pelos atalhos da tela de login ("Entrar como leiloeiro (demo)" ou um dos dois licitantes) ou com as contas abaixo, senha `demo-leilao-2026`:
+  - leiloeiro: `leiloeiro@demo.example`
+  - licitantes: `licitante1@demo.example` e `licitante2@demo.example`
+- Ou crie a sua conta escolhendo "Quero comprar" ou "Quero vender". Não há confirmação por e-mail.
+- A auditoria de qualquer lote abre sem login, em `/auditoria/<lote>`.
+
 ## Rodar localmente
 
 Requisitos: Node 22, Docker (rodando), `make` e `openssl`.
