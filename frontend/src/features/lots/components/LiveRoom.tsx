@@ -180,7 +180,7 @@ export function LiveRoom({ lotId }: { lotId: string }) {
           <ul>
             {receipts.map((receipt) => (
               <li key={receipt.seq}>
-                Lance nº {receipt.seq}: <code>{receipt.head}</code>{' '}
+                Lance nº {receipt.seq}: <code className="audit-hash">{receipt.head}</code>{' '}
                 <Link to={`/auditoria/${lotId}?head=${receipt.head}`}>Conferir na auditoria</Link>
               </li>
             ))}
