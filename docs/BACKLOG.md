@@ -42,7 +42,7 @@ mutation per rule and the owner's "pode mergear"; **normal** needs one reviewer 
 | README final review: steps and limits checked against the code; the intro no longer says bids and audit are coming | 8.3 | normal | #44 |
 | The demo catalog has real variety: the seed adds six real Met objects of other kinds (clock, sword, chair, teapot, box), scheduled for tomorrow (B23) | 8.1 | normal | #46 |
 | Catalog search pages through the Met's results, 12 at a time, up to its 10,000-result window, with the total and the page count (B24, D28) | 1.1 | normal | #47 |
-| Redesign, slice 1: showcase with the featured live lot and the room in two columns, from the Claude Design canvas (copy unchanged; visual change) (D29) | 2.1, 2.2 | normal | #PR_PLACEHOLDER |
+| Redesign, slice 1: showcase with the featured live lot and the room in two columns, from the Claude Design canvas (copy unchanged; visual change) (D29) | 2.1, 2.2 | normal | #48 |
 | Brief gaps: seed test reads the active demo lot (B13); sign-up chooses bidder or auctioneer (B14, migration 11); demo sign-in shortcuts (B15); README with the site and the demo accounts (B16); seed with an ended lot and a tampered lot (B17, B18); cancel with refund (B19, optional); Docker Compose (B20, optional); theme switch (B21, optional); AI usage notes (B22) | 0.6 to 0.8, 8.1, 8.5, 9.1 to 9.3 | D24, D25, D26 | #45 (waiting for "pode mergear") |
 
 ## To do (by priority)
