@@ -90,3 +90,21 @@ describe('the showcase error state (2.5)', () => {
     expect(screen.queryByRole('alert')).toBeNull();
   });
 });
+
+describe('the catalog search pages through the whole collection (B24)', () => {
+  it('shows the total and goes to the next page of results, then back', async () => {
+    const user = userEvent.setup();
+    const token = await auctioneerToken();
+    render(<CatalogSearch token={token} onPick={() => {}} />);
+
+    await user.type(screen.getByLabelText('Palavra-chave'), 'vase');
+    await user.click(screen.getByRole('button', { name: 'Buscar' }));
+    expect(await screen.findByText(/9\.225 resultados/)).toBeTruthy();
+    expect(screen.getByText(/Página 1 de 769/)).toBeTruthy();
+
+    await user.click(screen.getByRole('button', { name: 'Próxima página' }));
+    expect(await screen.findByText(/Página 2 de 769/)).toBeTruthy();
+    await user.click(screen.getByRole('button', { name: 'Página anterior' }));
+    expect(await screen.findByText(/Página 1 de 769/)).toBeTruthy();
+  });
+});
