@@ -27,6 +27,21 @@
     --danger: #ff8a9a;
   }
 }
+/* A theme chosen with the switch (B21) wins over the system's. The dark values repeat the block above: CSS cannot put a
+   media query and an attribute selector in one rule. */
+:root[data-theme="light"] { color-scheme: light; }
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --ink: #ece8df;
+  --muted: #aab1bf;
+  --paper: #15171c;
+  --card: #1f232b;
+  --line: #333a46;
+  --accent: #e0a46b;
+  --accent-ink: #15171c;
+  --live: #6fd39b;
+  --danger: #ff8a9a;
+}
 
 body { margin: 0; background: var(--paper); color: var(--ink); }
 main { max-width: 72rem; margin: 0 auto; padding: 1.5rem 1rem 3rem; }

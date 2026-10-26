@@ -1,5 +1,6 @@
 import { Link, Outlet } from 'react-router-dom';
 import { signOut, useAuth } from '@/features/auth';
+import { ThemeToggle } from './ThemeToggle';
 
 export function AppLayout() {
   const auth = useAuth();
@@ -17,6 +18,7 @@ export function AppLayout() {
           {(auth.status === 'signed-in' || auth.status === 'error') && (
             <button type="button" className="link" onClick={() => void signOut()}>Sair</button>
           )}
+          <ThemeToggle />
         </nav>
       </header>
       <main>

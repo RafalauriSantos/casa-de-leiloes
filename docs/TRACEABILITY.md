@@ -110,4 +110,4 @@ Each criterion of the brief's journeys (defined in phase 2 of the delivery proce
 | Automated tests | `make ci` | Covered |
 | 9.1 cancelling a lot with bids refunds the committed money automatically (B19) | `backend/tests/integration/cancel-refund.test.ts`; `frontend/src/features/lots/results.test.tsx` ("asks to confirm, says the leader is refunded ..."); hand mutation in D25 | Covered |
 | 9.2 Docker Compose runs the app (B20) | | Open |
-| 9.3 light and dark theme, with a switch (B21) | | Open |
+| 9.3 light and dark theme, with a switch (B21) | `frontend/src/app/theme.test.tsx` ("switches to dark and back, and the choice survives a reload"); the colors are checked on screen | Covered |
