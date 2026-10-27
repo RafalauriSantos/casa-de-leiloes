@@ -28,6 +28,7 @@ export function AuctioneerPanel({ token }: { token: string }) {
         <OwnLots key={version} token={token} />
       </div>
       {notice && <p role="status">{notice}</p>}
+      <div className="new-lot">
       <div id="buscar-item">
         <CatalogSearch token={token} onPick={(picked) => { setItem(picked); setNotice(undefined); }} />
       </div>
@@ -48,6 +49,7 @@ export function AuctioneerPanel({ token }: { token: string }) {
           />
         </section>
       )}
+      </div>
     </section>
   );
 }

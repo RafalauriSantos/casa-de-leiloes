@@ -347,3 +347,10 @@ details.lot-facts summary { min-height: 44px; display: flex; align-items: center
 
 /* Auctioneer panel on the canvas (desktop): the summary and the lots first, the new-lot search below. */
 .panel-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 1rem; flex-wrap: wrap; }
+
+/* New lot on the canvas (desktop): the item search on the left, the lot form on the right; results as cards. */
+.new-lot { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 2.5rem; align-items: start; }
+@media (max-width: 900px) { .new-lot { grid-template-columns: minmax(0, 1fr); } }
+.catalog-results { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.9rem; list-style: none; padding: 0; }
+.catalog-results li { display: grid; grid-template-columns: minmax(0, 1fr); align-content: start; gap: 0.6rem; }
+.catalog-results img { width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 10px; }
