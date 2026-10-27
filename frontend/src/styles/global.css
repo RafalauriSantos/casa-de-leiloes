@@ -362,3 +362,6 @@ details.lot-facts summary { min-height: 44px; display: flex; align-items: center
 .own-lot > div, .own-lot > form { grid-column: 1 / -1; }
 .own-lot > button.secondary { background: transparent; color: var(--accent); border: 1px solid var(--accent); }
 @media (max-width: 600px) { .own-lot { grid-template-columns: minmax(0, 1fr); } .own-lot-actions { grid-column: 1; grid-row: auto; } }
+
+/* Wins on the canvas: the lot titles are plain text, not underlined links. */
+.my-lots .my-lot-body a { text-decoration: none; }
