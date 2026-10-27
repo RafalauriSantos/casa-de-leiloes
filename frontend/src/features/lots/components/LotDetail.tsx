@@ -9,6 +9,11 @@ import { formatWhen, STATE_LABEL } from '../time';
 
 type State = { status: 'loading' } | { status: 'error'; message: string } | { status: 'ready'; lot: LotDetailView };
 
+/** The facts panel is open on wide screens and closed on phones, where the room should come first. */
+function isWide(): boolean {
+  return typeof window.matchMedia !== 'function' || window.matchMedia('(min-width: 601px)').matches;
+}
+
 export function LotDetail({ id }: { id: string }) {
   const [state, setState] = useState<State>({ status: 'loading' });
 
@@ -35,23 +40,27 @@ export function LotDetail({ id }: { id: string }) {
         <div className="lot-info">
           <img src={lot.imageUrl} alt={lot.title} className="lot-hero" />
           <p><span className="state">{STATE_LABEL[lot.state]}</span></p>
-          <dl>
-            <div><dt>Lance inicial</dt><dd>{formatBRL(lot.startingBidCents)}</dd></div>
-            <div><dt>Incremento mínimo</dt><dd>{formatBRL(lot.incrementCents)}</dd></div>
-            <div><dt>Início</dt><dd>{formatWhen(lot.startsAt)}</dd></div>
-            <div><dt>Fim</dt><dd>{formatWhen(lot.endsAt)}</dd></div>
-          </dl>
-          {attributes.length > 0 && (
-            <>
-              <h2>Sobre o item</h2>
-              <dl>
-                {attributes.map(([key, value]) => (
-                  <div key={key}><dt>{labels[key] ?? key}</dt><dd>{value}</dd></div>
-                ))}
-              </dl>
-            </>
-          )}
-          <p><a href={lot.sourceUrl} target="_blank" rel="noreferrer">Ver a obra na fonte (The Met)</a></p>
+          {/* Open on wide screens; on phones it stays closed so the live room comes right after the photo. */}
+          <details className="lot-facts" open={isWide()}>
+            <summary>Detalhes do lote</summary>
+            <dl>
+              <div><dt>Lance inicial</dt><dd>{formatBRL(lot.startingBidCents)}</dd></div>
+              <div><dt>Incremento mínimo</dt><dd>{formatBRL(lot.incrementCents)}</dd></div>
+              <div><dt>Início</dt><dd>{formatWhen(lot.startsAt)}</dd></div>
+              <div><dt>Fim</dt><dd>{formatWhen(lot.endsAt)}</dd></div>
+            </dl>
+            {attributes.length > 0 && (
+              <>
+                <h2>Sobre o item</h2>
+                <dl>
+                  {attributes.map(([key, value]) => (
+                    <div key={key}><dt>{labels[key] ?? key}</dt><dd>{value}</dd></div>
+                  ))}
+                </dl>
+              </>
+            )}
+            <p><a href={lot.sourceUrl} target="_blank" rel="noreferrer">Ver a obra na fonte (The Met)</a></p>
+          </details>
           <p><Link to={`/auditoria/${lot.id}`}>Auditar histórico</Link></p>
         </div>
         <div className="lot-room">
