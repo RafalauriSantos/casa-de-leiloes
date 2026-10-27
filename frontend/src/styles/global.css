@@ -1,9 +1,10 @@
 :root {
   color-scheme: light dark;
   --display: "Instrument Sans", -apple-system, system-ui, sans-serif;
+  /* Neutral scale (D31): ink 900, muted 600, field 400, line 100, paper 50 (page), card (white). */
   --ink: #1d1d1f;
   --muted: #6e6e73;
-  --paper: #fbfbfd;
+  --paper: #f5f5f7;
   --card: #ffffff;
   --line: #e8e8ed;
   --accent: #0071e3;
@@ -326,3 +327,10 @@ section[aria-label="Sala do lote"] {
 }
 section[aria-label="Sala do lote"] button[type="submit"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
 .featured .featured-actions a:first-child { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+
+/* Visual v2 (D31), phone: a smaller title and photo, and the lot facts collapsed so the live room comes right after the photo. */
+details.lot-facts summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; font-weight: 500; }
+@media (max-width: 600px) {
+  article[aria-label="Lote"] h1 { font-size: 2rem; }
+  .lot-hero { max-height: 16rem; }
+}
