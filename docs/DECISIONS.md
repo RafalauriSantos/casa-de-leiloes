@@ -286,3 +286,10 @@ Built so far: each accepted bid returns a bid receipt `{seq, head, placedAt}` in
 - **Tradeoff:** the identity of the earlier look (cream paper, serif titles) is gone. Dark mode is kept with the same tokens in a neutral palette. The audit table on phones keeps its horizontal scroll and its cut last column; a card layout for phones is a separate change.
 - **Not decided:** whether `PRODUCT.md` (the product record, kept out of the repository for now) is committed later.
 - **Test:** the existing suites (backend and frontend) run unchanged; the layout was checked by measurement at 320, 360, 390 and 1280 px (no horizontal overflow on the screens measured).
+
+## D32. The screens follow the canvas v3, detail by detail
+- **Why:** the owner reviewed a canvas with the whole flow (nine desktop screens and nine phone screens, from the storefront to switching from the auctioneer to a bidder). It is the reference for layout, positions, spacing and the order of content. Screens are not redesigned during implementation.
+- **How:** the canvas is the source; the backlog items B27 to B32 carry the acceptance criteria. Where the brief asks for a behaviour (the panel's content, the refusal messages), the canvas shows it, and a test covers it. Visual items are checked on screen with screenshots, without new tests, as the test budget says.
+- **Tradeoff:** the canvas shows the flow with links, not with real state, so the bid, the deposit and the publish buttons in the canvas do not change anything. The behaviour comes from the code and its tests, not from the canvas.
+- **Not decided yet:** the dark theme (B29) is not drawn on the canvas, and it will be drawn before it is built.
+- **Source:** `https://claude.ai/artifact/C6CSQtYu36oSzRzaJnxZks` (private; the owner's Claude account opens it).
