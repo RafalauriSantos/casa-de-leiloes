@@ -52,7 +52,7 @@ export function LotDetail({ id }: { id: string }) {
             </>
           )}
           <p><a href={lot.sourceUrl} target="_blank" rel="noreferrer">Ver a obra na fonte (The Met)</a></p>
-          <p><Link to={`/auditoria/${lot.id}`}>Auditar o histórico deste lote</Link></p>
+          <p><Link to={`/auditoria/${lot.id}`}>Auditar histórico</Link></p>
         </div>
         <div className="lot-room">
           <LiveRoom key={lot.id} lotId={lot.id} />

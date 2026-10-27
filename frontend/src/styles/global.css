@@ -11,6 +11,7 @@
   --live: #1f6b45;
   --live-red: #b8341f;
   --danger: #9e1b32;
+  --field: #756e62;
   font-family: "Instrument Sans", system-ui, sans-serif;
   line-height: 1.55;
   color: var(--ink);
@@ -29,6 +30,7 @@
     --live: #6fd39b;
     --live-red: #ff6b5b;
     --danger: #ff8a9a;
+    --field: #8a93a3;
   }
 }
 /* A theme chosen with the switch (B21) wins over the system's. The dark values repeat the block above: CSS cannot put a
@@ -47,6 +49,7 @@
   --live: #6fd39b;
   --live-red: #ff6b5b;
   --danger: #ff8a9a;
+  --field: #8a93a3;
 }
 
 body { margin: 0; background: var(--paper); color: var(--ink); }
@@ -58,7 +61,7 @@ form { display: grid; gap: 0.75rem; max-width: 36rem; }
 label { display: grid; gap: 0.3rem; color: var(--muted); font-size: 0.95rem; }
 input, button { font: inherit; padding: 0.55rem 0.8rem; border-radius: 2px; }
 button { min-height: 44px; font-weight: 600; letter-spacing: 0.02em; }
-input { font-size: 1rem; border: 1px solid var(--line); background: var(--card); color: var(--ink); }
+input { font-size: 1rem; border: 1px solid var(--field); background: var(--card); color: var(--ink); }
 button { border: 1px solid var(--accent); background: var(--accent); color: var(--accent-ink); cursor: pointer; }
 button:disabled { opacity: 0.6; cursor: wait; }
 button[aria-pressed="false"] { background: transparent; color: var(--accent); }
@@ -73,6 +76,7 @@ fieldset input { padding: 0; margin: 0; }
 [role='status'] { color: var(--live); }
 header nav { display: flex; flex-wrap: wrap; gap: 1rem 1.5rem; align-items: center; padding: 0.9rem 1rem; border-bottom: 1px solid var(--line); background: var(--card); }
 header nav a { color: var(--ink); text-decoration: none; }
+.theme-toggle > span[aria-hidden="true"] { display: none; }
 header nav a:first-child { font-family: "Fraunces", Georgia, serif; font-weight: 600; font-size: 1.4rem; color: var(--ink); margin-right: auto; }
 nav[aria-label="Estado dos lotes"] { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 1rem 0; }
 .lot-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); gap: 1.25rem; margin-top: 1rem; }
@@ -83,7 +87,7 @@ nav[aria-label="Estado dos lotes"] { display: flex; flex-wrap: wrap; gap: 0.5rem
 .lot-card p { margin: 0.25rem 0; padding: 0 0.9rem; color: var(--muted); font-size: 0.92rem; }
 .lot-card p:last-child { padding-bottom: 0.9rem; }
 .state { display: inline-block; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.1rem 0.5rem; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
-.lot-hero { box-sizing: border-box; max-width: 100%; max-height: 28rem; object-fit: contain; background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 0.5rem; }
+.lot-hero { box-sizing: border-box; width: 100%; max-width: 100%; aspect-ratio: 4 / 3; height: auto; max-height: 28rem; object-fit: contain; background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 0.5rem; }
 .empty { border: 1px dashed var(--line); border-radius: 10px; padding: 2rem 1.25rem; color: var(--muted); margin-top: 1rem; text-align: center; }
 dl { display: grid; gap: 0.2rem; max-width: 36rem; }
 dl > div { display: flex; justify-content: space-between; gap: 1rem; padding: 0.35rem 0; border-bottom: 1px dotted var(--line); }
@@ -162,7 +166,7 @@ form[role="search"] button { min-height: 2.75rem; }
 .lot-media .live-badge { background: var(--live-red); }
 .lot-card-foot { display: flex; justify-content: space-between; align-items: flex-end; gap: 1rem; border-top: 1px solid var(--line); margin-top: auto; padding: 0.9rem; }
 .lot-card-foot .label { display: block; }
-.lot-card-foot .amount { font-family: "Fraunces", Georgia, serif; font-size: 1.35rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+.lot-card-foot .amount { font-family: "Fraunces", Georgia, serif; font-size: 1.35rem; white-space: nowrap; font-weight: 600; font-variant-numeric: tabular-nums; }
 .lot-card-foot small { color: var(--muted); text-align: right; line-height: 1.4; }
 .countdown { display: flex; flex-direction: column; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 1rem 0; }
 .countdown-time { font-family: "Fraunces", Georgia, serif; font-size: 3.4rem; font-weight: 600; line-height: 1.1; font-variant-numeric: tabular-nums; }
@@ -209,7 +213,7 @@ header nav a:first-child::before { content: ""; display: inline-block; width: 0.
 form[aria-labelledby="deposit-title"] { max-width: 28rem; border: 1px solid var(--line); background: var(--card); padding: 1.6rem; }
 form[aria-labelledby="deposit-title"] h2 { margin: 0; font-size: 1.5rem; }
 .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; }
-.chip { background: transparent; color: var(--ink); border: 1px solid #b9af9b; min-height: 2.5rem; font-weight: 500; }
+.chip { background: transparent; color: var(--ink); border: 1px solid var(--field); white-space: nowrap; min-height: 2.5rem; font-weight: 500; }
 .chip:hover { border-color: var(--ink); }
 
 .my-lots { list-style: none; padding: 0; display: grid; gap: 0.9rem; }
@@ -252,6 +256,9 @@ section[aria-label="Painel do leiloeiro"] article > button { margin-top: 0.4rem;
 @media (max-width: 600px) {
   header nav { gap: 0.4rem 0.9rem; padding: 0.6rem 0.8rem; font-size: 0.95rem; }
   header nav a:first-child { flex-basis: 100%; font-size: 1.3rem; margin-right: 0; }
+  .theme-toggle-text { display: none; }
+  .theme-toggle > span[aria-hidden="true"] { display: inline; font-size: 1.2rem; }
+  .theme-toggle { min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; }
   .auth-page { grid-template-columns: minmax(0, 1fr); margin: 0; }
   .auth-aside { padding: 2rem 1.25rem; gap: 1.25rem; }
   .auth-aside .auth-aside-title { font-size: 2rem; }
