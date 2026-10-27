@@ -164,7 +164,7 @@ export function LiveRoom({ lotId }: { lotId: string }) {
 
       <dl>
         <div><dt>Lance atual</dt><dd>{room.currentAmountCents === null ? 'nenhum' : formatBRL(room.currentAmountCents)}</dd></div>
-        <div><dt>Próximo lance mínimo</dt><dd>{formatBRL(room.nextMinimumCents)}</dd></div>
+        <div><dt>Mínimo para dar lance</dt><dd>{formatBRL(room.nextMinimumCents)}</dd></div>
         <div><dt>Lances</dt><dd>{room.bidCount}</dd></div>
       </dl>
 
