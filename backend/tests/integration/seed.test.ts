@@ -15,12 +15,12 @@ let met: MetStub;
 beforeAll(async () => {
   met = await startMetStub();
   server = await startTestServer({ metApiUrl: met.baseUrl });
-  // The seed reuses a settled demo lot left by an earlier run of this shared database and skips creating it. Give those
-  // an old title, so every run walks the whole seed (8.5), not only the first run on a fresh database.
+  // The seed looks for an active demo lot to reuse. Earlier runs leave theirs open in this shared database, so every run
+  // starts with none: the seed then creates each lot it promises, and every run walks the whole seed (8.1, 8.5).
   await server.db.query(
-    `update public.lots l set title = l.title || ' (run ' || l.id || ')' from auth.users a
-      where a.id = l.auctioneer_id and a.email = $1 and l.title = any($2::text[]) and l.settled_at is not null`,
-    [DEMO.auctioneer, [DEMO.endedLotTitle, DEMO.tamperedLotTitle]],
+    `update public.lots l set status = 'cancelled' from auth.users a
+      where a.id = l.auctioneer_id and a.email = $1 and l.status = 'active'`,
+    [DEMO.auctioneer],
   );
 });
 afterAll(async () => {
