@@ -79,7 +79,8 @@ fieldset input { padding: 0; margin: 0; }
 header nav { display: flex; flex-wrap: wrap; gap: 1rem 1.5rem; align-items: center; padding: 0.9rem 1rem; border-bottom: 1px solid var(--line); background: var(--paper); }
 header nav a { color: var(--ink); text-decoration: none; }
 .theme-toggle > span[aria-hidden="true"] { display: none; }
-header nav a:first-child { font-family: var(--display); font-weight: 600; font-size: 1.4rem; color: var(--ink); margin-right: auto; }
+header nav .brand { display: inline-flex; align-items: center; margin-right: auto; color: var(--brass); }
+header nav .brand .logo { display: block; }
 nav[aria-label="Estado dos lotes"] { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 1rem 0; }
 .lot-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr)); gap: 1.5rem; margin-top: 1rem; }
 .lead { font-size: 1.2rem; color: var(--muted); margin: 0 0 1.5rem; }
@@ -185,7 +186,6 @@ section[aria-label="Sala do lote"] dl dd { text-align: left; font-family: var(--
 .history li { display: grid; grid-template-columns: 1fr auto auto; gap: 0.75rem; align-items: baseline; padding: 0.55rem 0.6rem; border-top: 1px solid var(--line); }
 .history li.mine { background: var(--paper); font-weight: 600; }
 .history li small { color: var(--muted); }
-header nav a:first-child::before { content: ""; display: inline-block; width: 0.9rem; height: 0.9rem; margin-right: 0.5rem; background: var(--brass); transform: rotate(45deg); }
 
 /* The remaining screens of the Claude Design canvas: sign-in, wallet, my wins, receipt, audit and the auctioneer panel. */
 .auth-page { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(440px, 100%), 1fr)); min-height: 70vh; margin: -1.5rem -1rem -3rem; }
@@ -258,7 +258,7 @@ section[aria-label="Painel do leiloeiro"] article > button { margin-top: 0.4rem;
 /* Phone width: the header, sign-in, wallet and room stack cleanly without sideways scroll. */
 @media (max-width: 600px) {
   header nav { gap: 0.4rem 0.9rem; padding: 0.6rem 0.8rem; font-size: 0.95rem; }
-  header nav a:first-child { flex-basis: 100%; font-size: 1.3rem; margin-right: 0; }
+  header nav .brand { flex-basis: 100%; margin-right: 0; }
   .theme-toggle-text { display: none; }
   .theme-toggle > span[aria-hidden="true"] { display: inline; font-size: 1.2rem; }
   .theme-toggle { min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; }

@@ -1,6 +1,7 @@
 import { Link, Outlet } from 'react-router-dom';
 import { signOut, useAuth } from '@/features/auth';
 import { HeaderBalance } from './HeaderBalance';
+import { Logo } from './Logo';
 import { ThemeToggle } from './ThemeToggle';
 
 export function AppLayout() {
@@ -10,7 +11,7 @@ export function AppLayout() {
     <>
       <header>
         <nav aria-label="Principal">
-          <Link to="/">Casa de Leilões</Link>
+          <Link to="/" className="brand" aria-label="Casa de Leilões"><Logo /></Link>
           {auth.status === 'signed-in' && auth.me.role === 'bidder' && <Link to="/carteira">Carteira</Link>}
           {auth.status === 'signed-in' && auth.me.role === 'bidder' && <Link to="/arremates">Meus arremates</Link>}
           {auth.status === 'signed-in' && auth.me.role === 'auctioneer' && <Link to="/leiloeiro">Painel do leiloeiro</Link>}
