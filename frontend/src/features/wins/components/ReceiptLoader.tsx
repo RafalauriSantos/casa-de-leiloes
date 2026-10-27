@@ -37,16 +37,17 @@ export function ReceiptLoader({ code }: { code: string }) {
           </svg>
           <img className="lot-hero" src={state.receipt.imageUrl} alt={state.receipt.lotTitle} />
           <h2>{state.receipt.lotTitle}</h2>
+          <strong className="receipt-amount">{formatBRL(state.receipt.amountCents)}</strong>
           <dl>
-            <div><dt>Valor arrematado</dt><dd>{formatBRL(state.receipt.amountCents)}</dd></div>
             <div><dt>Liquidado em</dt><dd>{closedAt(state.receipt.closedAt)}</dd></div>
             <div><dt>Vencedor</dt><dd>{state.receipt.winnerLabel}</dd></div>
             <div><dt>Código</dt><dd><code>{state.receipt.code}</code></dd></div>
           </dl>
-          <p>
-            <Link to={`/auditoria/${state.receipt.lotId}?head=${state.receipt.headHash}`}>Conferir este lote na auditoria pública</Link>
-          </p>
-          <p className="audit-note">Para compartilhar, envie o endereço desta página: ele abre o comprovante sem login.</p>
+          <div className="receipt-actions">
+            <Link to={`/auditoria/${state.receipt.lotId}?head=${state.receipt.headHash}`}>Conferir na auditoria</Link>
+            <button type="button" onClick={() => { void navigator.clipboard.writeText(window.location.href); }}>Copiar link</button>
+          </div>
+          <p className="audit-note">Qualquer pessoa com este link vê o comprovante, sem entrar na conta.</p>
         </div>
       )}
     </section>

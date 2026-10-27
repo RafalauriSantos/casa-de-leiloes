@@ -334,3 +334,9 @@ details.lot-facts summary { min-height: 44px; display: flex; align-items: center
   article[aria-label="Lote"] h1 { font-size: 2rem; }
   .lot-hero { max-height: 16rem; }
 }
+
+/* Receipt on the canvas (desktop): the amount as the figure, the rows, and two actions. */
+.receipt-amount { display: block; text-align: center; font-family: var(--display); font-size: 3.5rem; font-weight: 600; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; margin: 0.5rem 0 1.5rem; }
+.receipt-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.75rem; margin: 1.5rem 0 1rem; }
+.receipt-actions a, .receipt-actions button { display: inline-flex; align-items: center; min-height: 44px; padding: 0 1.4rem; border-radius: 999px; font-weight: 500; text-decoration: none; }
+.receipt-actions a { border: 1px solid var(--line); color: var(--ink); }
