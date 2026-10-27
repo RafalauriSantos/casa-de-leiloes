@@ -15,6 +15,7 @@ let met: MetStub;
 beforeAll(async () => {
   met = await startMetStub();
   server = await startTestServer({ metApiUrl: met.baseUrl });
+  await cancelOpenDemoLots();
   // The seed reuses a settled demo lot left by an earlier run of this shared database and skips creating it. Give those
   // an old title, so every run walks the whole seed (8.5), not only the first run on a fresh database.
   await server.db.query(
@@ -23,6 +24,35 @@ beforeAll(async () => {
     [DEMO.auctioneer, [DEMO.endedLotTitle, DEMO.tamperedLotTitle]],
   );
 });
+
+/**
+ * The seed looks for an active demo lot to reuse. Earlier runs leave theirs open in this shared database, so every run
+ * starts with none: the seed then creates each lot it promises, and every run walks the whole seed (8.1, 8.5).
+ * Each lot is cancelled through the API as the demo auctioneer, so a leader's committed balance is refunded as in production.
+ */
+async function cancelOpenDemoLots(): Promise<void> {
+  const open = await server.db.query<{ id: string }>(
+    `select l.id from public.lots l join auth.users a on a.id = l.auctioneer_id
+      where a.email = $1 and l.status = 'active' and l.ends_at > now()`,
+    [DEMO.auctioneer],
+  );
+  if (open.length === 0) return;
+  const headers = { 'Content-Type': 'application/json', apikey: requireEnv('SUPABASE_ANON_KEY') };
+  const signIn = await fetch(`${requireEnv('SUPABASE_URL')}/auth/v1/token?grant_type=password`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({ email: DEMO.auctioneer, password: DEMO.password }),
+  });
+  const session = (await signIn.json()) as { access_token?: string };
+  if (!session.access_token) throw new Error(`seed test: could not sign in ${DEMO.auctioneer} (${String(signIn.status)})`);
+  for (const lot of open) {
+    const cancelled = await fetch(`${server.url}/api/lots/${lot.id}/cancel`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${session.access_token}` },
+    });
+    if (!cancelled.ok) throw new Error(`seed test: cancelling ${lot.id} answered ${String(cancelled.status)}`);
+  }
+}
 afterAll(async () => {
   await server.close();
   await met.close();
