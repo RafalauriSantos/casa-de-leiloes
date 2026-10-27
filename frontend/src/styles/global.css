@@ -344,3 +344,6 @@ details.lot-facts summary { min-height: 44px; display: flex; align-items: center
 /* Audit on the canvas (desktop): a large headline and the bids inside a card. */
 .audit-headline h2 { font-size: 2.6rem; line-height: 1.1; letter-spacing: -0.02em; margin: 0 0 0.6rem; }
 .audit-scroll { border-radius: 20px; background: var(--card); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 8px 28px rgba(0, 0, 0, 0.06); padding: 0.5rem 1.5rem; }
+
+/* Auctioneer panel on the canvas (desktop): the summary and the lots first, the new-lot search below. */
+.panel-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 1rem; flex-wrap: wrap; }

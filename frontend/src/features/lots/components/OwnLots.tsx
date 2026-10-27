@@ -54,7 +54,7 @@ export function OwnLots({ token }: { token: string }) {
 
   return (
     <section aria-labelledby="lots-title">
-      <h2 id="lots-title">3. Meus lotes</h2>
+      <h2 id="lots-title">Meus lotes</h2>
       {notice && <p role="status">{notice}</p>}
       {load.status === 'loading' && <p>Carregando seus lotes…</p>}
       {load.status === 'error' && (
