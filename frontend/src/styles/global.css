@@ -80,7 +80,8 @@ header nav a { color: var(--ink); text-decoration: none; }
 .theme-toggle > span[aria-hidden="true"] { display: none; }
 header nav a:first-child { font-family: var(--display); font-weight: 600; font-size: 1.4rem; color: var(--ink); margin-right: auto; }
 nav[aria-label="Estado dos lotes"] { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 1rem 0; }
-.lot-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); gap: 1.25rem; margin-top: 1rem; }
+.lot-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr)); gap: 1.5rem; margin-top: 1rem; }
+.lead { font-size: 1.2rem; color: var(--muted); margin: 0 0 1.5rem; }
 .lot-card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; display: flex; flex-direction: column; }
 .lot-card a { color: inherit; text-decoration: none; display: block; }
 .lot-card img { width: 100%; aspect-ratio: 4 / 3; object-fit: contain; background: var(--paper); display: block; }

@@ -75,7 +75,8 @@ export function Showcase() {
 
   return (
     <section aria-label="Vitrine">
-      <h1>Lotes</h1>
+      <h1>Leilões ao vivo.</h1>
+      <p className="lead">Lances com a história à vista.</p>
       {liveLot && (
         <section className="featured" aria-label="Lote ao vivo em destaque">
           <img src={liveLot.imageUrl} alt="" />
