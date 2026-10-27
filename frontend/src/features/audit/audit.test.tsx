@@ -254,7 +254,7 @@ describe('the audit page, through the real API', () => {
     window.history.replaceState({}, '', `/lotes/${lotId}`);
     render(<App />);
 
-    const link = await screen.findByRole('link', { name: 'Auditar o histórico deste lote' });
+    const link = await screen.findByRole('link', { name: 'Auditar histórico' });
     expect(link.getAttribute('href')).toBe(`/auditoria/${lotId}`);
   });
 });

@@ -5,16 +5,19 @@ import { chooseTheme, currentTheme } from '@/lib/theme';
 export function ThemeToggle() {
   const [theme, setTheme] = useState(currentTheme);
   const next = theme === 'dark' ? 'light' : 'dark';
+  const label = next === 'dark' ? 'Usar tema escuro' : 'Usar tema claro';
   return (
     <button
       type="button"
-      className="link"
+      className="link theme-toggle"
+      aria-label={label}
       onClick={() => {
         chooseTheme(next);
         setTheme(next);
       }}
     >
-      {next === 'dark' ? 'Usar tema escuro' : 'Usar tema claro'}
+      <span aria-hidden="true">{next === 'dark' ? '☾' : '☀'}</span>
+      <span className="theme-toggle-text">{label}</span>
     </button>
   );
 }

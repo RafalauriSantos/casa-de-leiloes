@@ -186,7 +186,7 @@ export function LiveRoom({ lotId }: { lotId: string }) {
           <div className="bid-head">
             <label htmlFor="bid-amount">Seu lance (R$)</label>
             <button type="button" className="link" onClick={() => { setAmount((room.nextMinimumCents / 100).toFixed(2).replace('.', ',')); }}>
-              Usar o mínimo
+              Usar lance mínimo
             </button>
           </div>
           <input id="bid-amount" value={amount} onChange={(event) => { setAmount(event.target.value); }} inputMode="decimal" required />
