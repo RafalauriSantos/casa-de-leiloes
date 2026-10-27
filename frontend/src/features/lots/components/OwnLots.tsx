@@ -81,7 +81,7 @@ export function OwnLots({ token }: { token: string }) {
             <button type="button" onClick={() => { setEditing(lot.id); }}>Editar</button>
           )}
           {lot.canCancel && confirming !== lot.id && (
-            <button type="button" onClick={() => { if (lot.bidCount > 0) setConfirming(lot.id); else void cancel(lot); }}>Cancelar lote</button>
+            <button type="button" className="secondary" onClick={() => { if (lot.bidCount > 0) setConfirming(lot.id); else void cancel(lot); }}>Cancelar lote</button>
           )}
           {confirming === lot.id && (
             <div>
