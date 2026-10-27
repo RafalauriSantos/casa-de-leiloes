@@ -216,8 +216,12 @@ form[aria-labelledby="deposit-title"] h2 { margin: 0; font-size: 1.5rem; }
 .chip:hover { border-color: var(--ink); }
 
 .my-lots { list-style: none; padding: 0; display: grid; gap: 0.9rem; }
-.my-lots li { background: var(--card); border: 1px solid var(--line); padding: 1rem 1.2rem; display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.9rem; }
-.my-lots li > a:first-child { font-family: var(--display); font-size: 1.25rem; color: var(--ink); }
+.my-lots li { background: var(--card); border: 1px solid var(--line); padding: 1.4rem 1.6rem; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 1rem 1.5rem; }
+.my-lot-body { display: grid; gap: 0.35rem; }
+.my-lot-body strong { font-family: var(--display); font-size: 1.25rem; font-weight: 600; }
+.my-lot-body a { text-decoration: none; }
+.my-lot-note { color: var(--muted); font-size: 0.95rem; }
+.my-lot-action { display: inline-flex; align-items: center; min-height: 44px; padding: 0 1.2rem; border-radius: 999px; background: var(--accent); color: var(--accent-ink); text-decoration: none; font-weight: 500; }
 
 .receipt { position: relative; background: var(--card); border: 1px solid var(--ink); padding: 0.6rem; max-width: 56rem; margin: 0 auto; }
 .receipt::before { content: ""; position: absolute; inset: 0.6rem; border: 1px solid var(--brass); pointer-events: none; }
@@ -236,8 +240,8 @@ form[aria-labelledby="deposit-title"] h2 { margin: 0; font-size: 1.5rem; }
 section[aria-label="Painel do leiloeiro"] > h1 { margin-bottom: 1rem; }
 section[aria-label="Painel do leiloeiro"] > section, section[aria-label="Painel do leiloeiro"] > form { background: var(--card); border: 1px solid var(--line); padding: 1.4rem; margin-bottom: 1.2rem; }
 .catalog-results li img { border-radius: 2px; }
-.my-lots a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
-.my-lots li .state { white-space: nowrap; }
+.my-lots a:not(.my-lot-action) { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+.my-lots li .state { white-space: nowrap; justify-self: start; }
 [aria-label="Saldos"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
 [aria-label="Saldos"] > div { border-right-color: #3a3730; }
 [aria-label="Saldos"] dt { color: #c9c2b2; font-size: 0.8rem; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 600; }

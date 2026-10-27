@@ -13,6 +13,12 @@ const OUTCOME_LABEL: Record<MyLotOutcome, string> = {
   cancelled: 'Cancelado',
 };
 
+function noteFor(outcome: MyLotOutcome, bestCents: number): string {
+  if (outcome === 'won') return `Você arrematou por ${formatBRL(bestCents)}`;
+  if (outcome === 'lost') return `Seu maior lance foi ${formatBRL(bestCents)} · o valor voltou para o saldo`;
+  return `Seu maior lance foi ${formatBRL(bestCents)}`;
+}
+
 type State = { status: 'loading' } | { status: 'error'; message: string } | { status: 'ready'; lots: MyLot[] };
 
 export function MyWins({ token }: { token: string }) {
@@ -53,11 +59,14 @@ export function MyWins({ token }: { token: string }) {
         <ul className="my-lots">
           {state.lots.map((lot) => (
             <li key={lot.lotId}>
-              {lot.outcome === 'cancelled' ? lot.title : <Link to={`/lotes/${lot.lotId}`}>{lot.title}</Link>}{' '}
-              <span className="state">{OUTCOME_LABEL[lot.outcome]}</span> · seu maior lance {formatBRL(lot.myBestCents)}
-              {lot.receiptCode !== null && (
-                <> · <Link to={`/comprovante/${lot.receiptCode}`}>Ver comprovante</Link></>
-              )}
+              <div className="my-lot-body">
+                <span className="state">{OUTCOME_LABEL[lot.outcome]}</span>
+                {lot.outcome === 'cancelled' ? <strong>{lot.title}</strong> : <Link to={`/lotes/${lot.lotId}`}><strong>{lot.title}</strong></Link>}
+                <span className="my-lot-note">{noteFor(lot.outcome, lot.myBestCents)}</span>
+              </div>
+              {lot.receiptCode !== null
+                ? <Link className="my-lot-action" to={`/comprovante/${lot.receiptCode}`}>Ver comprovante</Link>
+                : lot.outcome !== 'cancelled' && <Link className="my-lot-action" to={`/lotes/${lot.lotId}`}>Ver lote</Link>}
             </li>
           ))}
         </ul>
