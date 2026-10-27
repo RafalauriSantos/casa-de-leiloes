@@ -1,17 +1,18 @@
 :root {
   color-scheme: light dark;
-  --ink: #1d1b18;
-  --muted: #645e52;
-  --paper: #f4efe6;
-  --card: #fbf8f2;
-  --line: #ddd5c5;
-  --accent: #1d1b18;
-  --accent-ink: #fbf8f2;
-  --brass: #7a5c22;
-  --live: #1f6b45;
-  --live-red: #b8341f;
-  --danger: #9e1b32;
-  --field: #756e62;
+  --display: "Instrument Sans", -apple-system, system-ui, sans-serif;
+  --ink: #1d1d1f;
+  --muted: #6e6e73;
+  --paper: #fbfbfd;
+  --card: #ffffff;
+  --line: #e8e8ed;
+  --accent: #0071e3;
+  --accent-ink: #ffffff;
+  --brass: #0071e3;
+  --live: #1d7a3e;
+  --live-red: #d70015;
+  --danger: #d70015;
+  --field: #86868b;
   font-family: "Instrument Sans", system-ui, sans-serif;
   line-height: 1.55;
   color: var(--ink);
@@ -19,18 +20,18 @@
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --ink: #ece8df;
-    --muted: #aab1bf;
-    --paper: #15171c;
-    --card: #1f232b;
-    --line: #333a46;
-    --accent: #e0a46b;
-    --accent-ink: #15171c;
-    --brass: #e0a46b;
-    --live: #6fd39b;
-    --live-red: #ff6b5b;
-    --danger: #ff8a9a;
-    --field: #8a93a3;
+    --ink: #f5f5f7;
+    --muted: #a1a1a6;
+    --paper: #000000;
+    --card: #1c1c1e;
+    --line: #2c2c2e;
+    --accent: #2997ff;
+    --accent-ink: #000000;
+    --brass: #2997ff;
+    --live: #30d158;
+    --live-red: #ff453a;
+    --danger: #ff453a;
+    --field: #8e8e93;
   }
 }
 /* A theme chosen with the switch (B21) wins over the system's. The dark values repeat the block above: CSS cannot put a
@@ -38,30 +39,30 @@
 :root[data-theme="light"] { color-scheme: light; }
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --ink: #ece8df;
-  --muted: #aab1bf;
-  --paper: #15171c;
-  --card: #1f232b;
-  --line: #333a46;
-  --accent: #e0a46b;
-  --accent-ink: #15171c;
-  --brass: #e0a46b;
-  --live: #6fd39b;
-  --live-red: #ff6b5b;
-  --danger: #ff8a9a;
-  --field: #8a93a3;
+  --ink: #f5f5f7;
+  --muted: #a1a1a6;
+  --paper: #000000;
+  --card: #1c1c1e;
+  --line: #2c2c2e;
+  --accent: #2997ff;
+  --accent-ink: #000000;
+  --brass: #2997ff;
+  --live: #30d158;
+  --live-red: #ff453a;
+  --danger: #ff453a;
+  --field: #8e8e93;
 }
 
 body { margin: 0; background: var(--paper); color: var(--ink); }
 main { max-width: 72rem; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
-h1, h2, h3 { font-family: "Fraunces", Georgia, serif; font-weight: 400; }
-h1 { font-size: 2.6rem; line-height: 1.1; letter-spacing: -0.01em; margin: 0.5rem 0 1rem; }
+h1, h2, h3 { font-family: var(--display); font-weight: 600; }
+h1 { font-size: 2.6rem; line-height: 1.1; letter-spacing: -0.025em; font-weight: 600; margin: 0.5rem 0 1rem; }
 h2 { font-size: 1.5rem; }
 form { display: grid; gap: 0.75rem; max-width: 36rem; }
 label { display: grid; gap: 0.3rem; color: var(--muted); font-size: 0.95rem; }
-input, button { font: inherit; padding: 0.55rem 0.8rem; border-radius: 2px; }
-button { min-height: 44px; font-weight: 600; letter-spacing: 0.02em; }
-input { font-size: 1rem; border: 1px solid var(--field); background: var(--card); color: var(--ink); }
+input, button { font: inherit; padding: 0.55rem 1.1rem; border-radius: 999px; }
+button { min-height: 44px; font-weight: 500; letter-spacing: 0; }
+input { font-size: 1rem; border: 1px solid var(--field); border-radius: 12px; padding: 0.7rem 0.9rem; background: var(--card); color: var(--ink); }
 button { border: 1px solid var(--accent); background: var(--accent); color: var(--accent-ink); cursor: pointer; }
 button:disabled { opacity: 0.6; cursor: wait; }
 button[aria-pressed="false"] { background: transparent; color: var(--accent); }
@@ -74,10 +75,10 @@ fieldset input { padding: 0; margin: 0; }
 .demo-accounts p { flex-basis: 100%; margin: 0; }
 [role='alert'] { color: var(--danger); }
 [role='status'] { color: var(--live); }
-header nav { display: flex; flex-wrap: wrap; gap: 1rem 1.5rem; align-items: center; padding: 0.9rem 1rem; border-bottom: 1px solid var(--line); background: var(--card); }
+header nav { display: flex; flex-wrap: wrap; gap: 1rem 1.5rem; align-items: center; padding: 0.9rem 1rem; border-bottom: 1px solid var(--line); background: var(--paper); }
 header nav a { color: var(--ink); text-decoration: none; }
 .theme-toggle > span[aria-hidden="true"] { display: none; }
-header nav a:first-child { font-family: "Fraunces", Georgia, serif; font-weight: 600; font-size: 1.4rem; color: var(--ink); margin-right: auto; }
+header nav a:first-child { font-family: var(--display); font-weight: 600; font-size: 1.4rem; color: var(--ink); margin-right: auto; }
 nav[aria-label="Estado dos lotes"] { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 1rem 0; }
 .lot-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); gap: 1.25rem; margin-top: 1rem; }
 .lot-card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; display: flex; flex-direction: column; }
@@ -137,12 +138,12 @@ section[aria-labelledby] { margin-bottom: 1.5rem; }
 .featured img { width: 100%; aspect-ratio: 4 / 3; object-fit: contain; background: var(--card); border: 1px solid var(--line); }
 .featured .featured-body { display: flex; flex-direction: column; align-items: flex-start; gap: 1rem; }
 .featured .featured-body p { margin: 0; color: var(--muted); }
-.featured .featured-amount { font-family: "Fraunces", Georgia, serif; font-size: 2.2rem; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--ink); }
+.featured .featured-amount { font-family: var(--display); font-size: 2.2rem; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--ink); }
 .featured .featured-actions { display: flex; flex-wrap: wrap; gap: 0.75rem; }
 .featured .featured-actions a { display: inline-flex; align-items: center; min-height: 48px; padding: 0 1.4rem; border: 1px solid var(--ink); color: var(--ink); text-decoration: none; font-weight: 600; }
 .featured .featured-actions a:first-child { background: var(--live-red); border-color: var(--live-red); color: #fff; }
 .lot-card { border-radius: 2px; }
-.lot-card h3 { font-family: "Fraunces", Georgia, serif; font-size: 1.35rem; font-weight: 400; }
+.lot-card h3 { font-family: var(--display); font-size: 1.35rem; font-weight: 400; }
 .lot-card .lot-card-foot { display: flex; justify-content: space-between; align-items: flex-end; gap: 1rem; border-top: 1px solid var(--line); margin-top: auto; padding-top: 0.9rem; }
 .lot-layout { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 2.5rem; align-items: start; margin-top: 1rem; }
 .lot-layout > .lot-info { display: flex; flex-direction: column; gap: 1.5rem; }
@@ -150,7 +151,7 @@ section[aria-labelledby] { margin-bottom: 1.5rem; }
 section[aria-label="Sala do lote"] { background: var(--card); border: 1px solid var(--ink); padding: 1.5rem; }
 section[aria-label="Sala do lote"] > h2 { display: none; }
 section[aria-label="Sala do lote"] form { max-width: none; }
-section[aria-label="Sala do lote"] input { font-family: "Fraunces", Georgia, serif; font-size: 1.5rem; font-variant-numeric: tabular-nums; min-height: 3.5rem; }
+section[aria-label="Sala do lote"] input { font-family: var(--display); font-size: 1.5rem; font-variant-numeric: tabular-nums; min-height: 3.5rem; }
 section[aria-label="Sala do lote"] button[type="submit"] { background: var(--live-red); border-color: var(--live-red); color: #fff; min-height: 3.5rem; font-size: 1.05rem; }
 @media (max-width: 900px) {
   .lot-layout { grid-template-columns: minmax(0, 1fr); }
@@ -166,15 +167,15 @@ form[role="search"] button { min-height: 2.75rem; }
 .lot-media .live-badge { background: var(--live-red); }
 .lot-card-foot { display: flex; justify-content: space-between; align-items: flex-end; gap: 1rem; border-top: 1px solid var(--line); margin-top: auto; padding: 0.9rem; }
 .lot-card-foot .label { display: block; }
-.lot-card-foot .amount { font-family: "Fraunces", Georgia, serif; font-size: 1.35rem; white-space: nowrap; font-weight: 600; font-variant-numeric: tabular-nums; }
+.lot-card-foot .amount { font-family: var(--display); font-size: 1.35rem; white-space: nowrap; font-weight: 600; font-variant-numeric: tabular-nums; }
 .lot-card-foot small { color: var(--muted); text-align: right; line-height: 1.4; }
 .countdown { display: flex; flex-direction: column; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 1rem 0; }
-.countdown-time { font-family: "Fraunces", Georgia, serif; font-size: 3.4rem; font-weight: 600; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.countdown-time { font-family: var(--display); font-size: 3.4rem; font-weight: 600; line-height: 1.1; font-variant-numeric: tabular-nums; }
 .room-status { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; margin: 0; }
 .room-refresh { color: var(--muted); font-size: 0.85rem; }
 section[aria-label="Sala do lote"] dl { display: grid; grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)); gap: 1rem; max-width: none; }
 section[aria-label="Sala do lote"] dl > div { flex-direction: column; border-bottom: 0; padding: 0; gap: 0.1rem; }
-section[aria-label="Sala do lote"] dl dd { text-align: left; font-family: "Fraunces", Georgia, serif; font-size: 1.6rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+section[aria-label="Sala do lote"] dl dd { text-align: left; font-family: var(--display); font-size: 1.6rem; font-weight: 600; font-variant-numeric: tabular-nums; }
 .position { display: flex; flex-direction: column; gap: 0.2rem; padding: 0.85rem 1rem; border: 1px solid var(--line); margin: 0; }
 .position.leading { border-color: var(--live); color: var(--live); background: var(--paper); }
 .position.leading span { color: var(--ink); }
@@ -192,7 +193,7 @@ header nav a:first-child::before { content: ""; display: inline-block; width: 0.
 .auth-page { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(440px, 100%), 1fr)); min-height: 70vh; margin: -1.5rem -1rem -3rem; }
 .auth-aside { background: var(--ink); color: var(--paper); padding: 3rem 4rem; display: flex; flex-direction: column; justify-content: space-between; gap: 2rem; }
 .auth-aside p { margin: 0; color: var(--line); font-size: 1.05rem; }
-.auth-aside .auth-aside-title { font-family: "Fraunces", Georgia, serif; font-size: 2.6rem; line-height: 1.1; color: var(--paper); }
+.auth-aside .auth-aside-title { font-family: var(--display); font-size: 2.6rem; line-height: 1.1; color: var(--paper); }
 .auth-aside .auth-aside-note { font-size: 0.9rem; }
 .auth-form { align-self: center; justify-self: center; width: 100%; max-width: 26rem; padding: 2.5rem 1.5rem; }
 .auth-form fieldset { border: 0; padding: 0; }
@@ -209,7 +210,7 @@ header nav a:first-child::before { content: ""; display: inline-block; width: 0.
 [aria-label="Saldos"] { display: grid; grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr)); gap: 0; border: 1px solid var(--line); background: var(--card); max-width: none; }
 [aria-label="Saldos"] > div { flex-direction: column; border: 0; border-right: 1px solid var(--line); padding: 1.2rem 1.4rem; }
 [aria-label="Saldos"] > div:last-child { border-right: 0; }
-[aria-label="Saldos"] dd { text-align: left; font-family: "Fraunces", Georgia, serif; font-size: 1.7rem; font-weight: 600; font-variant-numeric: tabular-nums; margin: 0.15rem 0 0; }
+[aria-label="Saldos"] dd { text-align: left; font-family: var(--display); font-size: 1.7rem; font-weight: 600; font-variant-numeric: tabular-nums; margin: 0.15rem 0 0; }
 form[aria-labelledby="deposit-title"] { max-width: 28rem; border: 1px solid var(--line); background: var(--card); padding: 1.6rem; }
 form[aria-labelledby="deposit-title"] h2 { margin: 0; font-size: 1.5rem; }
 .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; }
@@ -218,7 +219,7 @@ form[aria-labelledby="deposit-title"] h2 { margin: 0; font-size: 1.5rem; }
 
 .my-lots { list-style: none; padding: 0; display: grid; gap: 0.9rem; }
 .my-lots li { background: var(--card); border: 1px solid var(--line); padding: 1rem 1.2rem; display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.9rem; }
-.my-lots li > a:first-child { font-family: "Fraunces", Georgia, serif; font-size: 1.25rem; color: var(--ink); }
+.my-lots li > a:first-child { font-family: var(--display); font-size: 1.25rem; color: var(--ink); }
 
 .receipt { position: relative; background: var(--card); border: 1px solid var(--ink); padding: 0.6rem; max-width: 56rem; margin: 0 auto; }
 .receipt::before { content: ""; position: absolute; inset: 0.6rem; border: 1px solid var(--brass); pointer-events: none; }
@@ -279,14 +280,14 @@ section[aria-label="Painel do leiloeiro"] article > button { margin-top: 0.4rem;
 .auth-form { min-width: 0; }
 .steps { display: flex; flex-wrap: wrap; gap: 0.5rem 2rem; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 0.6rem 0; margin-bottom: 1.2rem; }
 .steps a { display: inline-flex; align-items: center; gap: 0.6rem; color: var(--ink); text-decoration: none; font-weight: 500; min-height: 2.75rem; }
-.steps b { width: 1.9rem; height: 1.9rem; border-radius: 50%; border: 1px solid var(--ink); display: inline-flex; align-items: center; justify-content: center; font-family: "Fraunces", Georgia, serif; font-size: 0.95rem; font-weight: 400; }
+.steps b { width: 1.9rem; height: 1.9rem; border-radius: 50%; border: 1px solid var(--ink); display: inline-flex; align-items: center; justify-content: center; font-family: var(--display); font-size: 0.95rem; font-weight: 400; }
 [aria-label="Saldos"] > div:first-child dd { font-size: 3rem; }
 @media (max-width: 600px) { [aria-label="Saldos"] > div:first-child dd { font-size: 2.4rem; } }
 
 /* Header balance, wallet bar and the room's available line (the canvas's balance details). */
 .header-balance { display: inline-flex; flex-direction: column; align-items: flex-end; line-height: 1.15; text-decoration: none; }
 .header-balance span { font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
-.header-balance strong { font-family: "Fraunces", Georgia, serif; font-size: 1.05rem; font-variant-numeric: tabular-nums; }
+.header-balance strong { font-family: var(--display); font-size: 1.05rem; font-variant-numeric: tabular-nums; }
 .balance-bar { display: flex; height: 0.6rem; background: var(--line); margin: 1rem 0 0; }
 .balance-bar span { display: block; background: var(--ink); height: 100%; }
 .room-available { font-size: 0.9rem; color: var(--muted); margin: 0; }
@@ -301,3 +302,17 @@ dl > div { min-width: 0; }
 .audit-scroll td, .audit-scroll th { white-space: nowrap; }
 .audit-scroll .audit-hash { white-space: normal; }
 .history li strong { white-space: nowrap; }
+
+/* Visual v2 (D31): quiet surfaces, soft shadows, rounded controls. Same classes and structure as above. */
+.lot-card, .featured, .receipt, .position, .auth-form, .room-panel, .my-lots li, .own-lot, .audit-results li, .catalog-results li {
+  border: 0;
+  border-radius: 20px;
+  background: var(--card);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 8px 28px rgba(0, 0, 0, 0.06);
+}
+.lot-card img, .featured img, .lot-hero { border: 0; border-radius: 16px; background: var(--paper); }
+.lot-card-foot { border-top: 0; }
+.amount, .balance-bar strong { font-weight: 600; font-variant-numeric: tabular-nums; }
+.featured-actions a, .live-badge, .lot-state, .chip { border-radius: 999px; }
+.chip { border-color: var(--line); background: var(--card); }
+.header-balance strong, .header-balance span { font-variant-numeric: tabular-nums; }
