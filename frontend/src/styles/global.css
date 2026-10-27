@@ -250,8 +250,13 @@ section[aria-label="Painel do leiloeiro"] article > button { margin-top: 0.4rem;
 
 /* Phone width: the header, sign-in, wallet and room stack cleanly without sideways scroll. */
 @media (max-width: 600px) {
-  header nav { gap: 0.4rem 0.9rem; padding: 0.6rem 0.8rem; font-size: 0.95rem; }
-  header nav a:first-child { flex-basis: 100%; font-size: 1.3rem; margin-right: 0; }
+  header nav { gap: 0.4rem 0.7rem; padding: 0.6rem 0.8rem; font-size: 0.95rem; }
+  header nav a:first-child { font-size: 1.2rem; }
+  /* Two rows: the brand and the theme switch, then the balance, the links and sign-out. The greeting is left out here. */
+  header nav > span { display: none; }
+  header nav > .header-balance { order: 1; }
+  header nav > a:not(:first-child):not(.header-balance), header nav > button.link:not(:last-child) { order: 2; }
+  header nav > button.link:last-child { order: 0; }
   .auth-page { grid-template-columns: minmax(0, 1fr); margin: 0; }
   .auth-aside { padding: 2rem 1.25rem; gap: 1.25rem; }
   .auth-aside .auth-aside-title { font-size: 2rem; }
