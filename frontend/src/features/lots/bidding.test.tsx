@@ -102,7 +102,7 @@ describe('live room: bidding in the UI', () => {
     expect(within(room).getByText('R$ 500,00')).toBeTruthy();
 
     const form = screen.getByRole('form', { name: 'Dar lance' });
-    await user.click(within(form).getByRole('button', { name: 'Dar lance' }));
+    await user.click(within(form).getByRole('button', { name: /^Dar lance/ }));
     expect(await screen.findByText('Você está ganhando.')).toBeTruthy();
 
     // Bruno outbids her through the API; her screen catches up on its own (polling every 3 s).
@@ -126,7 +126,7 @@ describe('live room: bidding in the UI', () => {
     const form = await screen.findByRole('form', { name: 'Dar lance' });
     const input = within(form).getByLabelText<HTMLInputElement>('Seu lance (R$)');
     fireEvent.change(input, { target: { value: '500,00' } });
-    await user.click(within(form).getByRole('button', { name: 'Dar lance' }));
+    await user.click(within(form).getByRole('button', { name: /^Dar lance/ }));
     expect((await within(form).findByRole('alert')).textContent).toBe('Saldo disponível insuficiente: você tem R$ 100,00 para lances.');
     expect(input.value).toBe('500,00');
   });
@@ -175,7 +175,7 @@ describe('live room: bidding in the UI', () => {
     window.history.replaceState({}, '', `/lotes/${lotId}`);
     const first = render(<App />);
     const form = await screen.findByRole('form', { name: 'Dar lance' });
-    await user.click(within(form).getByRole('button', { name: 'Dar lance' }));
+    await user.click(within(form).getByRole('button', { name: /^Dar lance/ }));
     const receipts = await screen.findByRole('region', { name: 'Seus recibos' });
     const head = within(receipts).getByText(/^[0-9a-f]{64}$/).textContent;
     expect(within(receipts).getByText(/Lance nº 1/)).toBeTruthy();
@@ -201,7 +201,7 @@ describe('live room: bidding in the UI', () => {
     const first = render(<App />);
     const form = await screen.findByRole('form', { name: 'Dar lance' });
     expect(screen.queryByRole('region', { name: 'Seus recibos' })).toBeNull();
-    await user.click(within(form).getByRole('button', { name: 'Dar lance' }));
+    await user.click(within(form).getByRole('button', { name: /^Dar lance/ }));
     expect(await screen.findByRole('region', { name: 'Seus recibos' })).toBeTruthy();
     first.unmount();
 
@@ -226,7 +226,7 @@ describe('live room: bidding in the UI', () => {
     const receipts = await screen.findByRole('region', { name: 'Seus recibos' });
     expect(within(receipts).getByText('a'.repeat(64))).toBeTruthy();
     const form = screen.getByRole('form', { name: 'Dar lance' });
-    await user.click(within(form).getByRole('button', { name: 'Dar lance' }));
+    await user.click(within(form).getByRole('button', { name: /^Dar lance/ }));
     expect(await within(receipts).findByText(/Lance nº 1/)).toBeTruthy();
     expect(within(receipts).getByText('a'.repeat(64))).toBeTruthy();
   }, 30_000);
@@ -245,7 +245,7 @@ describe('live room: bidding in the UI', () => {
       window.history.replaceState({}, '', `/lotes/${lotId}`);
       render(<App />);
       const form = await screen.findByRole('form', { name: 'Dar lance' });
-      await user.click(within(form).getByRole('button', { name: 'Dar lance' }));
+      await user.click(within(form).getByRole('button', { name: /^Dar lance/ }));
       expect(await screen.findByRole('region', { name: 'Seus recibos' })).toBeTruthy();
       expect(refuse).toHaveBeenCalled();
     } finally {
