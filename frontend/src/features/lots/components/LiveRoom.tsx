@@ -11,6 +11,12 @@ import { clockOffset, formatRemaining, formatWhen, remainingMs, STATE_LABEL } fr
 
 const POLL_MS = 3_000;
 
+/** The bid button names the amount it will place, as the canvas does; without a valid amount it stays plain. */
+function bidButtonLabel(amount: string): string {
+  const cents = parseReaisToCents(amount);
+  return cents === undefined ? 'Dar lance' : `Dar lance de ${formatBRL(cents)}`;
+}
+
 type Load = { status: 'loading' } | { status: 'error'; message: string } | { status: 'ready'; room: LiveLot };
 
 export function LiveRoom({ lotId }: { lotId: string }) {
@@ -185,7 +191,9 @@ export function LiveRoom({ lotId }: { lotId: string }) {
           </div>
           <input id="bid-amount" value={amount} onChange={(event) => { setAmount(event.target.value); }} inputMode="decimal" required />
           {bidError && <p role="alert">{bidError}</p>}
-          <button type="submit" disabled={busy || remaining <= 0}>{busy ? 'Enviando…' : 'Dar lance'}</button>
+          <button type="submit" disabled={busy || remaining <= 0}>
+            {busy ? 'Enviando…' : bidButtonLabel(amount)}
+          </button>
           {available !== undefined && (
             <p className="room-available">Disponível para lances: <strong>{formatBRL(available)}</strong></p>
           )}
