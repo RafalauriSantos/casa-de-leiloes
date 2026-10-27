@@ -77,12 +77,14 @@ export function OwnLots({ token }: { token: string }) {
           </p>
           <p><small>De {formatWhen(lot.startsAt)} até {formatWhen(lot.endsAt)} · {lot.bidCount} lance(s)</small></p>
           {resultText(lot) && <p><strong>{resultText(lot)}</strong></p>}
-          {lot.canEdit && editing !== lot.id && (
-            <button type="button" onClick={() => { setEditing(lot.id); }}>Editar</button>
-          )}
-          {lot.canCancel && confirming !== lot.id && (
-            <button type="button" className="secondary" onClick={() => { if (lot.bidCount > 0) setConfirming(lot.id); else void cancel(lot); }}>Cancelar lote</button>
-          )}
+          <div className="own-lot-actions">
+            {lot.canEdit && editing !== lot.id && (
+              <button type="button" onClick={() => { setEditing(lot.id); }}>Editar</button>
+            )}
+            {lot.canCancel && confirming !== lot.id && (
+              <button type="button" className="secondary" onClick={() => { if (lot.bidCount > 0) setConfirming(lot.id); else void cancel(lot); }}>Cancelar lote</button>
+            )}
+          </div>
           {confirming === lot.id && (
             <div>
               <p>Este lote tem lances. Cancelar devolve na hora o valor comprometido de quem lidera, e ninguém paga nada.</p>

@@ -358,7 +358,7 @@ details.lot-facts summary { min-height: 44px; display: flex; align-items: center
 /* Auctioneer lots on the canvas: one row per lot, information on the left and the actions on the right. */
 .own-lot { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 1.5rem; row-gap: 0.35rem; align-items: center; }
 .own-lot > h3, .own-lot > p { grid-column: 1; margin: 0; }
-.own-lot > button { grid-column: 2; justify-self: end; }
+.own-lot-actions { grid-column: 2; grid-row: 1 / span 3; align-self: center; display: flex; gap: 0.6rem; }
 .own-lot > div, .own-lot > form { grid-column: 1 / -1; }
 .own-lot > button.secondary { background: transparent; color: var(--accent); border: 1px solid var(--accent); }
-@media (max-width: 600px) { .own-lot { grid-template-columns: minmax(0, 1fr); } .own-lot > button { grid-column: 1; justify-self: start; } }
+@media (max-width: 600px) { .own-lot { grid-template-columns: minmax(0, 1fr); } .own-lot-actions { grid-column: 1; grid-row: auto; } }
