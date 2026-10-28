@@ -328,6 +328,7 @@ button.secondary { background: transparent; color: var(--ink); border: 1px solid
 .featured-stats span { color: var(--muted); font-size: 0.95rem; }
 .featured-stats strong { font-size: 2.4rem; font-weight: 600; font-variant-numeric: tabular-nums; }
 .featured-stats div + div strong { font-size: 1.5rem; font-weight: 500; }
+.featured-stats div:first-child strong { white-space: nowrap; }
 .featured-actions { display: flex; align-items: center; gap: 1.5rem; }
 .featured-actions a { color: var(--muted); font-size: 1rem; }
 .featured-bid { display: inline-flex; align-items: center; min-height: 52px; padding: 0 2.25rem; border-radius: 6px; background: var(--accent); color: var(--accent-ink); font-size: 1.05rem; font-weight: 500; text-decoration: none; }
@@ -352,6 +353,7 @@ button.secondary { background: transparent; color: var(--ink); border: 1px solid
   .showcase-hero h1 { font-size: 2.3rem; }
   .featured-title { font-size: 1.6rem; }
   .featured-stats strong { font-size: 1.8rem; }
+  .featured-stats div + div strong { font-size: 1.25rem; }
 }
 .showcase-hero form { display: flex; align-items: flex-end; gap: 0.5rem; }
 .showcase-hero form button { min-height: 44px; padding: 0 0.25rem; border: 0; border-radius: 0; background: none; color: var(--ink); font-weight: 500; text-decoration: underline; text-underline-offset: 3px; }
@@ -405,7 +407,7 @@ button.secondary { background: transparent; color: var(--ink); border: 1px solid
 [aria-label="Saldos"] > div { display: flex; flex-direction: column; border: 0; padding: 0; gap: 0.1rem; }
 [aria-label="Saldos"] > div:first-child { flex-basis: 100%; }
 [aria-label="Saldos"] dt { color: var(--muted); font-size: 0.95rem; }
-[aria-label="Saldos"] dd { font-size: 1.1rem; font-weight: 500; }
+[aria-label="Saldos"] dd { font-size: 1.1rem; font-weight: 500; text-align: left; }
 [aria-label="Saldos"] > div:first-child dd { font-size: 3.75rem; font-weight: 600; letter-spacing: -0.02em; line-height: 1.1; }
 @media (max-width: 600px) { [aria-label="Saldos"] > div:first-child dd { font-size: 2.75rem; } }
 form[aria-labelledby="deposit-title"] { border: 0; background: transparent; padding: 0; }
@@ -443,3 +445,15 @@ section[aria-label="Auditoria"] > h1 { font-size: 1rem; font-weight: 600; color:
 .audit-warning h2 { color: var(--brass); }
 .audit-scroll th { color: var(--muted); font-weight: 400; }
 @media (max-width: 600px) { .audit-headline h2 { font-size: 2rem; } }
+
+/* Tablet (601 to 900 px): the links take their own row under the brand and the account, so the header never runs past the screen. */
+.header-balance { white-space: nowrap; }
+@media (min-width: 601px) and (max-width: 900px) {
+  .app-header-inner { flex-wrap: wrap; min-height: 0; row-gap: 0.25rem; padding-top: 0.75rem; padding-bottom: 0.5rem; }
+  .brand-name, .account-name { display: none; }
+  .main-nav { order: 3; flex: 0 0 100%; gap: 1.5rem; }
+}
+@media (max-width: 600px) {
+  .featured-stats { gap: 1.25rem; }
+  .featured-stats div:first-child strong { font-size: 1.5rem; }
+}
