@@ -168,10 +168,16 @@ export function LiveRoom({ lotId }: { lotId: string }) {
         <div><dt>Lances</dt><dd>{room.bidCount}</dd></div>
       </dl>
 
-      {room.position === 'leading' && (
+      {room.position === 'leading' && room.state === 'live' && (
         <p role="status" className="position leading">
           <strong>Você está ganhando.</strong>
           <span>Seu lance lidera e esse valor fica reservado na carteira.</span>
+        </p>
+      )}
+      {room.position === 'leading' && room.state === 'ended' && (
+        <p role="status" className="position leading">
+          <strong>Você arrematou este lote.</strong>
+          <span>O resultado está em <Link to="/arremates">Meus arremates</Link>.</span>
         </p>
       )}
       {room.position === 'outbid' && (
