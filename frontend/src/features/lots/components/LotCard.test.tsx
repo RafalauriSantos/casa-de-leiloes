@@ -21,19 +21,19 @@ const lot = (state: LotSummary['state']): LotSummary => ({
 const renderCard = (state: LotSummary['state']) =>
   render(<MemoryRouter><LotCard lot={lot(state)} /></MemoryRouter>);
 
-describe('lot card: a live lot is evident, like a live badge on a video platform', () => {
-  it('shows an AO VIVO badge with a pulsing dot while the lot is live', () => {
+describe('lot card: a live lot is evident, in the list and on the storefront', () => {
+  it('marks a live lot with "Ao vivo agora" in the accent colour and no red badge', () => {
     renderCard('live');
-    const badge = screen.getByText('AO VIVO').closest('.live-badge');
-    expect(badge).not.toBeNull();
-    expect(badge?.querySelector('.live-dot')).not.toBeNull();
+    const status = screen.getByText('Ao vivo');
+    expect(status.classList.contains('live-status')).toBe(true);
+    expect(document.querySelector('.live-badge')).toBeNull();
   });
 
-  it('keeps the plain state label for every other state, with no live badge', () => {
+  it('keeps the plain state label for every other state', () => {
     for (const [state, label] of [['scheduled', 'Agendado'], ['ended', 'Encerrado'], ['cancelled', 'Cancelado']] as const) {
       const { unmount } = renderCard(state);
       expect(screen.getByText(label).classList.contains('state')).toBe(true);
-      expect(document.querySelector('.live-badge')).toBeNull();
+      expect(document.querySelector('.live-status')).toBeNull();
       unmount();
     }
   });

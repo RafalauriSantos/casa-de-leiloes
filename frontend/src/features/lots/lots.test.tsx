@@ -181,7 +181,7 @@ describe('showcase and lot page (no login needed)', () => {
     await waitFor(() => {
       expect(screen.queryByText('Carregando lotes…')).toBeNull();
     });
-    expect(screen.getByRole('heading', { name: 'Leilões ao vivo.' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Leilões ao vivo' })).toBeTruthy();
   });
 
   it('answers a missing lot with a message, not a blank page', async () => {
