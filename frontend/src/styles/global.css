@@ -430,3 +430,16 @@ section[aria-label="Comprovante"] > h1 { font-size: 1rem; font-weight: 400; colo
 .receipt-actions { margin: 0; }
 .receipt-actions button { background: var(--accent); color: var(--accent-ink); border: 1px solid var(--accent); }
 @media (max-width: 600px) { .receipt h2 { font-size: 1.6rem; } .receipt-amount { font-size: 2.75rem; } .receipt-actions { flex-direction: column; } .receipt-actions > * { justify-content: center; } }
+
+/* Audit (canvas): the verdict is the page: a small label, the large headline, the checks, then the bids as plain rows. */
+section[aria-label="Auditoria"] > h1 { font-size: 1rem; font-weight: 600; color: var(--muted); margin: 0; }
+.audit-headline { border: 0; border-radius: 0; background: transparent; box-shadow: none; padding: 0.75rem 0 1.25rem; max-width: 48rem; }
+.audit-headline h2 { font-size: 3.25rem; font-weight: 500; line-height: 1.08; letter-spacing: -0.01em; margin: 0 0 0.75rem; }
+.audit-headline p { font-size: 1.15rem; line-height: 1.5; }
+.audit-results { display: flex; flex-direction: column; gap: 0.6rem; margin: 0 0 1.5rem; padding: 0; }
+.audit-results li { display: flex; gap: 0.6rem; align-items: baseline; background: transparent; border: 0; border-radius: 0; box-shadow: none; padding: 0; font-size: 1.05rem; }
+.audit-ok ~ .audit-results li::before { content: "✓"; color: var(--live); font-weight: 700; }
+.audit-scroll { background: transparent; box-shadow: none; border-radius: 0; border-top: 1px solid var(--line); padding: 0; }
+.audit-warning h2 { color: var(--brass); }
+.audit-scroll th { color: var(--muted); font-weight: 400; }
+@media (max-width: 600px) { .audit-headline h2 { font-size: 2rem; } }
