@@ -87,10 +87,13 @@ describe('auctioneer journey: find an item, publish, edit, cancel', () => {
     await user.click(within(editForm).getByRole('button', { name: 'Salvar alterações' }));
     expect(await screen.findByRole('heading', { name: `${marker} editado`, level: 3 })).toBeTruthy();
 
-    // Cancel with no bids: gone from the owner's list as a cancelled lot.
+    // Cancel with no bids asks first; once confirmed, the lot is gone from the owner's list as a cancelled lot.
     const edited = (await screen.findByRole('heading', { name: `${marker} editado`, level: 3 })).closest('article');
     if (!edited) throw new Error('the edited lot is not inside a card');
     await user.click(within(edited).getByRole('button', { name: 'Cancelar lote' }));
+    expect(within(edited).getByRole('button', { name: 'Confirmar cancelamento' })).toBeTruthy();
+    expect(notices()).not.toContain('cancelado');
+    await user.click(within(edited).getByRole('button', { name: 'Confirmar cancelamento' }));
     await waitFor(() => { expect(notices()).toContain('cancelado'); });
     await waitFor(() => {
       expect(screen.queryByRole('button', { name: /Cancelar lote/ })).toBeNull();

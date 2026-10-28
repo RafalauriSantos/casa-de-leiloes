@@ -164,7 +164,7 @@ export function LiveRoom({ lotId }: { lotId: string }) {
 
       <dl>
         <div><dt>Lance atual</dt><dd>{room.currentAmountCents === null ? 'nenhum' : formatBRL(room.currentAmountCents)}</dd></div>
-        <div><dt>Próximo lance mínimo</dt><dd>{formatBRL(room.nextMinimumCents)}</dd></div>
+        <div><dt>Mínimo para dar lance</dt><dd>{formatBRL(room.nextMinimumCents)}</dd></div>
         <div><dt>Lances</dt><dd>{room.bidCount}</dd></div>
       </dl>
 
@@ -185,11 +185,11 @@ export function LiveRoom({ lotId }: { lotId: string }) {
         <form onSubmit={(event) => void submit(event)} aria-label="Dar lance">
           <div className="bid-head">
             <label htmlFor="bid-amount">Seu lance (R$)</label>
-            <button type="button" className="link" onClick={() => { setAmount((room.nextMinimumCents / 100).toFixed(2).replace('.', ',')); }}>
+            <button type="button" className="link" onClick={() => { setAmount((room.nextMinimumCents / 100).toFixed(2).replace('.', ',')); setBidError(undefined); }}>
               Usar lance mínimo
             </button>
           </div>
-          <input id="bid-amount" value={amount} onChange={(event) => { setAmount(event.target.value); }} inputMode="decimal" required />
+          <input id="bid-amount" value={amount} onChange={(event) => { setAmount(event.target.value); setBidError(undefined); }} inputMode="decimal" required />
           {bidError && <p role="alert">{bidError}</p>}
           <button type="submit" disabled={busy || remaining <= 0}>
             {busy ? 'Enviando…' : bidButtonLabel(amount)}

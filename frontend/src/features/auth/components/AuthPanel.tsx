@@ -48,9 +48,8 @@ export function AuthPanel() {
   return (
     <div className="auth-page">
     <aside className="auth-aside" aria-label="Sobre a casa de leilões">
-      <p className="serif auth-aside-title">Cada lance fica registrado. Qualquer pessoa pode conferir.</p>
-      <p>O histórico de cada lote é uma cadeia de hashes com âncora pública. Se alguém alterar um lance, a auditoria mostra onde.</p>
-      <p className="auth-aside-note">Saldos e depósitos são simulados. Nenhum pagamento real é feito.</p>
+      <p className="serif auth-aside-title">Entre para dar lances ou vender.</p>
+      <p className="auth-aside-note">Nenhum pagamento real é feito. Os saldos são simulados.</p>
     </aside>
     <form className="auth-form" onSubmit={(event) => void onSubmit(event)} aria-labelledby="auth-title">
       <h2 id="auth-title">{mode === 'signin' ? 'Entrar' : 'Criar conta'}</h2>

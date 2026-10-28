@@ -54,7 +54,7 @@ export function OwnLots({ token }: { token: string }) {
 
   return (
     <section aria-labelledby="lots-title">
-      <h2 id="lots-title">3. Meus lotes</h2>
+      <h2 id="lots-title">Meus lotes</h2>
       {notice && <p role="status">{notice}</p>}
       {load.status === 'loading' && <p>Carregando seus lotes…</p>}
       {load.status === 'error' && (
@@ -77,15 +77,19 @@ export function OwnLots({ token }: { token: string }) {
           </p>
           <p><small>De {formatWhen(lot.startsAt)} até {formatWhen(lot.endsAt)} · {lot.bidCount} lance(s)</small></p>
           {resultText(lot) && <p><strong>{resultText(lot)}</strong></p>}
-          {lot.canEdit && editing !== lot.id && (
-            <button type="button" onClick={() => { setEditing(lot.id); }}>Editar</button>
-          )}
-          {lot.canCancel && confirming !== lot.id && (
-            <button type="button" onClick={() => { if (lot.bidCount > 0) setConfirming(lot.id); else void cancel(lot); }}>Cancelar lote</button>
-          )}
+          <div className="own-lot-actions">
+            {lot.canEdit && editing !== lot.id && (
+              <button type="button" onClick={() => { setEditing(lot.id); }}>Editar</button>
+            )}
+            {lot.canCancel && confirming !== lot.id && (
+              <button type="button" className="secondary" onClick={() => { setConfirming(lot.id); }}>Cancelar lote</button>
+            )}
+          </div>
           {confirming === lot.id && (
             <div>
-              <p>Este lote tem lances. Cancelar devolve na hora o valor comprometido de quem lidera, e ninguém paga nada.</p>
+              {lot.bidCount > 0
+                ? <p>Este lote tem lances. Cancelar devolve na hora o valor comprometido de quem lidera, e ninguém paga nada.</p>
+                : <p>Confirme para cancelar este lote.</p>}
               <button type="button" onClick={() => void cancel(lot)}>Confirmar cancelamento</button>
               <button type="button" onClick={() => { setConfirming(undefined); }}>Manter o lote</button>
             </div>

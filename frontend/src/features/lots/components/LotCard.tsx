@@ -10,10 +10,10 @@ export function LotCard({ lot }: { lot: LotSummary }) {
       <Link to={`/lotes/${lot.id}`}>
         <div className="lot-media">
           <img src={lot.imageUrl} alt={lot.title} loading="lazy" />
-          {lot.state === 'live'
-            ? <span className="live-badge"><span className="live-dot" aria-hidden="true" />AO VIVO</span>
-            : <span className="state lot-state">{STATE_LABEL[lot.state]}</span>}
         </div>
+        {lot.state === 'live'
+          ? <span className="live-badge"><span className="live-dot" aria-hidden="true" />AO VIVO</span>
+          : <span className="state">{STATE_LABEL[lot.state]}</span>}
         <h3>{lot.title}</h3>
       </Link>
       <div className="lot-card-foot">

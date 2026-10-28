@@ -20,12 +20,15 @@ export function AuctioneerPanel({ token }: { token: string }) {
 
   return (
     <section aria-label="Painel do leiloeiro">
-      <h1>Painel do leiloeiro</h1>
-      <nav aria-label="Etapas do painel" className="steps">
-        <a href="#buscar-item"><b>1</b>Buscar item</a>
-        <a href="#novo-lote"><b>2</b>Configurar o lote</a>
-        <a href="#meus-lotes"><b>3</b>Meus lotes</a>
-      </nav>
+      <header className="panel-head">
+        <h1>Painel do leiloeiro</h1>
+        <a href="#buscar-item" className="my-lot-action">Novo lote</a>
+      </header>
+      <div id="meus-lotes">
+        <OwnLots key={version} token={token} />
+      </div>
+      {notice && <p role="status">{notice}</p>}
+      <div className="new-lot">
       <div id="buscar-item">
         <CatalogSearch token={token} onPick={(picked) => { setItem(picked); setNotice(undefined); }} />
       </div>
@@ -46,9 +49,6 @@ export function AuctioneerPanel({ token }: { token: string }) {
           />
         </section>
       )}
-      {notice && <p role="status">{notice}</p>}
-      <div id="meus-lotes">
-        <OwnLots key={version} token={token} />
       </div>
     </section>
   );
