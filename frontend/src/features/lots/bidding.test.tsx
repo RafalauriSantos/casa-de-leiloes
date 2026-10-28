@@ -176,6 +176,31 @@ describe('live room: bidding in the UI', () => {
     expect(screen.queryByRole('form', { name: 'Dar lance' })).toBeNull();
   });
 
+  it('tells a bidder why a lot takes no bid yet or any more: not started or ended', async () => {
+    const auctioneer = await newAccount('auctioneer');
+    const bidder = await newAccount();
+    await signInAs(bidder.id);
+    const later = (ms: number) => new Date(Date.now() + ms).toISOString();
+    const created = await api('/api/lots', auctioneer.token, {
+      method: 'POST',
+      body: { externalId: '205482', title: `Sem lance ${randomUUID().slice(0, 6)}`, startsAt: later(3_600_000), endsAt: later(7_200_000), startingBidCents: 50_000, incrementCents: 5_000 },
+    });
+    const scheduled = (await created.json()) as { id: string };
+    const ended = await liveLotFor(auctioneer.token);
+    await sql("update public.lots set ends_at = now() - interval '1 second' where id = $1", [ended]);
+
+    for (const [lotId, message] of [
+      [scheduled.id, 'O lote ainda não começou.'],
+      [ended, 'Este lote já encerrou.'],
+    ] as const) {
+      window.history.replaceState({}, '', `/lotes/${lotId}`);
+      const view = render(<App />);
+      expect(await screen.findByText(message)).toBeTruthy();
+      expect(screen.queryByRole('form', { name: 'Dar lance' })).toBeNull();
+      view.unmount();
+    }
+  });
+
   it('a full lot (1,000 bids) tells a bidder why they cannot bid and shows no bid form', async () => {
     const auctioneer = await newAccount('auctioneer');
     const lotId = await liveLotFor(auctioneer.token);

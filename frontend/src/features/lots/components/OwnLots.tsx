@@ -85,7 +85,7 @@ export function OwnLots({ token }: { token: string }) {
             {resultText(lot) && <p><strong>{resultText(lot)}</strong></p>}
           </div>
           <div className="own-lot-actions">
-            <Link to={`/lotes/${lot.id}`}>Ver sala</Link>
+            {lot.state !== 'cancelled' && <Link to={`/lotes/${lot.id}`}>Ver sala</Link>}
             {lot.canEdit && editing !== lot.id && (
               <button type="button" className="secondary" onClick={() => { setEditing(lot.id); }}>Editar</button>
             )}
