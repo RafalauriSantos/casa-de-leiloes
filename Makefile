@@ -4,7 +4,7 @@
 audit:
 	npm audit --omit=dev --audit-level=high
 
-.PHONY: audit install lint typecheck test build ci ci-local dev dev-api dev-web compose db-up db-down db-reset e2e-live seed e2e-prod
+.PHONY: audit install lint typecheck test build ci ci-local dev dev-api dev-web compose db-up db-down db-reset e2e-live seed e2e-prod e2e-browser
 
 install:
 	npm ci
@@ -34,6 +34,9 @@ dev:
 
 dev-api:
 	./scripts/with-local-env.sh npm run dev -w @casa/backend
+
+e2e-browser:
+	./scripts/with-local-env.sh npx playwright test -c e2e/playwright.config.ts
 
 e2e-prod:
 	./scripts/with-local-env.sh sh -c 'cd backend && node --import tsx scripts/e2e-deployed.ts'

@@ -238,7 +238,7 @@ describe('live room: bidding in the UI', () => {
     await signInAs(auctioneer.id);
     render(<App />);
     // The label follows the role, which is known once the account menu is there
-    await screen.findByRole('button', { name: 'Menu da conta' });
+    await screen.findByRole('button', { expanded: false });
     const asAuctioneer = await screen.findByRole('region', { name: 'Lote ao vivo em destaque' });
     expect(within(asAuctioneer).queryByRole('link', { name: 'Dar lance' })).toBeNull();
     expect(within(asAuctioneer).getByRole('link', { name: 'Ver lote' })).toBeTruthy();

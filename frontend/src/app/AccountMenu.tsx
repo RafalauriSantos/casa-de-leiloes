@@ -42,7 +42,7 @@ export function AccountMenu({ name, roleLabel, availableCents, links }: Props) {
 
   return (
     <div className="account" ref={root}>
-      <button type="button" className="account-button" ref={button} aria-haspopup="dialog" aria-expanded={open} aria-label="Menu da conta" onClick={() => { setOpen((value) => !value); }}>
+      <button type="button" className="account-button" ref={button} aria-haspopup="dialog" aria-expanded={open} onClick={() => { setOpen((value) => !value); }}>
         <span className="avatar" aria-hidden="true">{name.charAt(0).toUpperCase()}</span>
         <span className="account-name">{name}</span>
         <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true" focusable="false"><path d="M3 5l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
