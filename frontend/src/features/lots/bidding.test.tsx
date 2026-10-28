@@ -201,6 +201,22 @@ describe('live room: bidding in the UI', () => {
     expect(screen.queryByRole('form', { name: 'Dar lance' })).toBeNull();
   });
 
+  it('an auctioneer is not offered a bid on the storefront; a visitor still is', async () => {
+    const auctioneer = await newAccount('auctioneer');
+    await liveLotFor(auctioneer.token);
+    window.history.replaceState({}, '', '/');
+    const visitor = render(<App />);
+    const asVisitor = await screen.findByRole('region', { name: 'Lote ao vivo em destaque' });
+    expect(within(asVisitor).getByRole('link', { name: 'Dar lance' })).toBeTruthy();
+    visitor.unmount();
+
+    await signInAs(auctioneer.id);
+    render(<App />);
+    const asAuctioneer = await screen.findByRole('region', { name: 'Lote ao vivo em destaque' });
+    expect(within(asAuctioneer).queryByRole('link', { name: 'Dar lance' })).toBeNull();
+    expect(within(asAuctioneer).getByRole('link', { name: 'Ver lote' })).toBeTruthy();
+  });
+
   it('shows the receipt of an accepted bid and keeps it across a reload', async () => {
     const user = userEvent.setup();
     const auctioneer = await newAccount('auctioneer');

@@ -99,7 +99,7 @@ export function Showcase() {
               <div><span>Termina em</span><strong>{formatWhen(liveLot.endsAt)}</strong></div>
             </div>
             <div className="featured-actions">
-              <Link className="featured-bid" to={`/lotes/${liveLot.id}`}>Dar lance</Link>
+              <Link className="featured-bid" to={`/lotes/${liveLot.id}`}>{isAuctioneer ? 'Ver lote' : 'Dar lance'}</Link>
               <Link to={`/lotes/${liveLot.id}`}>Histórico</Link>
             </div>
           </div>
