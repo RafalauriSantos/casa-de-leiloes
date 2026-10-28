@@ -347,3 +347,9 @@ Built so far: each accepted bid returns a bid receipt `{seq, head, placedAt}` in
 - **What changes:** the double-bordered frame, the seal and the large photo are gone; `Copiar link` comes first and is the filled button. The data shown is the same (lot, amount, settlement time, winner label, code), and the public link and the audit link are unchanged.
 - **Tradeoff:** the receipt no longer shows the item's picture; the lot title, the amount and the code identify it, and the audit link opens the lot's history.
 - **Test:** none new (visual change); the journeys that open the receipt, signed in and signed out, pass unchanged.
+
+## D42. The audit page leads with the verdict: a small label, the large headline, the checks, the bids as plain rows
+- **Why:** the canvas makes the verdict the page. A visitor who opens an audit link should read at once whether the history is intact, not find it inside a card among other cards.
+- **What changes:** only styles. The page title becomes a small label, the headline (`Histórico íntegro` and its other forms) is large, the results are a short list (with a check mark only when the headline says the history is intact), and the bid table has no card around it. The coloured edge of the old card is gone, so the warning verdicts keep their own colour on the headline (brass, like the danger verdict keeps red) and are not read as the intact one. The texts, the receipt form and the table columns, including the full hash of each bid, are unchanged.
+- **Tradeoff:** the canvas shortens each hash ("9c1e…b7d2"); the page keeps the full hash because a person comparing it with their receipt needs every character. On a phone the table still scrolls sideways instead of stacking into rows.
+- **Test:** none new (visual change); the audit tests, including every verdict and the tamper cases, pass unchanged.
