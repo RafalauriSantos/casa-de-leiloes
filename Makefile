@@ -4,7 +4,7 @@
 audit:
 	npm audit --omit=dev --audit-level=high
 
-.PHONY: audit install lint typecheck test build ci dev dev-api dev-web compose db-up db-down db-reset e2e-live seed e2e-prod
+.PHONY: audit install lint typecheck test build ci ci-local dev dev-api dev-web compose db-up db-down db-reset e2e-live seed e2e-prod
 
 install:
 	npm ci
@@ -24,6 +24,10 @@ test:
 
 # The only definition of green. GitHub Actions runs exactly this.
 ci: lint typecheck build test audit
+
+# The same check as the GitHub job, from a clean state (fresh stack, install and environment): scripts/ci-local.sh.
+ci-local:
+	./scripts/ci-local.sh
 
 dev:
 	$(MAKE) -j2 dev-api dev-web
