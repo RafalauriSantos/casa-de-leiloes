@@ -52,6 +52,8 @@ describe('bidder journey', () => {
     await user.type(screen.getByLabelText('Valor (R$)'), '250,00');
     await user.click(screen.getByRole('button', { name: 'Depositar' }));
     expect((await screen.findByRole('status')).textContent).toBe('Depósito de R$ 250,00 realizado.');
+    // The balance in the header follows the deposit without a reload
+    await waitFor(() => { expect(screen.getByRole('link', { name: /Saldo/ }).textContent).toContain('R$ 250,00'); });
     const summary = screen.getByLabelText('Saldos');
     expect(within(summary).getAllByText('R$ 250,00')).toHaveLength(2);
 
@@ -60,13 +62,24 @@ describe('bidder journey', () => {
     await user.dblClick(screen.getByRole('button', { name: 'Depositar' }));
     await waitFor(() => { expect(within(screen.getByLabelText('Saldos')).getAllByText('R$ 350,00')).toHaveLength(2); });
 
+    // The account menu names the account and its role, offers the bidder's places, and closes with Escape
+    await user.click(screen.getByRole('button', { name: 'Menu da conta' }));
+    const menu = screen.getByRole('dialog', { name: 'Menu da conta' });
+    expect(within(menu).getByText('Conta de licitante', { exact: false })).toBeTruthy();
+    expect(within(menu).getByRole('link', { name: 'Meus arremates' })).toBeTruthy();
+    await user.tab();
+    expect(menu.contains(document.activeElement)).toBe(true);
+    await user.keyboard('{Escape}');
+    expect(screen.queryByRole('dialog', { name: 'Menu da conta' })).toBeNull();
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Menu da conta' }));
+
     // Sign out: the wallet is closed and the login is offered
+    await user.click(screen.getByRole('button', { name: 'Menu da conta' }));
     await user.click(screen.getByRole('button', { name: 'Sair' }));
-    expect(await screen.findByRole('link', { name: 'Entrar' })).toBeTruthy();
+    expect(await screen.findByRole('heading', { name: 'Entrar' })).toBeTruthy();
     expect(screen.queryByRole('heading', { name: 'Carteira' })).toBeNull();
 
     // A wrong password gives one generic message
-    await user.click(screen.getByRole('link', { name: 'Entrar' }));
     await user.type(screen.getByLabelText('E-mail'), email);
     await user.type(screen.getByLabelText('Senha'), 'wrong-password');
     await user.click(screen.getByRole('button', { name: 'Entrar' }));
@@ -109,7 +122,9 @@ describe('auctioneer access', () => {
     await user.type(screen.getByLabelText('Senha'), password);
     await user.click(screen.getByRole('button', { name: 'Criar conta' }));
 
-    expect(await screen.findByRole('link', { name: 'Painel do leiloeiro' })).toBeTruthy();
+    // After sign-in the auctioneer lands on the panel, with its own navigation and no wallet
+    expect(await screen.findByRole('heading', { name: 'Painel do leiloeiro' })).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'Painel' })).toBeTruthy();
     expect(screen.queryByRole('link', { name: 'Carteira' })).toBeNull();
   });
 
@@ -128,6 +143,18 @@ describe('auctioneer access', () => {
 });
 
 describe('visitor', () => {
+  it('has a way back to the storefront on every screen but the storefront itself', async () => {
+    window.history.replaceState({}, '', '/comprovante/abc');
+    const { unmount } = render(<App />);
+    expect(await screen.findByRole('link', { name: 'Voltar aos lotes' })).toBeTruthy();
+    unmount();
+
+    window.history.replaceState({}, '', '/');
+    render(<App />);
+    expect(await screen.findByRole('link', { name: 'Entrar' })).toBeTruthy();
+    expect(screen.queryByRole('link', { name: 'Voltar aos lotes' })).toBeNull();
+  });
+
   it('is sent to the login from the wallet and sees the not-found page for unknown routes', async () => {
     window.history.replaceState({}, '', '/carteira');
     const { unmount } = render(<App />);

@@ -1,25 +1,39 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { fetchWallet } from '@/features/wallet';
 import { formatBRL } from '@/lib/format';
+import { onWalletChange } from '@/lib/wallet-events';
 
-/** The available balance in the header (the design's "Disponível"). Shown only when it is read; a failed read shows nothing. */
-export function HeaderBalance({ token }: { token: string }) {
+/**
+ * The available balance, read again when the screen changes and when a deposit or a bid changes the wallet.
+ * A failed read gives nothing: the header never shows a balance it did not read.
+ */
+export function useAvailableBalance(token: string | undefined, screen: string): number | undefined {
   const [available, setAvailable] = useState<number>();
+  const [changes, setChanges] = useState(0);
+
+  useEffect(() => onWalletChange(() => { setChanges((n) => n + 1); }), []);
 
   useEffect(() => {
     let cancelled = false;
-    setAvailable(undefined);
+    if (token === undefined) {
+      setAvailable(undefined);
+      return;
+    }
     fetchWallet(token)
       .then((wallet) => { if (!cancelled) setAvailable(wallet.availableCents); })
       .catch(() => { if (!cancelled) setAvailable(undefined); });
     return () => { cancelled = true; };
-  }, [token]);
+  }, [token, screen, changes]);
 
-  if (available === undefined) return null;
+  return available;
+}
+
+export function HeaderBalance({ availableCents }: { availableCents: number }) {
   return (
-    <a href="/carteira" className="header-balance">
-      <span>Disponível</span>
-      <strong>{formatBRL(available)}</strong>
-    </a>
+    <Link to="/carteira" className="header-balance">
+      <span>Saldo</span>
+      <strong>{formatBRL(availableCents)}</strong>
+    </Link>
   );
 }

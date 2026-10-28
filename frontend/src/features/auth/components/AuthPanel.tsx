@@ -18,7 +18,7 @@ export function AuthPanel() {
   const [busy, setBusy] = useState(false);
   const auth = useAuth();
 
-  if (auth.status === 'signed-in') return <Navigate to="/" replace />;
+  if (auth.status === 'signed-in') return <Navigate to={auth.me.role === 'auctioneer' ? '/leiloeiro' : '/'} replace />;
 
   async function onSubmit(event: SyntheticEvent<HTMLFormElement>) {
     event.preventDefault();
