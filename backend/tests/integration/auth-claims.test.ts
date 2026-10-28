@@ -1,6 +1,6 @@
 import { createServer, type Server } from 'node:http';
 import type { AddressInfo } from 'node:net';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi, type MockInstance } from 'vitest';
 import { SignJWT, exportJWK, generateKeyPair, type JWK } from 'jose';
 import { signUpUser, type TestUser } from '../helpers/auth';
 import { startTestServer, type TestServer } from '../helpers/server';
@@ -93,12 +93,18 @@ async function withKeyServer(respond: (res: import('node:http').ServerResponse) 
 }
 
 describe('the key server is a dependency: its failure is our error, not the caller\'s', () => {
+  // The server logs the cause of each failure on purpose: capture it, and assert it, instead of printing it on every run.
+  let logged: MockInstance<typeof console.error>;
+  beforeEach(() => { logged = vi.spyOn(console, 'error').mockImplementation(() => undefined); });
+  afterEach(() => { logged.mockRestore(); });
+
   it('answers 500 internal_error, never 401, when the key server is unreachable', async () => {
     const broken = await startTestServer({ supabaseUrl: 'http://127.0.0.1:1' });
     try {
       const response = await fetch(`${broken.url}/api/me`, { headers: { Authorization: `Bearer ${await token()}` } });
       expect(response.status).toBe(500);
       expect(await response.json()).toEqual({ code: 'internal_error', message: expect.any(String) as string });
+      expect(logged).toHaveBeenCalledWith('unhandled error:', expect.any(String));
     } finally {
       await broken.close();
     }
@@ -115,6 +121,7 @@ describe('the key server is a dependency: its failure is our error, not the call
         const response = await fetch(`${broken.url}/api/me`, { headers: { Authorization: `Bearer ${await token()}` } });
         expect(response.status).toBe(500);
         expect(await response.json()).toEqual({ code: 'internal_error', message: expect.any(String) as string });
+        expect(logged).toHaveBeenCalledWith('unhandled error:', expect.any(String));
       } finally {
         await broken.close();
       }
