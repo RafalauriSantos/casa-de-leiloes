@@ -52,7 +52,7 @@ async function api(path: string, token: string, init: { method?: string; body?: 
 }
 
 /** A lot that has ended: sold to one bidder for 55,000, or left with no bids. It is settled by a read unless `settle` is false. */
-async function endedLot(auctioneer: { token: string; id: string }, bidder: { token: string } | undefined, title: string, settle = true): Promise<void> {
+async function endedLot(auctioneer: { token: string; id: string }, bidder: { token: string } | undefined, title: string, settle = true): Promise<string> {
   const later = (ms: number) => new Date(Date.now() + ms).toISOString();
   const created = await api('/api/lots', auctioneer.token, {
     method: 'POST',
@@ -68,6 +68,7 @@ async function endedLot(auctioneer: { token: string; id: string }, bidder: { tok
   }
   await sql("update public.lots set ends_at = now() - interval '1 second' where id = $1", [lot.id]);
   if (settle) expect((await fetch(`${window.location.origin}/api/lots/${lot.id}`)).status).toBe(200);
+  return lot.id;
 }
 
 describe('the auctioneer panel shows the results (B3, 1.7)', () => {
@@ -122,5 +123,22 @@ describe('cancelling a lot with bids from the panel (B19, 9.1)', () => {
     expect(await screen.findByText(`Lote "${title}" cancelado. O valor do lance líder voltou para o licitante.`)).toBeTruthy();
     const wallet = (await (await api('/api/wallet', bidder.token)).json()) as { committedCents: number };
     expect(wallet.committedCents).toBe(0);
+  });
+});
+
+describe('an ended lot tells its winner they won it, not that they are leading', () => {
+  it('shows the result of an ended lot the viewer won, and no leading message', async () => {
+    const auctioneer = await newAccount('auctioneer');
+    const buyer = await newAccount();
+    const title = `Won ${randomUUID().slice(0, 6)}`;
+    const lotId = await endedLot(auctioneer, buyer, title);
+
+    const login = await supabase.auth.signInWithPassword({ email: buyer.email, password: buyer.password });
+    expect(login.error).toBeNull();
+    window.history.replaceState({}, '', `/lotes/${lotId}`);
+    render(<App />);
+
+    expect(await screen.findByText('Você arrematou este lote.')).toBeTruthy();
+    expect(screen.queryByText('Você está ganhando.')).toBeNull();
   });
 });
