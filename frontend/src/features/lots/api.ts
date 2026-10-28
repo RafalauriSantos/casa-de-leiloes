@@ -1,5 +1,6 @@
 import type { AuctioneerSummary, BidAccepted, CatalogPage, CreateLotInput, LiveLot, LotDetail, LotInput, LotSummary, OwnLot } from '@casa/contracts';
 import { apiFetch } from '@/lib/api-client';
+import { announceWalletChange } from '@/lib/wallet-events';
 
 export type ShowcaseStatus = 'live' | 'scheduled' | 'ended';
 
@@ -44,5 +45,8 @@ export function fetchLive(id: string, token: string | undefined): Promise<LiveLo
 }
 
 export function placeBid(token: string, id: string, amountCents: number): Promise<BidAccepted> {
-  return apiFetch<BidAccepted>(`/api/lots/${id}/bids`, { token, method: 'POST', body: { amountCents } });
+  return apiFetch<BidAccepted>(`/api/lots/${id}/bids`, { token, method: 'POST', body: { amountCents } }).then((accepted) => {
+    announceWalletChange();
+    return accepted;
+  });
 }

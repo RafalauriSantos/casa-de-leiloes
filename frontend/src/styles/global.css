@@ -79,12 +79,6 @@ fieldset input { padding: 0; margin: 0; }
 .demo-accounts p { flex-basis: 100%; margin: 0; }
 [role='alert'] { color: var(--danger); }
 [role='status'] { color: var(--live); }
-header nav { display: flex; flex-wrap: wrap; gap: 1rem 1.5rem; align-items: center; padding: 0.9rem 1rem; border-bottom: 1px solid var(--line); background: var(--paper); }
-header nav a { color: var(--ink); text-decoration: none; }
-.theme-toggle > span[aria-hidden="true"] { display: none; }
-header nav .brand { display: inline-flex; align-items: center; margin-right: auto; color: var(--ink); }
-header nav .brand .logo { display: block; }
-header nav .brand-name { margin-left: 0.8rem; font-family: Jost, var(--display); font-size: 1.1rem; letter-spacing: 0.24em; color: var(--ink); white-space: nowrap; }
 nav[aria-label="Estado dos lotes"] { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 1rem 0; }
 .state { display: inline-block; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.1rem 0.5rem; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
 .lot-hero { box-sizing: border-box; width: 100%; max-width: 100%; aspect-ratio: 4 / 3; height: auto; max-height: 28rem; object-fit: contain; background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 0.5rem; }
@@ -227,7 +221,6 @@ section[aria-label="Painel do leiloeiro"] > section, section[aria-label="Painel 
 [aria-label="Saldos"] dd { color: var(--paper); }
 form[aria-labelledby="deposit-title"] .chip { flex: 1 1 6rem; }
 a { color: var(--ink); text-underline-offset: 3px; }
-header nav a, .nav a { text-decoration: none; }
 .receipt-seal { z-index: 2; }
 section[aria-label="Sala do lote"] input { width: 100%; box-sizing: border-box; min-width: 0; }
 .bid-head button.link { white-space: nowrap; }
@@ -236,12 +229,6 @@ section[aria-label="Painel do leiloeiro"] article > button { margin-top: 0.4rem;
 
 /* Phone width: the header, sign-in, wallet and room stack cleanly without sideways scroll. */
 @media (max-width: 600px) {
-  header nav { gap: 0.4rem 0.9rem; padding: 0.6rem 0.8rem; font-size: 0.95rem; }
-  header nav .brand { flex-basis: 100%; margin-right: 0; }
-  header nav .brand-name { display: none; }
-  .theme-toggle-text { display: none; }
-  .theme-toggle > span[aria-hidden="true"] { display: inline; font-size: 1.2rem; }
-  .theme-toggle { min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; }
   .auth-page { grid-template-columns: minmax(0, 1fr); margin: 0; }
   .auth-aside { padding: 2rem 1.25rem; gap: 1.25rem; }
   .auth-aside .auth-aside-title { font-size: 2rem; }
@@ -267,9 +254,6 @@ section[aria-label="Painel do leiloeiro"] article > button { margin-top: 0.4rem;
 @media (max-width: 600px) { [aria-label="Saldos"] > div:first-child dd { font-size: 2.4rem; } }
 
 /* Header balance, wallet bar and the room's available line (the canvas's balance details). */
-.header-balance { display: inline-flex; align-items: baseline; gap: 0.45rem; line-height: 1.15; text-decoration: none; }
-.header-balance span { font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
-.header-balance strong { font-family: var(--display); font-size: 1.05rem; font-variant-numeric: tabular-nums; }
 .balance-bar { display: flex; height: 0.6rem; background: var(--line); margin: 1rem 0 0; }
 .balance-bar span { display: block; background: var(--ink); height: 100%; }
 .room-available { font-size: 0.9rem; color: var(--muted); margin: 0; }
@@ -296,7 +280,6 @@ dl > div { min-width: 0; }
 .amount, .balance-bar strong { font-weight: 600; font-variant-numeric: tabular-nums; }
 .lot-state, .chip { border-radius: 999px; }
 .chip { border-color: var(--line); background: var(--card); }
-.header-balance strong, .header-balance span { font-variant-numeric: tabular-nums; }
 
 /* Visual v2 (D31), room and main actions: the bid button uses the accent; the room card has no hard border. */
 section[aria-label="Sala do lote"] {
@@ -391,3 +374,43 @@ details.lot-facts summary { min-height: 44px; display: flex; align-items: center
 .lot-thumb { width: 4.5rem; height: 3.4rem; object-fit: contain; background: var(--photo); border-radius: 6px; }
 .featured-actions a.featured-bid { color: var(--accent-ink); }
 .showcase-hero form { flex-wrap: nowrap; }
+
+/* The header (canvas v3): the brand, the links of the role and the account on a wide screen; on a phone, the title of the screen and the account. */
+.app-header-inner { max-width: 72rem; margin: 0 auto; padding: 0 1rem; box-sizing: border-box; min-height: 104px; display: flex; align-items: center; gap: 2rem; }
+.brand { flex: 1; display: inline-flex; align-items: center; gap: 0.9rem; color: var(--ink); text-decoration: none; }
+.brand .logo { display: block; width: 92px; height: 72px; }
+.brand-name { font-family: Jost, var(--display); font-size: 1.2rem; letter-spacing: 0.24em; white-space: nowrap; }
+.screen-title { display: none; }
+.main-nav { display: flex; align-items: center; gap: 2.25rem; font-size: 1.06rem; }
+.main-nav a { color: var(--muted); text-decoration: none; }
+.main-nav a[aria-current="page"] { color: var(--brass); font-weight: 500; }
+.header-end { flex: 1; display: flex; align-items: center; justify-content: flex-end; gap: 1.25rem; }
+.header-end > a { color: var(--ink); text-decoration: none; }
+.header-end > a.enter-link { color: var(--brass); font-weight: 500; }
+.header-balance { display: inline-flex; align-items: baseline; gap: 0.4rem; color: var(--muted); text-decoration: none; }
+.header-balance strong { color: var(--ink); font-weight: 500; font-variant-numeric: tabular-nums; }
+.account { position: relative; }
+.account-button { display: inline-flex; align-items: center; gap: 0.6rem; min-height: 44px; padding: 0 0.5rem 0 0.25rem; border: 0; border-radius: 6px; background: transparent; color: var(--ink); font-weight: 400; }
+.avatar { width: 2rem; height: 2rem; border-radius: 50%; border: 1px solid var(--field); display: inline-flex; align-items: center; justify-content: center; font-weight: 500; font-size: 0.9rem; }
+.account-panel { position: absolute; right: 0; top: calc(100% + 0.25rem); z-index: 10; width: 300px; max-width: calc(100vw - 2rem); overflow: hidden; background: var(--card); border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 8px 28px rgba(0, 0, 0, 0.12); }
+.account-who { display: flex; flex-direction: column; gap: 0.15rem; padding: 1rem 1.1rem; }
+.account-who span { color: var(--muted); font-size: 0.9rem; }
+.account-nav { display: none; }
+.account-panel .theme-toggle, .account-item { display: flex; align-items: center; justify-content: flex-start; width: 100%; min-height: 52px; box-sizing: border-box; padding: 0 1.1rem; border: 0; border-top: 1px solid var(--line); border-radius: 0; background: transparent; color: var(--ink); font-size: 1.05rem; font-weight: 400; text-align: left; text-decoration: none; }
+.theme-toggle > span[aria-hidden="true"] { display: none; }
+.theme-toggle-icon { min-width: 44px; min-height: 44px; padding: 0; display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
+.theme-toggle-icon > span[aria-hidden="true"] { display: inline; font-size: 1.2rem; }
+.theme-toggle-icon .theme-toggle-text { display: none; }
+.header-back { display: none; }
+@media (max-width: 600px) {
+  .app-header-inner { min-height: 56px; gap: 0.5rem; }
+  .header-back { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; margin-left: -0.75rem; color: var(--ink); }
+  .brand, .main-nav, .header-balance, .account-name { display: none; }
+  .screen-title { display: block; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 1.375rem; font-weight: 500; letter-spacing: -0.01em; }
+  .header-end { flex: none; gap: 0.5rem; }
+  .account-nav { display: flex; flex-direction: column; }
+  .account-nav a { display: flex; align-items: center; min-height: 52px; padding: 0 1.1rem; border-top: 1px solid var(--line); color: var(--ink); text-decoration: none; font-size: 1.05rem; }
+  .account-nav a[aria-current="page"] { color: var(--brass); font-weight: 500; }
+  main { padding-top: 0.5rem; }
+  main[data-title-in-header] h1 { position: absolute; width: 1px; height: 1px; margin: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+}
