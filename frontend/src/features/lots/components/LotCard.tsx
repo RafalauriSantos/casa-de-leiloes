@@ -3,26 +3,25 @@ import { Link } from 'react-router-dom';
 import { formatBRL } from '@/lib/format';
 import { formatWhen, STATE_LABEL } from '../time';
 
+/** One lot in the list: its title and state on the left, its bid on the right. */
 export function LotCard({ lot }: { lot: LotSummary }) {
   const bid = lot.currentAmountCents ?? lot.startingBidCents;
   return (
-    <article className="lot-card">
+    <article className="lot-row">
+      <img src={lot.imageUrl} alt="" className="lot-thumb" loading="lazy" />
       <Link to={`/lotes/${lot.id}`}>
-        <div className="lot-media">
-          <img src={lot.imageUrl} alt={lot.title} loading="lazy" />
-        </div>
-        {lot.state === 'live'
-          ? <span className="live-badge"><span className="live-dot" aria-hidden="true" />AO VIVO</span>
-          : <span className="state">{STATE_LABEL[lot.state]}</span>}
         <h3>{lot.title}</h3>
+        <span className="lot-status">
+          {lot.state === 'live'
+            ? <span className="live-status">Ao vivo</span>
+            : <span className="state">{STATE_LABEL[lot.state]}</span>}
+          <small>Termina em {formatWhen(lot.endsAt)}</small>
+        </span>
       </Link>
-      <div className="lot-card-foot">
-        <div>
-          <span className="label">{lot.currentAmountCents === null ? 'Lance inicial' : 'Lance atual'}</span>
-          <strong className="amount">{formatBRL(bid)}</strong>
-        </div>
-        <small>Termina em {formatWhen(lot.endsAt)}</small>
-      </div>
+      <span className="lot-price">
+        <span className="label">{lot.currentAmountCents === null ? 'Lance inicial' : 'Lance atual'}</span>
+        <strong className="amount">{formatBRL(bid)}</strong>
+      </span>
     </article>
   );
 }

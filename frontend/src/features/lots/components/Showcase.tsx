@@ -75,62 +75,69 @@ export function Showcase() {
 
   return (
     <section aria-label="Vitrine">
-      <h1>Leilões ao vivo.</h1>
-      <p className="lead">Lances com a história à vista.</p>
+      <div className="showcase-hero">
+        <h1>Leilões ao vivo</h1>
+        <form onSubmit={(event) => { event.preventDefault(); setQuery(search.trim()); }} role="search">
+          <label>
+            Buscar por título
+            <input value={search} onChange={(event) => { setSearch(event.target.value); }} placeholder="Relógio, mapa, Sèvres" />
+          </label>
+          <button type="submit">Buscar</button>
+        </form>
+      </div>
       {liveLot && (
         <section className="featured" aria-label="Lote ao vivo em destaque">
           <img src={liveLot.imageUrl} alt="" />
           <div className="featured-body">
-            <span className="live-badge"><span className="live-dot" aria-hidden="true" />AO VIVO</span>
-            <p className="serif">{liveLot.title}</p>
-            <p>Lance atual</p>
-            <p className="featured-amount">{formatBRL(liveLot.currentAmountCents ?? liveLot.startingBidCents)}</p>
-            <p>Termina em {formatWhen(liveLot.endsAt)}</p>
+            <span className="featured-status">Ao vivo agora</span>
+            <p className="featured-title">{liveLot.title}</p>
+            <div className="featured-stats">
+              <div><span>Lance atual</span><strong>{formatBRL(liveLot.currentAmountCents ?? liveLot.startingBidCents)}</strong></div>
+              <div><span>Termina em</span><strong>{formatWhen(liveLot.endsAt)}</strong></div>
+            </div>
             <div className="featured-actions">
-              <Link to={`/lotes/${liveLot.id}`}>Entrar na sala e dar lance</Link>
-              <Link to={`/auditoria/${liveLot.id}`}>Auditar histórico</Link>
+              <Link className="featured-bid" to={`/lotes/${liveLot.id}`}>Dar lance</Link>
+              <Link to={`/lotes/${liveLot.id}`}>Histórico</Link>
             </div>
           </div>
         </section>
       )}
-      <form onSubmit={(event) => { event.preventDefault(); setQuery(search.trim()); }} role="search">
-        <label>
-          Buscar por título
-          <input value={search} onChange={(event) => { setSearch(event.target.value); }} placeholder="Buscar por título: vaso, jarra…" />
-        </label>
-        <button type="submit">Buscar</button>
-      </form>
-      <nav aria-label="Estado dos lotes">
-        {TABS.map((item) => (
-          <button
-            key={item.value}
-            type="button"
-            className={item.value === 'live' && hasLive ? 'tab-live' : undefined}
-            aria-pressed={tab === item.value}
-            onClick={() => { setTab(item.value); }}
-          >
-            {item.value === 'live' && hasLive && <span className="live-dot" aria-hidden="true" />}
-            {item.label}
-          </button>
-        ))}
-      </nav>
-      {state.status === 'loading' && <p>Carregando lotes…</p>}
-      {state.status === 'error' && (
-        <>
-          <p role="alert">{state.message}</p>
-          <button type="button" onClick={() => { setAttempt((n) => n + 1); }}>Tentar de novo</button>
-        </>
-      )}
-      {state.status === 'ready' && state.lots.length === 0 && (
-        <div className="empty">
-          <p>{query ? `Nenhum lote encontrado para "${query}".` : EMPTY_HINT[tab]}</p>
+      <section className="upcoming" aria-labelledby="upcoming-title">
+        <div className="upcoming-head">
+          <h2 id="upcoming-title">Próximos leilões</h2>
+          <nav aria-label="Estado dos lotes">
+            {TABS.map((item) => (
+              <button
+                key={item.value}
+                type="button"
+                className={item.value === 'live' && hasLive ? 'tab-live' : undefined}
+                aria-pressed={tab === item.value}
+                onClick={() => { setTab(item.value); }}
+              >
+                {item.value === 'live' && hasLive && <span className="live-dot" aria-hidden="true" />}
+                {item.label}
+              </button>
+            ))}
+          </nav>
         </div>
-      )}
-      {state.status === 'ready' && state.lots.length > 0 && (
-        <div className="lot-grid">
-          {state.lots.map((lot) => <LotCard key={lot.id} lot={lot} />)}
-        </div>
-      )}
+        {state.status === 'loading' && <p>Carregando lotes…</p>}
+        {state.status === 'error' && (
+          <>
+            <p role="alert">{state.message}</p>
+            <button type="button" onClick={() => { setAttempt((n) => n + 1); }}>Tentar de novo</button>
+          </>
+        )}
+        {state.status === 'ready' && state.lots.length === 0 && (
+          <div className="empty">
+            <p>{query ? `Nenhum lote encontrado para "${query}".` : EMPTY_HINT[tab]}</p>
+          </div>
+        )}
+        {state.status === 'ready' && state.lots.length > 0 && (
+          <div className="lot-rows">
+            {state.lots.map((lot) => <LotCard key={lot.id} lot={lot} />)}
+          </div>
+        )}
+      </section>
     </section>
   );
 }

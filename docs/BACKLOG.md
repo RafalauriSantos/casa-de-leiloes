@@ -24,7 +24,7 @@ mutation per rule and the owner's "pode mergear"; **normal** needs one reviewer 
 | Payment waits for the publication of the last bid | | D21 | #24 |
 | Owner release of a lot whose history fails verification | 7.2 | D20 | #12, #25 |
 | Decision: no read-back of the anchor before payment | | D21 | #26 |
-| AO VIVO badge on live lots | 2.1 | | #27 |
+| AO VIVO badge on live lots (replaced by the brass "Ao vivo" label, D34) | 2.1 | | #27 |
 | The Ao vivo dot only while a lot is open; test runs leave no open lot behind | 2.1, 2.5 | | #28 |
 | "Meus arremates" and the shareable win receipt | 6.1 to 6.4 | high | #30 |
 | Demo seed: one auctioneer, two funded bidders, one live lot with bids (D9c) | 8.1 | normal | #31 |
