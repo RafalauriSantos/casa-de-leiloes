@@ -84,6 +84,7 @@ describe('my wins and the win receipt (J6)', () => {
 
     expect(await screen.findByRole('heading', { name: 'Meus arremates' })).toBeTruthy();
     expect(await screen.findByText(title)).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Arrematados', level: 2 })).toBeTruthy();
     expect(screen.getByText('Arrematado')).toBeTruthy();
     await user.click(screen.getByRole('link', { name: 'Ver comprovante' }));
 
