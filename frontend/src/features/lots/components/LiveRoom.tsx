@@ -11,6 +11,12 @@ import { clockOffset, formatRemaining, formatWhen, remainingMs, STATE_LABEL } fr
 
 const POLL_MS = 3_000;
 
+/** Why a lot takes no bid yet or any more, in the words the server uses for the same refusals (bidding rules). A cancelled lot has no room: the public read hides it (D17). */
+const NOT_LIVE_MESSAGE: Partial<Record<LiveLot['state'], string>> = {
+  scheduled: 'O lote ainda não começou.',
+  ended: 'Este lote já encerrou.',
+};
+
 /** The bid button names the amount it will place, as the canvas does; without a valid amount it stays plain. */
 function bidButtonLabel(amount: string): string {
   const cents = parseReaisToCents(amount);
@@ -151,6 +157,7 @@ export function LiveRoom({ lotId }: { lotId: string }) {
         <span className="state">{STATE_LABEL[room.state]}</span>
         {room.state === 'live' && <span className="room-refresh">Atualiza a cada 3 s</span>}
       </p>
+      {NOT_LIVE_MESSAGE[room.state] && <p>{NOT_LIVE_MESSAGE[room.state]}</p>}
       {room.state === 'live' && remaining > 0 && (
         <div className="countdown">
           <span className="label">Termina em</span>
