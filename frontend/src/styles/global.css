@@ -82,7 +82,8 @@ fieldset input { padding: 0; margin: 0; }
 nav[aria-label="Estado dos lotes"] { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 1rem 0; }
 .state { display: inline-block; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.1rem 0.5rem; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
 .lot-hero { box-sizing: border-box; width: 100%; max-width: 100%; aspect-ratio: 4 / 3; height: auto; max-height: 28rem; object-fit: contain; background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 0.5rem; }
-.empty { border: 1px dashed var(--line); border-radius: 10px; padding: 2rem 1.25rem; color: var(--muted); margin-top: 1rem; text-align: center; }
+.empty { border: 1px dashed var(--line); border-radius: 10px; padding: 2rem 1.25rem; color: var(--muted); margin-top: 1rem; text-align: center; display: grid; justify-items: center; gap: 1rem; }
+.empty p { margin: 0; }
 dl { display: grid; gap: 0.2rem; max-width: 36rem; }
 dl > div { display: flex; justify-content: space-between; gap: 1rem; padding: 0.35rem 0; border-bottom: 1px dotted var(--line); }
 dd { margin: 0; text-align: right; }
@@ -338,9 +339,9 @@ button.secondary { background: transparent; color: var(--ink); border: 1px solid
 .featured-bid { display: inline-flex; align-items: center; min-height: 52px; padding: 0 2.25rem; border-radius: 6px; background: var(--accent); color: var(--accent-ink); font-size: 1.05rem; font-weight: 500; text-decoration: none; }
 .upcoming-head { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 1rem; margin-bottom: 0.5rem; }
 .upcoming-head h2 { margin: 0; font-size: 1.4rem; font-weight: 500; }
-.upcoming-head nav { display: flex; gap: 1.25rem; }
-.upcoming-head nav button { background: none; border: 0; border-radius: 0; padding: 0.25rem 0; min-height: 44px; color: var(--muted); font-weight: 400; }
-.upcoming-head nav button[aria-pressed="true"] { color: var(--ink); font-weight: 600; }
+.upcoming-head nav { display: flex; gap: 0.25rem; padding: 0.25rem; border-radius: 999px; background: color-mix(in srgb, var(--ink) 7%, transparent); }
+.upcoming-head nav button { background: none; border: 0; border-radius: 999px; padding: 0 1rem; min-height: 40px; color: var(--muted); font-weight: 400; }
+.upcoming-head nav button[aria-pressed="true"] { background: var(--card); color: var(--ink); font-weight: 600; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12); }
 .lot-rows { display: flex; flex-direction: column; }
 .lot-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 1.5rem; align-items: center; padding: 1.25rem 0; border-top: 1px solid var(--line); }
 .lot-row a { display: flex; flex-direction: column; gap: 0.3rem; color: inherit; text-decoration: none; }

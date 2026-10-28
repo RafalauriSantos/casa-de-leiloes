@@ -2,6 +2,7 @@ import type { LotSummary } from '@casa/contracts';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { formatBRL } from '@/lib/format';
+import { useAuth } from '@/features/auth';
 import { fetchLots, type ShowcaseStatus } from '../api';
 import { formatWhen } from '../time';
 import { LotCard } from './LotCard';
@@ -24,6 +25,8 @@ const EMPTY_HINT: Record<ShowcaseStatus, string> = {
 type State = { status: 'loading' } | { status: 'error'; message: string } | { status: 'ready'; lots: LotSummary[] };
 
 export function Showcase() {
+  const auth = useAuth();
+  const isAuctioneer = auth.status === 'signed-in' && auth.me.role === 'auctioneer';
   const [tab, setTab] = useState<ShowcaseStatus>('live');
   const [search, setSearch] = useState('');
   const [query, setQuery] = useState('');
@@ -130,6 +133,10 @@ export function Showcase() {
         {state.status === 'ready' && state.lots.length === 0 && (
           <div className="empty">
             <p>{query ? `Nenhum lote encontrado para "${query}".` : EMPTY_HINT[tab]}</p>
+            {isAuctioneer && <Link className="my-lot-action" to="/leiloeiro/novo">Criar lote</Link>}
+            {!isAuctioneer && tab !== 'scheduled' && (
+              <button type="button" onClick={() => { setTab('scheduled'); }}>Ver agendados</button>
+            )}
           </div>
         )}
         {state.status === 'ready' && state.lots.length > 0 && (
