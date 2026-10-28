@@ -11,7 +11,7 @@ export function AppLayout() {
     <>
       <header>
         <nav aria-label="Principal">
-          <Link to="/" className="brand" aria-label="Casa de Leilões"><Logo /></Link>
+          <Link to="/" className="brand" aria-label="Casa de Leilões"><Logo /><span className="brand-name" aria-hidden="true">CASA DE LEILÕES</span></Link>
           {auth.status === 'signed-in' && auth.me.role === 'bidder' && <Link to="/carteira">Carteira</Link>}
           {auth.status === 'signed-in' && auth.me.role === 'bidder' && <Link to="/arremates">Meus arremates</Link>}
           {auth.status === 'signed-in' && auth.me.role === 'auctioneer' && <Link to="/leiloeiro">Painel do leiloeiro</Link>}

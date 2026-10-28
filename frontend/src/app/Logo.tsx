@@ -1,12 +1,15 @@
-/** The brand mark: a gavel over a base, the auction's hammer. Used in the header. */
+/** The brand mark: the auction gavel striking its block. The head is gold; the rest takes the text color. Used in the header. */
 export function Logo() {
   return (
-    <svg className="logo" viewBox="0 0 24 24" width="36" height="36" aria-hidden="true" focusable="false">
-      <g transform="rotate(-35 12 12)" fill="currentColor">
-        <rect x="2.5" y="1.5" width="13" height="7" rx="2" />
-        <rect x="10" y="7.5" width="4" height="13.5" rx="1.5" />
+    <svg className="logo" viewBox="330 250 360 280" width="46" height="36" aria-hidden="true" focusable="false">
+      <g transform="translate(0 -40)" fill="currentColor" stroke="currentColor" strokeWidth="10" strokeLinejoin="round">
+        <rect x="340" y="500" width="320" height="56" rx="8" />
+        <g transform="rotate(15 474.5 498.8)">
+          <polygon points="460.9,420.3 623.5,257.6 605.3,239.3 442.7,402" />
+          <path d="M555.8 288.8L574.3 307.2" stroke="#d4a84f" strokeWidth="7" strokeLinecap="round" fill="none" />
+          <rect x="375.3" y="370.8" width="156" height="92" rx="14" transform="rotate(45 453.3 416.8)" fill="#d4a84f" />
+        </g>
       </g>
-      <rect x="3" y="20.5" width="18" height="3" rx="1.5" fill="currentColor" />
     </svg>
   );
 }

@@ -79,8 +79,9 @@ fieldset input { padding: 0; margin: 0; }
 header nav { display: flex; flex-wrap: wrap; gap: 1rem 1.5rem; align-items: center; padding: 0.9rem 1rem; border-bottom: 1px solid var(--line); background: var(--paper); }
 header nav a { color: var(--ink); text-decoration: none; }
 .theme-toggle > span[aria-hidden="true"] { display: none; }
-header nav .brand { display: inline-flex; align-items: center; margin-right: auto; color: var(--brass); }
+header nav .brand { display: inline-flex; align-items: center; margin-right: auto; color: var(--ink); }
 header nav .brand .logo { display: block; }
+header nav .brand-name { margin-left: 0.8rem; font-family: Jost, var(--display); font-size: 1.1rem; letter-spacing: 0.24em; color: var(--ink); white-space: nowrap; }
 nav[aria-label="Estado dos lotes"] { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 1rem 0; }
 .lot-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr)); gap: 1.5rem; margin-top: 1rem; }
 .lead { font-size: 1.2rem; color: var(--muted); margin: 0 0 1.5rem; }
@@ -259,6 +260,7 @@ section[aria-label="Painel do leiloeiro"] article > button { margin-top: 0.4rem;
 @media (max-width: 600px) {
   header nav { gap: 0.4rem 0.9rem; padding: 0.6rem 0.8rem; font-size: 0.95rem; }
   header nav .brand { flex-basis: 100%; margin-right: 0; }
+  header nav .brand-name { display: none; }
   .theme-toggle-text { display: none; }
   .theme-toggle > span[aria-hidden="true"] { display: inline; font-size: 1.2rem; }
   .theme-toggle { min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; }
