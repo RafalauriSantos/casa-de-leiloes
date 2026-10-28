@@ -97,6 +97,14 @@ steps.push(['um lance abaixo do mínimo é recusado com o motivo', async () => {
 
 steps.push(['um lance válido é aceito e o licitante lidera', async () => {
   const minimum = await nextMinimum();
+  // The demo lot's price rises with every bid, so a fixed first deposit can fall short: top up to the minimum first.
+  const wallet = await call('/api/wallet', { token });
+  check(wallet.status === 200, `GET /api/wallet respondeu ${String(wallet.status)}`);
+  const available = (wallet.body as { availableCents: number }).availableCents;
+  if (available < minimum) {
+    const topUp = await call('/api/wallet/deposits', { method: 'POST', token, body: { amountCents: minimum - available + 100_000 }, key: randomUUID() });
+    check(topUp.status === 201, `o depósito para cobrir o mínimo respondeu ${String(topUp.status)} (${JSON.stringify(topUp.body)})`);
+  }
   const placed = await call(`/api/lots/${String(lot?.id)}/bids`, { method: 'POST', token, body: { amountCents: minimum } });
   check(placed.status === 201, `o lance válido respondeu ${String(placed.status)} (${JSON.stringify(placed.body)})`);
   const mine = await call('/api/me/wins', { token });
