@@ -12,13 +12,13 @@ if [ "$node_major" != "$expected" ]; then
   exit 1
 fi
 
-echo "== local Supabase stack recreated from zero: empty database and services ready, as on a fresh runner"
-npx supabase stop --no-backup > /dev/null
-npx supabase start > /dev/null
-
 echo "== dependencies from the lockfile"
 rm -rf node_modules
 npm ci
+
+echo "== local Supabase stack recreated from zero: empty database and services ready, as on a fresh runner"
+npx supabase stop --no-backup > /dev/null
+npx supabase start > /dev/null
 
 echo "== fresh secrets, as on a fresh runner"
 rm -f .env.dev-secrets
