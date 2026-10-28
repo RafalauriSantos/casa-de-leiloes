@@ -30,12 +30,6 @@ export function ReceiptLoader({ code }: { code: string }) {
       {state.status === 'error' && <p role="alert">{state.message}</p>}
       {state.status === 'ready' && (
         <div className="receipt">
-          <svg className="receipt-seal" viewBox="0 0 76 76" aria-hidden="true" fill="none">
-            <circle cx="38" cy="38" r="35" stroke="currentColor" strokeWidth="1.5" />
-            <circle cx="38" cy="38" r="29" stroke="currentColor" strokeWidth="1" />
-            <path d="M38 20l18 18-18 18-18-18z" fill="currentColor" />
-          </svg>
-          <img className="lot-hero" src={state.receipt.imageUrl} alt={state.receipt.lotTitle} />
           <h2>{state.receipt.lotTitle}</h2>
           <strong className="receipt-amount">{formatBRL(state.receipt.amountCents)}</strong>
           <dl>
@@ -44,8 +38,8 @@ export function ReceiptLoader({ code }: { code: string }) {
             <div><dt>Código</dt><dd><code>{state.receipt.code}</code></dd></div>
           </dl>
           <div className="receipt-actions">
-            <Link to={`/auditoria/${state.receipt.lotId}?head=${state.receipt.headHash}`}>Conferir na auditoria</Link>
             <button type="button" onClick={() => { void navigator.clipboard.writeText(window.location.href); }}>Copiar link</button>
+            <Link to={`/auditoria/${state.receipt.lotId}?head=${state.receipt.headHash}`}>Conferir na auditoria</Link>
           </div>
           <p className="audit-note">Qualquer pessoa com este link vê o comprovante, sem entrar na conta.</p>
         </div>
