@@ -189,7 +189,7 @@ export function LiveRoom({ lotId }: { lotId: string }) {
               Usar lance mínimo
             </button>
           </div>
-          <input id="bid-amount" value={amount} onChange={(event) => { setAmount(event.target.value); }} inputMode="decimal" required />
+          <input id="bid-amount" value={amount} onChange={(event) => { setAmount(event.target.value); setBidError(undefined); }} inputMode="decimal" required />
           {bidError && <p role="alert">{bidError}</p>}
           <button type="submit" disabled={busy || remaining <= 0}>
             {busy ? 'Enviando…' : bidButtonLabel(amount)}

@@ -131,6 +131,24 @@ describe('live room: bidding in the UI', () => {
     expect(input.value).toBe('500,00');
   });
 
+  it('a refused bid message goes away as soon as the bidder changes the amount', async () => {
+    const user = userEvent.setup();
+    const auctioneer = await newAccount('auctioneer');
+    const lotId = await liveLotFor(auctioneer.token);
+    const carla = await fundedBidder(10_000);
+    await signInAs(carla.id);
+
+    window.history.replaceState({}, '', `/lotes/${lotId}`);
+    render(<App />);
+    const form = await screen.findByRole('form', { name: 'Dar lance' });
+    const input = within(form).getByLabelText<HTMLInputElement>('Seu lance (R$)');
+    fireEvent.change(input, { target: { value: '500,00' } });
+    await user.click(within(form).getByRole('button', { name: /^Dar lance/ }));
+    await within(form).findByRole('alert');
+    fireEvent.change(input, { target: { value: '90,00' } });
+    expect(within(form).queryByRole('alert')).toBeNull();
+  });
+
   it('a visitor sees the room without a bid form and is asked to sign in', async () => {
     const auctioneer = await newAccount('auctioneer');
     const lotId = await liveLotFor(auctioneer.token);
