@@ -63,7 +63,7 @@ describe('bidder journey', () => {
     await waitFor(() => { expect(within(screen.getByLabelText('Saldos')).getAllByText('R$ 350,00')).toHaveLength(2); });
 
     // The account menu names the account and its role, offers the bidder's places, and closes with Escape
-    await user.click(screen.getByRole('button', { name: 'Menu da conta' }));
+    await user.click(screen.getByRole('button', { expanded: false }));
     const menu = screen.getByRole('dialog', { name: 'Menu da conta' });
     expect(within(menu).getByText('Conta de licitante', { exact: false })).toBeTruthy();
     expect(within(menu).getByRole('link', { name: 'Meus arremates' })).toBeTruthy();
@@ -71,10 +71,10 @@ describe('bidder journey', () => {
     expect(menu.contains(document.activeElement)).toBe(true);
     await user.keyboard('{Escape}');
     expect(screen.queryByRole('dialog', { name: 'Menu da conta' })).toBeNull();
-    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Menu da conta' }));
+    expect(document.activeElement).toBe(screen.getByRole('button', { expanded: false }));
 
     // Sign out: the wallet is closed and the login is offered
-    await user.click(screen.getByRole('button', { name: 'Menu da conta' }));
+    await user.click(screen.getByRole('button', { expanded: false }));
     await user.click(screen.getByRole('button', { name: 'Sair' }));
     expect(await screen.findByRole('heading', { name: 'Entrar' })).toBeTruthy();
     expect(screen.queryByRole('heading', { name: 'Carteira' })).toBeNull();

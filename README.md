@@ -23,6 +23,7 @@ make db-up      # sobe o Supabase local (Postgres e Auth reais) e aplica supabas
 make dev        # API em http://localhost:8787 e site em http://localhost:5173
 make ci         # lint, tipos, build, testes com cobertura e npm audit (a única definição de verde)
 make e2e-live   # bate na API real do The Met (não roda no ci; use antes de publicar)
+make e2e-browser   # navegador real: largura, jornadas e acessibilidade (precisa de `npx playwright install chromium` uma vez)
 ```
 
 - **Com Docker Compose (opcional):** depois de `make db-up`, rode `make compose` no lugar de `make dev`. Ele sobe a API (`localhost:8787`) e o site (`localhost:5173`) em contêineres, com as variáveis lidas do Supabase local. O Supabase continua pelo próprio CLI (também em Docker), e o Node continua necessário para ele. Os contêineres usam a rede do host: no Linux funciona direto; no Docker Desktop (Mac/Windows), ative "host networking" nas configurações (versão 4.34 ou mais nova). Para parar: `./scripts/with-local-env.sh docker compose down`.

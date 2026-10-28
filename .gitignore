@@ -7,3 +7,5 @@ coverage/
 .vercel/
 supabase/.temp/
 .claude/settings.local.json
+test-results/
+playwright-report/

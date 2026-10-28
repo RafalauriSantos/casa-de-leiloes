@@ -12,12 +12,14 @@
   ],
   "scripts": {
     "lint": "eslint .",
-    "typecheck": "npm run typecheck --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present && tsc --noEmit -p e2e",
     "test": "npm run test --workspaces --if-present",
     "build": "npm run build --workspaces --if-present"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
     "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.64.1",
     "@vitest/coverage-v8": "^5.0.5",
     "eslint": "^10.13.0",
     "supabase": "^2.121.0",
