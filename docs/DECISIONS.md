@@ -330,3 +330,8 @@ Built so far: each accepted bid returns a bid receipt `{seq, head, placedAt}` in
 - **What changes:** the three tabs sit in a pill with the chosen one raised. When a list is empty, the auctioneer sees `Criar lote` (to `/leiloeiro/novo`); anyone else sees `Ver agendados`, except on the scheduled tab itself. The action also shows after a search with no result.
 - **Tradeoff:** a visitor who searched and found nothing is also sent to the scheduled lots, which may not hold the term; the sentence above it says what was searched, so the button reads as "see what is coming", not as a result.
 - **Test:** one test searches for a term that matches nothing, as a visitor (taps `Ver agendados`, the tab becomes the chosen one) and as an auctioneer (`Criar lote` points to the new lot screen, no `Ver agendados`).
+
+## D39. The featured lot says "Ver lote" to an auctioneer, not "Dar lance"
+- **Why:** the brief says the auctioneer cannot bid. The lot room already hides the bid form from them (`Leiloeiros não dão lances.`), but the storefront's featured lot still showed them a "Dar lance" button.
+- **What changes:** for a signed-in auctioneer the main link of the featured lot reads `Ver lote`; everyone else still sees `Dar lance`. Both go to the same room. The server refuses a bid from an auctioneer regardless; this only keeps the screen honest.
+- **Test:** the storefront shows `Dar lance` to a visitor and `Ver lote` (no `Dar lance`) to an auctioneer.
