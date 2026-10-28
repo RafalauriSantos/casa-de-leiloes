@@ -1,35 +1,35 @@
 :root {
   color-scheme: light dark;
-  --display: "Instrument Sans", -apple-system, system-ui, sans-serif;
-  /* Neutral scale (D31): ink 900, muted 600, field 400, line 100, paper 50 (page), card (white). */
-  --ink: #1d1d1f;
-  --muted: #6e6e73;
-  --paper: #f5f5f7;
+  --display: Jost, -apple-system, system-ui, sans-serif;
+  /* Neutral scale (D33): ink, muted, field, line, paper (page) and card, from the approved canvas. */
+  --ink: #3a3d42;
+  --muted: #6a6e74;
+  --paper: #ffffff;
   --card: #ffffff;
-  --line: #e8e8ed;
-  --accent: #0071e3;
+  --line: #e6e2d8;
+  --accent: #3a3d42;
   --accent-ink: #ffffff;
-  --brass: #0071e3;
+  --brass: #8a6a22;
   --live: #1d7a3e;
   --live-red: #d70015;
   --danger: #d70015;
   --field: #86868b;
-  font-family: "Instrument Sans", system-ui, sans-serif;
+  font-family: Jost, system-ui, sans-serif;
   line-height: 1.55;
   color: var(--ink);
   background: var(--paper);
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --ink: #f5f5f7;
-    --muted: #a1a1a6;
-    --paper: #000000;
-    --card: #1c1c1e;
-    --line: #2c2c2e;
-    --accent: #2997ff;
-    --accent-ink: #000000;
-    --brass: #2997ff;
-    --live: #30d158;
+    --ink: #f2ead2;
+    --muted: #b5ad9c;
+    --paper: #0b0b0c;
+    --card: #141416;
+    --line: #3d3322;
+    --accent: #d4a84f;
+    --accent-ink: #0b0b0c;
+    --brass: #d4a84f;
+    --live: #7fcf9a;
     --live-red: #ff453a;
     --danger: #ff453a;
     --field: #8e8e93;
@@ -40,15 +40,15 @@
 :root[data-theme="light"] { color-scheme: light; }
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --ink: #f5f5f7;
-  --muted: #a1a1a6;
-  --paper: #000000;
-  --card: #1c1c1e;
-  --line: #2c2c2e;
-  --accent: #2997ff;
-  --accent-ink: #000000;
-  --brass: #2997ff;
-  --live: #30d158;
+  --ink: #f2ead2;
+  --muted: #b5ad9c;
+  --paper: #0b0b0c;
+  --card: #141416;
+  --line: #3d3322;
+  --accent: #d4a84f;
+  --accent-ink: #0b0b0c;
+  --brass: #d4a84f;
+  --live: #7fcf9a;
   --live-red: #ff453a;
   --danger: #ff453a;
   --field: #8e8e93;
@@ -128,7 +128,7 @@ section[aria-labelledby] { margin-bottom: 1.5rem; }
 .audit-headline p { margin: 0; color: var(--muted); }
 .audit-danger { border-color: var(--danger); }
 .audit-danger h2 { color: var(--danger); }
-.audit-warning { border-color: var(--accent); }
+.audit-warning { border-color: var(--brass); }
 .audit-ok { border-color: var(--live); }
 .audit-results { padding-left: 1.2rem; }
 .audit-note { color: var(--muted); font-size: 0.92rem; }
@@ -244,8 +244,8 @@ section[aria-label="Painel do leiloeiro"] > section, section[aria-label="Painel 
 .my-lots a:not(.my-lot-action) { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
 .my-lots li .state { white-space: nowrap; justify-self: start; }
 [aria-label="Saldos"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
-[aria-label="Saldos"] > div { border-right-color: #3a3730; }
-[aria-label="Saldos"] dt { color: #c9c2b2; font-size: 0.8rem; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 600; }
+[aria-label="Saldos"] > div { border-right-color: color-mix(in srgb, var(--paper) 25%, transparent); }
+[aria-label="Saldos"] dt { color: var(--paper); font-size: 0.8rem; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 600; }
 [aria-label="Saldos"] dd { color: var(--paper); }
 form[aria-labelledby="deposit-title"] .chip { flex: 1 1 6rem; }
 a { color: var(--ink); text-underline-offset: 3px; }
@@ -270,7 +270,7 @@ section[aria-label="Painel do leiloeiro"] article > button { margin-top: 0.4rem;
   .auth-form { max-width: none; padding: 2rem 1rem; justify-self: stretch; }
   .auth-form input, .auth-form button { min-width: 0; }
   [aria-label="Saldos"] { grid-template-columns: minmax(0, 1fr); }
-  [aria-label="Saldos"] > div { border-right: 0; border-bottom: 1px solid #3a3730; }
+  [aria-label="Saldos"] > div { border-right: 0; border-bottom: 1px solid color-mix(in srgb, var(--paper) 25%, transparent); }
   [aria-label="Saldos"] > div:last-child { border-bottom: 0; }
   .chips { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .chip { white-space: nowrap; flex: none; }
