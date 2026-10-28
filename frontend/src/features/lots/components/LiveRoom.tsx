@@ -185,7 +185,7 @@ export function LiveRoom({ lotId }: { lotId: string }) {
         <form onSubmit={(event) => void submit(event)} aria-label="Dar lance">
           <div className="bid-head">
             <label htmlFor="bid-amount">Seu lance (R$)</label>
-            <button type="button" className="link" onClick={() => { setAmount((room.nextMinimumCents / 100).toFixed(2).replace('.', ',')); }}>
+            <button type="button" className="link" onClick={() => { setAmount((room.nextMinimumCents / 100).toFixed(2).replace('.', ',')); setBidError(undefined); }}>
               Usar lance mínimo
             </button>
           </div>
