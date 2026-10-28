@@ -196,6 +196,31 @@ describe('showcase and lot page (no login needed)', () => {
     expect(screen.getByRole('heading', { name: 'Leilões ao vivo' })).toBeTruthy();
   });
 
+  it('offers the next step on an empty list: the visitor sees the scheduled lots, the auctioneer creates one', async () => {
+    const user = userEvent.setup();
+    const nothing = `sem-lote-${randomUUID().slice(0, 8)}`;
+    const searchFor = async () => {
+      const search = await screen.findByRole('search');
+      await user.type(within(search).getByLabelText('Buscar por título'), nothing);
+      await user.click(within(search).getByRole('button', { name: 'Buscar' }));
+      await screen.findByText(new RegExp(`Nenhum lote encontrado para "${nothing}"`));
+    };
+    window.history.replaceState({}, '', '/');
+    const visitor = render(<App />);
+    await searchFor();
+    expect(screen.queryByRole('link', { name: 'Criar lote' })).toBeNull();
+    await user.click(screen.getByRole('button', { name: 'Ver agendados' }));
+    expect(screen.getByRole('button', { name: 'Agendados' }).getAttribute('aria-pressed')).toBe('true');
+    visitor.unmount();
+
+    await signedInAuctioneer();
+    window.history.replaceState({}, '', '/');
+    render(<App />);
+    await searchFor();
+    expect(screen.getByRole('link', { name: 'Criar lote' }).getAttribute('href')).toBe('/leiloeiro/novo');
+    expect(screen.queryByRole('button', { name: 'Ver agendados' })).toBeNull();
+  });
+
   it('answers a missing lot with a message, not a blank page', async () => {
     window.history.replaceState({}, '', `/lotes/${randomUUID()}`);
     render(<App />);

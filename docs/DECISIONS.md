@@ -324,3 +324,9 @@ Built so far: each accepted bid returns a bid receipt `{seq, head, placedAt}` in
 - **What changes:** only markup order and styles. `Disponível para lances` comes first and is the large number; `Saldo total` and `Comprometido em lances` follow in a line. The percentage bar is gone (the canvas has none, and the same numbers are written). The deposit form is plain, titled `Depositar`. The demo accounts keep their texts and sign in for real, now as bordered rows.
 - **Not built:** the canvas's "Movimentações" list. The API has no transaction history, and adding one is a money-path change; it is left for the backlog.
 - **Test:** no new test (visual change); the wallet, auth and journey tests that read the balances pass unchanged.
+
+## D38. The storefront's state tabs are a segmented control, and an empty list offers the next step
+- **Why:** the canvas draws "Ao vivo / Agendados / Encerrados" as one segmented control, and an empty list should lead somewhere (B31), not end in a sentence.
+- **What changes:** the three tabs sit in a pill with the chosen one raised. When a list is empty, the auctioneer sees `Criar lote` (to `/leiloeiro/novo`); anyone else sees `Ver agendados`, except on the scheduled tab itself. The action also shows after a search with no result.
+- **Tradeoff:** a visitor who searched and found nothing is also sent to the scheduled lots, which may not hold the term; the sentence above it says what was searched, so the button reads as "see what is coming", not as a result.
+- **Test:** one test searches for a term that matches nothing, as a visitor (taps `Ver agendados`, the tab becomes the chosen one) and as an auctioneer (`Criar lote` points to the new lot screen, no `Ver agendados`).
