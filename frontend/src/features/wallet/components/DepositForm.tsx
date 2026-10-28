@@ -52,7 +52,7 @@ export function DepositForm({ token, onDeposited }: Props) {
 
   return (
     <form onSubmit={(event) => void onSubmit(event)} aria-labelledby="deposit-title">
-      <h2 id="deposit-title">Depositar saldo (simulado)</h2>
+      <h2 id="deposit-title">Depositar</h2>
       <label>
         Valor (R$)
         <input name="amount" value={amount} onChange={(e) => { setAmount(e.target.value); }} inputMode="decimal" autoComplete="off" placeholder="250,00" required />

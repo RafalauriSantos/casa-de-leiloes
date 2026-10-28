@@ -178,10 +178,6 @@ section[aria-label="Sala do lote"] dl dd { text-align: left; font-family: var(--
 .auth-form fieldset div { display: flex; flex-wrap: wrap; gap: 0.75rem; }
 .auth-form fieldset div label { flex: 1 1 10rem; }
 
-[aria-label="Saldos"] { display: grid; grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr)); gap: 0; border: 1px solid var(--line); background: var(--card); max-width: none; }
-[aria-label="Saldos"] > div { flex-direction: column; border: 0; border-right: 1px solid var(--line); padding: 1.2rem 1.4rem; }
-[aria-label="Saldos"] > div:last-child { border-right: 0; }
-[aria-label="Saldos"] dd { text-align: left; font-family: var(--display); font-size: 1.7rem; font-weight: 600; font-variant-numeric: tabular-nums; margin: 0.15rem 0 0; }
 form[aria-labelledby="deposit-title"] { max-width: 28rem; border: 1px solid var(--line); background: var(--card); padding: 1.6rem; }
 form[aria-labelledby="deposit-title"] h2 { margin: 0; font-size: 1.5rem; }
 .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; }
@@ -213,10 +209,6 @@ form[aria-labelledby="deposit-title"] h2 { margin: 0; font-size: 1.5rem; }
 .catalog-results li img { border-radius: 2px; }
 .my-lots a:not(.my-lot-action) { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
 .my-lots li .state { white-space: nowrap; justify-self: start; }
-[aria-label="Saldos"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
-[aria-label="Saldos"] > div { border-right-color: color-mix(in srgb, var(--paper) 25%, transparent); }
-[aria-label="Saldos"] dt { color: var(--paper); font-size: 0.8rem; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 600; }
-[aria-label="Saldos"] dd { color: var(--paper); }
 form[aria-labelledby="deposit-title"] .chip { flex: 1 1 6rem; }
 a { color: var(--ink); text-underline-offset: 3px; }
 .receipt-seal { z-index: 2; }
@@ -230,9 +222,6 @@ section[aria-label="Sala do lote"] input { width: 100%; box-sizing: border-box; 
   .auth-aside .auth-aside-title { font-size: 2rem; }
   .auth-form { max-width: none; padding: 2rem 1rem; justify-self: stretch; }
   .auth-form input, .auth-form button { min-width: 0; }
-  [aria-label="Saldos"] { grid-template-columns: minmax(0, 1fr); }
-  [aria-label="Saldos"] > div { border-right: 0; border-bottom: 1px solid color-mix(in srgb, var(--paper) 25%, transparent); }
-  [aria-label="Saldos"] > div:last-child { border-bottom: 0; }
   .chips { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .chip { white-space: nowrap; flex: none; }
   .receipt { padding: 1.4rem 1.1rem; }
@@ -246,12 +235,8 @@ section[aria-label="Sala do lote"] input { width: 100%; box-sizing: border-box; 
 .steps { display: flex; flex-wrap: wrap; gap: 0.5rem 2rem; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 0.6rem 0; margin-bottom: 1.2rem; }
 .steps a { display: inline-flex; align-items: center; gap: 0.6rem; color: var(--ink); text-decoration: none; font-weight: 500; min-height: 2.75rem; }
 .steps b { width: 1.9rem; height: 1.9rem; border-radius: 50%; border: 1px solid var(--ink); display: inline-flex; align-items: center; justify-content: center; font-family: var(--display); font-size: 0.95rem; font-weight: 400; }
-[aria-label="Saldos"] > div:first-child dd { font-size: 3rem; }
-@media (max-width: 600px) { [aria-label="Saldos"] > div:first-child dd { font-size: 2.4rem; } }
 
 /* Header balance, wallet bar and the room's available line (the canvas's balance details). */
-.balance-bar { display: flex; height: 0.6rem; background: var(--line); margin: 1rem 0 0; }
-.balance-bar span { display: block; background: var(--ink); height: 100%; }
 .room-available { font-size: 0.9rem; color: var(--muted); margin: 0; }
 .room-available strong { color: var(--ink); font-variant-numeric: tabular-nums; }
 
@@ -273,7 +258,7 @@ dl > div { min-width: 0; }
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 8px 28px rgba(0, 0, 0, 0.06);
 }
 .lot-hero { border: 0; border-radius: 16px; background: var(--paper); }
-.amount, .balance-bar strong { font-weight: 600; font-variant-numeric: tabular-nums; }
+.amount { font-weight: 600; font-variant-numeric: tabular-nums; }
 .lot-state, .chip { border-radius: 999px; }
 .chip { border-color: var(--line); background: var(--card); }
 
@@ -419,3 +404,17 @@ button.secondary { background: transparent; color: var(--ink); border: 1px solid
   main { padding-top: 0.5rem; }
   main[data-title-in-header] h1 { position: absolute; width: 1px; height: 1px; margin: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 }
+
+/* Wallet and sign-in (canvas): the available balance is the hero, the totals are quiet, the demo accounts are rows. */
+[aria-label="Saldos"] { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.4rem 2rem; border: 0; border-top: 1px solid var(--line); background: transparent; padding: 1.5rem 0; margin: 0 0 1.5rem; }
+[aria-label="Saldos"] > div { display: flex; flex-direction: column; border: 0; padding: 0; gap: 0.1rem; }
+[aria-label="Saldos"] > div:first-child { flex-basis: 100%; }
+[aria-label="Saldos"] dt { color: var(--muted); font-size: 0.95rem; }
+[aria-label="Saldos"] dd { font-size: 1.1rem; font-weight: 500; }
+[aria-label="Saldos"] > div:first-child dd { font-size: 3.75rem; font-weight: 600; letter-spacing: -0.02em; line-height: 1.1; }
+@media (max-width: 600px) { [aria-label="Saldos"] > div:first-child dd { font-size: 2.75rem; } }
+form[aria-labelledby="deposit-title"] { border: 0; background: transparent; padding: 0; }
+.demo-accounts { flex-direction: column; flex-wrap: nowrap; align-items: stretch; gap: 0.6rem; margin-top: 0.5rem; }
+.demo-accounts p { flex-basis: auto; color: var(--muted); font-size: 0.9rem; }
+.demo-accounts button.link { display: flex; align-items: center; min-height: 3rem; padding: 0 1rem; border: 1px solid var(--line); border-radius: 6px; text-align: left; text-decoration: none; color: var(--ink); }
+.auth-form > button.link { align-self: center; color: var(--brass); font-weight: 500; }
