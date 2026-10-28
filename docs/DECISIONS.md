@@ -291,8 +291,8 @@ Built so far: each accepted bid returns a bid receipt `{seq, head, placedAt}` in
 - **Why:** the owner reviewed a canvas with the whole flow (nine desktop screens and nine phone screens, from the storefront to switching from the auctioneer to a bidder). It is the reference for layout, positions, spacing and the order of content. Screens are not redesigned during implementation.
 - **How:** the canvas is the source; the backlog items B27 to B32 carry the acceptance criteria. Where the brief asks for a behaviour (the panel's content, the refusal messages), the canvas shows it, and a test covers it. Visual items are checked on screen with screenshots, without new tests, as the test budget says.
 - **Tradeoff:** the canvas shows the flow with links, not with real state, so the bid, the deposit and the publish buttons in the canvas do not change anything. The behaviour comes from the code and its tests, not from the canvas.
-- **Not decided yet:** the dark theme (B29) is not drawn on the canvas, and it will be drawn before it is built.
-- **Source:** `https://claude.ai/artifact/C6CSQtYu36oSzRzaJnxZks` (private; the owner's Claude account opens it).
+- **Dark theme (B29):** drawn on the canvas since D33 (pages "Escuro"); the screens follow the other items.
+- **Source:** `https://claude.ai/artifact/MnWiASFsu9vAdWfhNLJ4Qu` (private; the owner's Claude account opens it).
 
 ## D33. The app follows the approved canvas palette (white and graphite, gold accents, Jost)
 - **Why:** the owner approved the canvas v3 storefront as the standard for the light theme: white ground, graphite text and primary buttons, dark gold for accents and states, and the new gavel mark. The dark theme uses the same structure on black with cream text and gold buttons. The canvas is the reference for every screen (D32).
