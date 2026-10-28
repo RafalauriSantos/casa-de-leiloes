@@ -86,8 +86,9 @@ describe('the auctioneer panel shows the results (B3, 1.7)', () => {
     window.history.replaceState({}, '', '/leiloeiro');
     render(<App />);
 
-    expect(await screen.findByText(/Total recebido: R\$\s*550,00/)).toBeTruthy();
-    expect(screen.getByText(/1 de 2 lote\(s\) encerrado\(s\) vendido\(s\)/)).toBeTruthy();
+    const stat = (label: string) => screen.findByText(label).then((node) => node.parentElement?.textContent ?? '');
+    expect(await stat('Total recebido')).toMatch(/R\$\s*550,00/);
+    expect(await stat('Encerrados vendidos')).toContain('1 de 2');
     await waitFor(() => { expect(screen.getByText(/Arrematado por R\$\s*550,00/)).toBeTruthy(); });
     expect(screen.getByText(/Encerrado sem lances/)).toBeTruthy();
     expect(screen.getByText(/Encerrado · aguardando liquidação/)).toBeTruthy();
@@ -117,7 +118,7 @@ describe('cancelling a lot with bids from the panel (B19, 9.1)', () => {
     if (!card) throw new Error('the lot card is missing');
 
     await user.click(within(card).getByRole('button', { name: 'Cancelar lote' }));
-    expect(within(card).getByText(/devolve na hora o valor comprometido de quem lidera/)).toBeTruthy();
+    expect(within(card).getByText(/volta na hora para o saldo dele/)).toBeTruthy();
     await user.click(within(card).getByRole('button', { name: 'Confirmar cancelamento' }));
 
     expect(await screen.findByText(`Lote "${title}" cancelado. O valor do lance líder voltou para o licitante.`)).toBeTruthy();

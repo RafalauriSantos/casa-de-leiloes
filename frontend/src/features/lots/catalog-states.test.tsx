@@ -54,7 +54,7 @@ describe('the catalog being down (1.4)', () => {
     );
     render(<CatalogSearch token={token} onPick={() => {}} />);
 
-    await user.type(screen.getByLabelText('Palavra-chave'), 'vase');
+    await user.type(screen.getByLabelText('Buscar item no acervo'), 'vase');
     await user.click(screen.getByRole('button', { name: 'Buscar' }));
     expect((await screen.findByRole('alert')).textContent).toBe('O catálogo de itens está indisponível. Tente de novo em instantes.');
 
@@ -97,7 +97,7 @@ describe('the catalog search pages through the whole collection (B24)', () => {
     const token = await auctioneerToken();
     render(<CatalogSearch token={token} onPick={() => {}} />);
 
-    await user.type(screen.getByLabelText('Palavra-chave'), 'vase');
+    await user.type(screen.getByLabelText('Buscar item no acervo'), 'vase');
     await user.click(screen.getByRole('button', { name: 'Buscar' }));
     expect(await screen.findByText(/9\.229 resultados/)).toBeTruthy();
     expect(screen.getByText(/Página 1 de 770/)).toBeTruthy();
@@ -113,7 +113,7 @@ describe('the catalog search pages through the whole collection (B24)', () => {
     const token = await auctioneerToken();
     render(<CatalogSearch token={token} onPick={() => {}} />);
 
-    await user.type(screen.getByLabelText('Palavra-chave'), 'painting');
+    await user.type(screen.getByLabelText('Buscar item no acervo'), 'painting');
     await user.click(screen.getByRole('button', { name: 'Buscar' }));
     expect(await screen.findByText(/61\.230 resultados/)).toBeTruthy();
     expect(screen.getByText(/só os primeiros 10\.000 resultados/)).toBeTruthy();

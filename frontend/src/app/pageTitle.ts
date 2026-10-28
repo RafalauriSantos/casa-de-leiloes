@@ -6,6 +6,7 @@ const SCREENS: Array<{ path: string; title: string; h1: boolean }> = [
   { path: '/lotes/:id', title: 'Lote', h1: false },
   { path: '/auditoria/:id', title: 'Auditoria', h1: false },
   { path: '/leiloeiro', title: 'Painel do leiloeiro', h1: true },
+  { path: '/leiloeiro/novo', title: 'Novo lote', h1: true },
   { path: '/entrar', title: 'Entrar', h1: false },
   { path: '/carteira', title: 'Carteira', h1: true },
   { path: '/arremates', title: 'Meus arremates', h1: true },
