@@ -44,35 +44,13 @@ export function valuesOf(lot: OwnLot): LotFormValues {
   };
 }
 
-export function LotForm({ initial, submitLabel, onSubmit, onDone }: Props) {
-  const [values, setValues] = useState<LotFormValues>(initial);
-  const [error, setError] = useState<string>();
-  const [busy, setBusy] = useState(false);
-
+/** The five fields of a lot, shared by the edit form and the step 2 of the new lot flow. */
+export function LotFields({ values, onChange }: { values: LotFormValues; onChange: (values: LotFormValues) => void }) {
   const set = (field: keyof LotFormValues) => (event: { target: { value: string } }) => {
-    setValues((current) => ({ ...current, [field]: event.target.value }));
+    onChange({ ...values, [field]: event.target.value });
   };
-
-  async function submit(event: SyntheticEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const input = toLotInput(values);
-    if (!input) {
-      setError('Confira o valor (por exemplo 500,00) e as datas.');
-      return;
-    }
-    setBusy(true);
-    setError(undefined);
-    try {
-      onDone(await onSubmit(input));
-    } catch (e: unknown) {
-      setError(e instanceof ApiRequestError || e instanceof Error ? e.message : 'Não foi possível salvar o lote.');
-    } finally {
-      setBusy(false);
-    }
-  }
-
   return (
-    <form onSubmit={(event) => void submit(event)} aria-label={submitLabel}>
+    <>
       <label>
         Título
         <input value={values.title} onChange={set('title')} required minLength={3} maxLength={120} />
@@ -96,6 +74,36 @@ export function LotForm({ initial, submitLabel, onSubmit, onDone }: Props) {
       <small>
         Limites: lance inicial até {formatBRL(MAX_STARTING_BID_CENTS)}, incremento até {formatBRL(MAX_INCREMENT_CENTS)}.
       </small>
+    </>
+  );
+}
+
+export function LotForm({ initial, submitLabel, onSubmit, onDone }: Props) {
+  const [values, setValues] = useState<LotFormValues>(initial);
+  const [error, setError] = useState<string>();
+  const [busy, setBusy] = useState(false);
+
+  async function submit(event: SyntheticEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const input = toLotInput(values);
+    if (!input) {
+      setError('Confira o valor (por exemplo 500,00) e as datas.');
+      return;
+    }
+    setBusy(true);
+    setError(undefined);
+    try {
+      onDone(await onSubmit(input));
+    } catch (e: unknown) {
+      setError(e instanceof ApiRequestError || e instanceof Error ? e.message : 'Não foi possível salvar o lote.');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <form onSubmit={(event) => void submit(event)} aria-label={submitLabel}>
+      <LotFields values={values} onChange={setValues} />
       {error && <p role="alert">{error}</p>}
       <button type="submit" disabled={busy}>{busy ? 'Salvando…' : submitLabel}</button>
     </form>

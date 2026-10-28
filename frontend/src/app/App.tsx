@@ -1,6 +1,7 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { AuthProvider } from '@/features/auth';
 import { AuctioneerPage } from '@/pages/auctioneer';
+import { NewLotPage } from '@/pages/new-lot';
 import { AuditPage } from '@/pages/audit';
 import { LotPage } from '@/pages/lot';
 import { ShowcasePage } from '@/pages/showcase';
@@ -20,6 +21,7 @@ export function App() {
             <Route path="lotes/:id" element={<LotPage />} />
             <Route path="auditoria/:id" element={<AuditPage />} />
             <Route path="leiloeiro" element={<AuctioneerPage />} />
+            <Route path="leiloeiro/novo" element={<NewLotPage />} />
             <Route path="entrar" element={<LoginPage />} />
             <Route path="carteira" element={<WalletPage />} />
             <Route path="arremates" element={<WinsPage />} />

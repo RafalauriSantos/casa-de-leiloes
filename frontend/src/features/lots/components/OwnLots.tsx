@@ -1,5 +1,6 @@
 import type { AuctioneerSummary, LotInput, OwnLot } from '@casa/contracts';
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { ApiRequestError } from '@/lib/api-client';
 import { formatBRL } from '@/lib/format';
 import { cancelLot, fetchAuctioneerSummary, fetchOwnLots, updateLot } from '../api';
@@ -54,6 +55,13 @@ export function OwnLots({ token }: { token: string }) {
 
   return (
     <section aria-labelledby="lots-title">
+      {load.status === 'ready' && load.lots.length > 0 && (
+        <div className="panel-stats">
+          <div><span>Total recebido</span><strong>{formatBRL(load.summary.totalReceivedCents)}</strong></div>
+          <div><span>Encerrados vendidos</span><strong>{load.summary.soldLots} de {load.summary.endedLots}</strong></div>
+          <div><span>Ativos e agendados</span><strong>{load.lots.filter((lot) => lot.state === 'live' || lot.state === 'scheduled').length}</strong></div>
+        </div>
+      )}
       <h2 id="lots-title">Meus lotes</h2>
       {notice && <p role="status">{notice}</p>}
       {load.status === 'loading' && <p>Carregando seus lotes…</p>}
@@ -64,34 +72,37 @@ export function OwnLots({ token }: { token: string }) {
         </>
       )}
       {load.status === 'ready' && load.lots.length === 0 && <p>Você ainda não publicou lotes.</p>}
-      {load.status === 'ready' && load.lots.length > 0 && (
-        <p>
-          Total recebido: {formatBRL(load.summary.totalReceivedCents)} · {load.summary.soldLots} de {load.summary.endedLots} lote(s) encerrado(s) vendido(s)
-        </p>
-      )}
       {load.status === 'ready' && load.lots.map((lot) => (
         <article key={lot.id} className="own-lot">
-          <h3>{lot.title}</h3>
-          <p>
-            <span className="state">{STATE_LABEL[lot.state]}</span> · lance inicial {formatBRL(lot.startingBidCents)} · incremento {formatBRL(lot.incrementCents)}
-          </p>
-          <p><small>De {formatWhen(lot.startsAt)} até {formatWhen(lot.endsAt)} · {lot.bidCount} lance(s)</small></p>
-          {resultText(lot) && <p><strong>{resultText(lot)}</strong></p>}
+          <img src={lot.imageUrl} alt="" className="lot-thumb" loading="lazy" />
+          <div className="own-lot-body">
+            <h3>{lot.title}</h3>
+            <p>
+              <span className="state">{STATE_LABEL[lot.state]}</span>
+              <small>Lance inicial {formatBRL(lot.startingBidCents)} · {lot.bidCount} lance(s)</small>
+            </p>
+            <p><small>De {formatWhen(lot.startsAt)} até {formatWhen(lot.endsAt)}</small></p>
+            {resultText(lot) && <p><strong>{resultText(lot)}</strong></p>}
+          </div>
           <div className="own-lot-actions">
+            <Link to={`/lotes/${lot.id}`}>Ver sala</Link>
             {lot.canEdit && editing !== lot.id && (
-              <button type="button" onClick={() => { setEditing(lot.id); }}>Editar</button>
+              <button type="button" className="secondary" onClick={() => { setEditing(lot.id); }}>Editar</button>
             )}
             {lot.canCancel && confirming !== lot.id && (
               <button type="button" className="secondary" onClick={() => { setConfirming(lot.id); }}>Cancelar lote</button>
             )}
           </div>
           {confirming === lot.id && (
-            <div>
-              {lot.bidCount > 0
-                ? <p>Este lote tem lances. Cancelar devolve na hora o valor comprometido de quem lidera, e ninguém paga nada.</p>
-                : <p>Confirme para cancelar este lote.</p>}
+            <div className="own-lot-confirm">
+              <p>
+                Cancelar este lote?{' '}
+                {lot.bidCount > 0
+                  ? `Ele tem ${lot.bidCount} lance(s). O valor do líder volta na hora para o saldo dele.`
+                  : 'Ele não tem lances.'}
+              </p>
               <button type="button" onClick={() => void cancel(lot)}>Confirmar cancelamento</button>
-              <button type="button" onClick={() => { setConfirming(undefined); }}>Manter o lote</button>
+              <button type="button" className="secondary" onClick={() => { setConfirming(undefined); }}>Manter o lote</button>
             </div>
           )}
           {editing === lot.id && (

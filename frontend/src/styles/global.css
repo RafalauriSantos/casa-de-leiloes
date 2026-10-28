@@ -210,8 +210,6 @@ form[aria-labelledby="deposit-title"] h2 { margin: 0; font-size: 1.5rem; }
 .audit-results { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); gap: 0.9rem; }
 .audit-results li { background: var(--card); border: 1px solid var(--line); padding: 1rem 1.2rem; margin: 0; }
 
-section[aria-label="Painel do leiloeiro"] > h1 { margin-bottom: 1rem; }
-section[aria-label="Painel do leiloeiro"] > section, section[aria-label="Painel do leiloeiro"] > form { background: var(--card); border: 1px solid var(--line); padding: 1.4rem; margin-bottom: 1.2rem; }
 .catalog-results li img { border-radius: 2px; }
 .my-lots a:not(.my-lot-action) { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
 .my-lots li .state { white-space: nowrap; justify-self: start; }
@@ -224,8 +222,6 @@ a { color: var(--ink); text-underline-offset: 3px; }
 .receipt-seal { z-index: 2; }
 section[aria-label="Sala do lote"] input { width: 100%; box-sizing: border-box; min-width: 0; }
 .bid-head button.link { white-space: nowrap; }
-section[aria-label="Painel do leiloeiro"] article button + button { margin-left: 0.6rem; }
-section[aria-label="Painel do leiloeiro"] article > button { margin-top: 0.4rem; }
 
 /* Phone width: the header, sign-in, wallet and room stack cleanly without sideways scroll. */
 @media (max-width: 600px) {
@@ -306,23 +302,32 @@ details.lot-facts summary { min-height: 44px; display: flex; align-items: center
 .audit-headline h2 { font-size: 2.6rem; line-height: 1.1; letter-spacing: -0.02em; margin: 0 0 0.6rem; }
 .audit-scroll { border-radius: 20px; background: var(--card); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 8px 28px rgba(0, 0, 0, 0.06); padding: 0.5rem 1.5rem; }
 
-/* Auctioneer panel on the canvas (desktop): the summary and the lots first, the new-lot search below. */
-.panel-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 1rem; flex-wrap: wrap; }
-
-/* New lot on the canvas (desktop): the item search on the left, the lot form on the right; results as cards. */
-.new-lot { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 2.5rem; align-items: start; }
-@media (max-width: 900px) { .new-lot { grid-template-columns: minmax(0, 1fr); } }
-.catalog-results { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.9rem; list-style: none; padding: 0; }
-.catalog-results li { display: grid; grid-template-columns: minmax(0, 1fr); align-content: start; gap: 0.6rem; }
-.catalog-results img { width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 10px; }
-
-/* Auctioneer lots on the canvas: one row per lot, information on the left and the actions on the right. */
-.own-lot { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 1.5rem; row-gap: 0.35rem; align-items: center; }
-.own-lot > h3, .own-lot > p { grid-column: 1; margin: 0; }
-.own-lot > .own-lot-actions { grid-column: 2; grid-row: 1 / span 3; align-self: center; display: flex; gap: 0.6rem; }
-.own-lot > div, .own-lot > form { grid-column: 1 / -1; }
-.own-lot-actions .secondary { background: transparent; color: var(--accent); border: 1px solid var(--accent); }
-@media (max-width: 600px) { .own-lot { grid-template-columns: minmax(0, 1fr); } .own-lot > .own-lot-actions { grid-column: 1; grid-row: auto; } }
+/* Auctioneer panel and new lot flow (canvas): one main action, three numbers, lots as rows, the catalog in three steps. */
+.panel-head { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem; }
+.panel-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.9rem; margin-bottom: 1.5rem; }
+.panel-stats div { display: grid; gap: 0.2rem; padding: 1rem 1.2rem; border-radius: 20px; background: var(--card); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 8px 28px rgba(0, 0, 0, 0.06); }
+.panel-stats span { color: var(--muted); font-size: 0.9rem; }
+.panel-stats strong { font-size: 1.4rem; font-weight: 500; }
+.own-lot, .catalog-results li { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 0.4rem 1rem; align-items: center; padding: 0.9rem 0; margin: 0; border: 0; border-bottom: 1px solid var(--line); border-radius: 0; background: transparent; }
+.own-lot-body h3 { margin: 0; font-size: 1.05rem; }
+.own-lot-body p { margin: 0.15rem 0 0; display: flex; flex-wrap: wrap; gap: 0.2rem 0.8rem; align-items: center; }
+.own-lot-actions { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center; justify-content: flex-end; }
+.own-lot-confirm, .own-lot > form { grid-column: 1 / -1; }
+button.secondary { background: transparent; color: var(--ink); border: 1px solid var(--field); }
+.shortcuts { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0.8rem 0 1rem; }
+.catalog-results { list-style: none; padding: 0; margin: 0; }
+.catalog-results li { grid-template-columns: auto minmax(0, 1fr) auto; }
+.flow-steps { display: flex; gap: 1.5rem; list-style: none; padding: 0; margin: 0 0 1.5rem; color: var(--muted); }
+.flow-steps li[aria-current="step"] { color: var(--ink); font-weight: 600; border-bottom: 2px solid var(--ink); }
+.flow-step { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 2rem; align-items: start; }
+.flow-photo { width: 100%; aspect-ratio: 4 / 3; object-fit: contain; background: var(--photo); border-radius: 20px; }
+.flow-actions { display: flex; gap: 0.8rem; margin-top: 1rem; }
+@media (max-width: 600px) {
+  .panel-stats { grid-template-columns: minmax(0, 1fr); }
+  .own-lot { grid-template-columns: auto minmax(0, 1fr); }
+  .own-lot-actions { grid-column: 1 / -1; justify-content: flex-start; }
+  .flow-step { grid-template-columns: minmax(0, 1fr); }
+}
 
 /* Wins on the canvas: the lot titles are plain text, not underlined links. */
 .my-lots .my-lot-body a { text-decoration: none; }

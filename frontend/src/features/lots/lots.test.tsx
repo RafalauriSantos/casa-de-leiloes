@@ -53,23 +53,30 @@ describe('auctioneer journey: find an item, publish, edit, cancel', () => {
     render(<App />);
 
     expect(await screen.findByRole('heading', { name: 'Painel do leiloeiro' })).toBeTruthy();
-    await user.type(screen.getByLabelText('Palavra-chave'), 'vase');
-    await user.click(screen.getByRole('button', { name: 'Buscar' }));
+    await user.click(screen.getByRole('link', { name: 'Novo lote' }));
+
+    // Step 1: the catalog is never an empty box: it opens with shortcuts, and one tap lists items
+    await user.click(await screen.findByRole('button', { name: 'Vaso' }));
     const pick = await screen.findAllByRole('button', { name: 'Usar este item' });
     expect(pick.length).toBeGreaterThanOrEqual(5);
     const [first] = pick;
     if (!first) throw new Error('the catalog search returned no item to pick');
     await user.click(first);
 
-    const form = screen.getByRole('form', { name: 'Publicar lote' });
+    // Step 2: the data, with the dates and the values already filled
+    const form = screen.getByRole('form', { name: 'Dados do lote' });
+    expect(within(form).getByLabelText<HTMLInputElement>('Lance inicial (R$)').value).toBe('500,00');
+    expect(within(form).getByLabelText<HTMLInputElement>('Início (horário de Brasília)').value).not.toBe('');
     const title = within(form).getByLabelText<HTMLInputElement>('Título');
     await user.clear(title);
     await user.type(title, marker);
     fireEvent.change(within(form).getByLabelText('Início (horário de Brasília)'), { target: { value: inMinutes(60) } });
     fireEvent.change(within(form).getByLabelText('Fim (horário de Brasília)'), { target: { value: inMinutes(180) } });
-    await user.type(within(form).getByLabelText('Lance inicial (R$)'), '500,00');
-    await user.type(within(form).getByLabelText('Incremento mínimo (R$)'), '50,00');
-    await user.click(within(form).getByRole('button', { name: 'Publicar lote' }));
+    await user.click(within(form).getByRole('button', { name: 'Continuar' }));
+
+    // Step 3: the summary, then publish
+    expect(screen.getByText(marker, { selector: 'strong' })).toBeTruthy();
+    await user.click(screen.getByRole('button', { name: 'Publicar lote' }));
 
     await waitFor(() => { expect(notices()).toContain('publicado'); });
     const card = await screen.findByRole('heading', { name: marker, level: 3 });
@@ -103,9 +110,9 @@ describe('auctioneer journey: find an item, publish, edit, cancel', () => {
   it('says so when a search finds nothing with a public image', async () => {
     const user = userEvent.setup();
     await signedInAuctioneer();
-    window.history.replaceState({}, '', '/leiloeiro');
+    window.history.replaceState({}, '', '/leiloeiro/novo');
     render(<App />);
-    await user.type(await screen.findByLabelText('Palavra-chave'), 'nada-disto-existe');
+    await user.type(await screen.findByLabelText('Buscar item no acervo'), 'nada-disto-existe');
     await user.click(screen.getByRole('button', { name: 'Buscar' }));
     expect(await screen.findByText('Nenhum item com imagem pública para essa busca.')).toBeTruthy();
   });
@@ -113,21 +120,25 @@ describe('auctioneer journey: find an item, publish, edit, cancel', () => {
   it('refuses inverted times with the reason, and keeps the form for a corrected retry', async () => {
     const user = userEvent.setup();
     await signedInAuctioneer();
-    window.history.replaceState({}, '', '/leiloeiro');
+    window.history.replaceState({}, '', '/leiloeiro/novo');
     render(<App />);
-    await user.type(await screen.findByLabelText('Palavra-chave'), 'vase');
+    await user.type(await screen.findByLabelText('Buscar item no acervo'), 'vase');
     await user.click(screen.getByRole('button', { name: 'Buscar' }));
     const [first] = await screen.findAllByRole('button', { name: 'Usar este item' });
     if (!first) throw new Error('the catalog search returned no item to pick');
     await user.click(first);
-    const form = screen.getByRole('form', { name: 'Publicar lote' });
+    const form = screen.getByRole('form', { name: 'Dados do lote' });
     fireEvent.change(within(form).getByLabelText('Início (horário de Brasília)'), { target: { value: inMinutes(180) } });
     fireEvent.change(within(form).getByLabelText('Fim (horário de Brasília)'), { target: { value: inMinutes(60) } });
-    await user.type(within(form).getByLabelText('Lance inicial (R$)'), '500,00');
-    await user.type(within(form).getByLabelText('Incremento mínimo (R$)'), '50,00');
-    await user.click(within(form).getByRole('button', { name: 'Publicar lote' }));
-    expect((await within(form).findByRole('alert')).textContent).toBe('O fim do lote precisa ser depois do início.');
-    expect(screen.getByRole('form', { name: 'Publicar lote' })).toBeTruthy();
+    await user.click(within(form).getByRole('button', { name: 'Continuar' }));
+    await user.click(screen.getByRole('button', { name: 'Publicar lote' }));
+    expect((await screen.findByRole('alert')).textContent).toBe('O fim do lote precisa ser depois do início.');
+    // The data is kept: going back shows the same dates, ready for a corrected retry
+    await user.click(screen.getByRole('button', { name: 'Voltar' }));
+    // The refusal stays on the screen it sends the person back to, and the new step's heading takes the focus
+    expect(screen.getByRole('alert').textContent).toBe('O fim do lote precisa ser depois do início.');
+    expect(document.activeElement).toBe(screen.getByRole('heading', { name: 'Sobre o item' }));
+    expect(within(screen.getByRole('form', { name: 'Dados do lote' })).getByLabelText<HTMLInputElement>('Início (horário de Brasília)').value).toBe(inMinutes(180));
   });
 });
 
@@ -136,21 +147,22 @@ describe('showcase and lot page (no login needed)', () => {
     const user = userEvent.setup();
     await signedInAuctioneer();
     const marker = `Jarra${randomUUID().slice(0, 6)}`;
-    window.history.replaceState({}, '', '/leiloeiro');
+    window.history.replaceState({}, '', '/leiloeiro/novo');
     const { unmount } = render(<App />);
-    await user.type(await screen.findByLabelText('Palavra-chave'), 'vase');
+    await user.type(await screen.findByLabelText('Buscar item no acervo'), 'vase');
     await user.click(screen.getByRole('button', { name: 'Buscar' }));
     const [first] = await screen.findAllByRole('button', { name: 'Usar este item' });
     if (!first) throw new Error('the catalog search returned no item to pick');
     await user.click(first);
-    const form = screen.getByRole('form', { name: 'Publicar lote' });
+    const form = screen.getByRole('form', { name: 'Dados do lote' });
     await user.clear(within(form).getByLabelText('Título'));
     await user.type(within(form).getByLabelText('Título'), marker);
     fireEvent.change(within(form).getByLabelText('Início (horário de Brasília)'), { target: { value: inMinutes(60) } });
     fireEvent.change(within(form).getByLabelText('Fim (horário de Brasília)'), { target: { value: inMinutes(180) } });
-    await user.type(within(form).getByLabelText('Lance inicial (R$)'), '1.234,56');
-    await user.type(within(form).getByLabelText('Incremento mínimo (R$)'), '100,00');
-    await user.click(within(form).getByRole('button', { name: 'Publicar lote' }));
+    fireEvent.change(within(form).getByLabelText('Lance inicial (R$)'), { target: { value: '1.234,56' } });
+    fireEvent.change(within(form).getByLabelText('Incremento mínimo (R$)'), { target: { value: '100,00' } });
+    await user.click(within(form).getByRole('button', { name: 'Continuar' }));
+    await user.click(screen.getByRole('button', { name: 'Publicar lote' }));
     await waitFor(() => { expect(notices()).toContain('publicado'); });
     unmount();
     await supabase.auth.signOut();
