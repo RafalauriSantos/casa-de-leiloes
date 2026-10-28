@@ -335,3 +335,9 @@ Built so far: each accepted bid returns a bid receipt `{seq, head, placedAt}` in
 - **Why:** the brief says the auctioneer cannot bid. The lot room already hides the bid form from them (`Leiloeiros não dão lances.`), but the storefront's featured lot still showed them a "Dar lance" button.
 - **What changes:** for a signed-in auctioneer the main link of the featured lot reads `Ver lote`; everyone else still sees `Dar lance`. Both go to the same room. The server refuses a bid from an auctioneer regardless; this only keeps the screen honest.
 - **Test:** the storefront shows `Dar lance` to a visitor and `Ver lote` (no `Dar lance`) to an auctioneer.
+
+## D40. "Meus arremates" groups the lots by where the bidder stands, one row each
+- **Why:** the canvas lists the bidder's lots under three headings instead of one long list with a status word on each, so the reader finds what still needs attention first.
+- **What changes:** `Em disputa` (leading, outbid, waiting for the receipt), `Arrematados` (won, with `Ver comprovante`) and `Não arrematados` (lost, cancelled). A group with no lots is not shown. Each row has the picture, the title, the status and one note, and one action (`Ver comprovante` is the filled button; `Ver lote` is the outlined one). The status texts and the data are unchanged.
+- **Tradeoff:** the canvas puts "Superado" under "Não arrematados", but a lot the bidder was outbid in can still be live and winnable, so it stays under `Em disputa`.
+- **Test:** the winner's journey also checks that the lot appears under `Arrematados`.

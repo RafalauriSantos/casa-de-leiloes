@@ -419,3 +419,11 @@ form[aria-labelledby="deposit-title"] { border: 0; background: transparent; padd
 .demo-accounts p { flex-basis: auto; color: var(--muted); font-size: 0.9rem; }
 .demo-accounts button.link { display: flex; align-items: center; min-height: 3rem; padding: 0 1rem; border: 1px solid var(--line); border-radius: 6px; text-align: left; text-decoration: none; color: var(--ink); }
 .auth-form > button.link { align-self: center; color: var(--brass); font-weight: 500; }
+
+/* My wins (canvas): lots grouped by where the bidder stands, one row each with the picture, the status and one action. */
+.my-lots { gap: 0; margin: 0 0 1.5rem; }
+.my-lots li { grid-template-columns: auto minmax(0, 1fr) auto; padding: 1.1rem 0; box-shadow: none; border: 0; border-top: 1px solid var(--line); border-radius: 0; background: transparent; gap: 0.5rem 1.25rem; }
+.my-lot-body strong { font-family: inherit; font-size: 1.2rem; font-weight: 500; }
+.my-lot-action.secondary-link { background: transparent; color: var(--ink); border: 1px solid var(--field); }
+section[aria-label="Meus arremates"] h2 { margin: 1.75rem 0 0.25rem; font-size: 1.4rem; font-weight: 500; }
+@media (max-width: 600px) { .my-lots li { grid-template-columns: auto minmax(0, 1fr); } .my-lots li .my-lot-action { grid-column: 1 / -1; justify-self: start; } }

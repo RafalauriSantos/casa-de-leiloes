@@ -19,6 +19,13 @@ function noteFor(outcome: MyLotOutcome, bestCents: number): string {
   return `Seu maior lance foi ${formatBRL(bestCents)}`;
 }
 
+/** The lots in the order the bidder cares about: what is still open, what was won, what was not. */
+const GROUPS: Array<{ title: string; outcomes: MyLotOutcome[] }> = [
+  { title: 'Em disputa', outcomes: ['leading', 'outbid', 'settling'] },
+  { title: 'Arrematados', outcomes: ['won'] },
+  { title: 'Não arrematados', outcomes: ['lost', 'cancelled'] },
+];
+
 type State = { status: 'loading' } | { status: 'error'; message: string } | { status: 'ready'; lots: MyLot[] };
 
 export function MyWins({ token }: { token: string }) {
@@ -55,22 +62,29 @@ export function MyWins({ token }: { token: string }) {
           <button type="button" onClick={() => { setAttempt((n) => n + 1); }}>Atualizar</button>
         </p>
       )}
-      {state.status === 'ready' && state.lots.length > 0 && (
-        <ul className="my-lots">
-          {state.lots.map((lot) => (
-            <li key={lot.lotId}>
-              <div className="my-lot-body">
-                <span className="state">{OUTCOME_LABEL[lot.outcome]}</span>
-                {lot.outcome === 'cancelled' ? <strong>{lot.title}</strong> : <Link to={`/lotes/${lot.lotId}`}><strong>{lot.title}</strong></Link>}
-                <span className="my-lot-note">{noteFor(lot.outcome, lot.myBestCents)}</span>
-              </div>
-              {lot.receiptCode !== null
-                ? <Link className="my-lot-action" to={`/comprovante/${lot.receiptCode}`}>Ver comprovante</Link>
-                : lot.outcome !== 'cancelled' && <Link className="my-lot-action" to={`/lotes/${lot.lotId}`}>Ver lote</Link>}
-            </li>
-          ))}
-        </ul>
-      )}
+      {state.status === 'ready' && GROUPS.map((group) => {
+        const lots = state.lots.filter((lot) => group.outcomes.includes(lot.outcome));
+        if (lots.length === 0) return null;
+        return (
+          <section key={group.title} aria-label={group.title}>
+            <h2>{group.title}</h2>
+            <ul className="my-lots">
+              {lots.map((lot) => (
+                <li key={lot.lotId}>
+                  <img src={lot.imageUrl} alt="" className="lot-thumb" loading="lazy" />
+                  <div className="my-lot-body">
+                    {lot.outcome === 'cancelled' ? <strong>{lot.title}</strong> : <Link to={`/lotes/${lot.lotId}`}><strong>{lot.title}</strong></Link>}
+                    <span className="my-lot-note"><span className="state">{OUTCOME_LABEL[lot.outcome]}</span> · {noteFor(lot.outcome, lot.myBestCents)}</span>
+                  </div>
+                  {lot.receiptCode !== null
+                    ? <Link className="my-lot-action" to={`/comprovante/${lot.receiptCode}`}>Ver comprovante</Link>
+                    : lot.outcome !== 'cancelled' && <Link className="my-lot-action secondary-link" to={`/lotes/${lot.lotId}`}>Ver lote</Link>}
+                </li>
+              ))}
+            </ul>
+          </section>
+        );
+      })}
     </section>
   );
 }
