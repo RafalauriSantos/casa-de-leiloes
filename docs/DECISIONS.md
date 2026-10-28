@@ -341,3 +341,9 @@ Built so far: each accepted bid returns a bid receipt `{seq, head, placedAt}` in
 - **What changes:** `Em disputa` (leading, outbid, waiting for the receipt), `Arrematados` (won, with `Ver comprovante`) and `Não arrematados` (lost, cancelled). A group with no lots is not shown. Each row has the picture, the title, the status and one note, and one action (`Ver comprovante` is the filled button; `Ver lote` is the outlined one). The status texts and the data are unchanged.
 - **Tradeoff:** the canvas puts "Superado" under "Não arrematados", but a lot the bidder was outbid in can still be live and winnable, so it stays under `Em disputa`.
 - **Test:** the winner's journey also checks that the lot appears under `Arrematados`.
+
+## D41. The receipt is a plain centred page: the lot, the amount, the facts, two actions
+- **Why:** the canvas shows the receipt without a frame, seal or photo: the small caption "Comprovante de arremate", the lot title, the amount large, three facts, then `Copiar link` as the main action and `Conferir na auditoria` beside it.
+- **What changes:** the double-bordered frame, the seal and the large photo are gone; `Copiar link` comes first and is the filled button. The data shown is the same (lot, amount, settlement time, winner label, code), and the public link and the audit link are unchanged.
+- **Tradeoff:** the receipt no longer shows the item's picture; the lot title, the amount and the code identify it, and the audit link opens the lot's history.
+- **Test:** none new (visual change); the journeys that open the receipt, signed in and signed out, pass unchanged.
