@@ -37,7 +37,7 @@ make seed      # cria os dados de demonstração (com a API no ar, em outro term
 
 1. Use um projeto Vercel para o site e a API (`vercel.json`), e um projeto Supabase para o banco e o login.
 2. Aplique as migrations de `supabase/migrations`, em ordem, no projeto Supabase.
-3. Desligue "Confirm email" em Auth no Supabase. Não verifiquei essa configuração no painel hospedado.
+3. Desligue "Confirm email" em Auth no Supabase.
 4. Configure no Vercel as variáveis de `.env.example`. `ANCHOR_MODE` é obrigatório: `github` em produção e `off` em preview e local. Com `github`, também são obrigatórios `ANCHOR_GITHUB_REPO` e `ANCHOR_GITHUB_TOKEN`.
 5. Agende o encerramento a cada minuto com `npx tsx backend/scripts/schedule-close-due.ts`. O mesmo agendamento publica as pontas na âncora. Com `ANCHOR_MODE=github`, sem ele nenhum lote com lances é liquidado.
 
