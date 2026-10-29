@@ -111,8 +111,10 @@ describe('live room: bidding in the UI', () => {
     expect(await screen.findByText('Você foi superado.', undefined, { timeout: 8_000 })).toBeTruthy();
     // The current bid is shown in the room (and again in the history), and the bid field and button advance to the new minimum.
     expect(within(room).getByText('Lance atual').closest('div')?.textContent).toContain('R$ 550,00');
-    expect(within(form).getByLabelText<HTMLInputElement>('Seu lance (R$)').value).toBe('600,00');
-    expect(within(form).getByRole('button', { name: 'Dar lance de R$ 600,00' })).toBeTruthy();
+    // The form comes back once she is outbid, so it is read again rather than kept from before.
+    const back = await screen.findByRole('form', { name: 'Dar lance' });
+    expect(within(back).getByLabelText<HTMLInputElement>('Seu lance (R$)').value).toBe('600,00');
+    expect(within(back).getByRole('button', { name: 'Dar lance de R$ 600,00' })).toBeTruthy();
     expect(within(room).getAllByText('Você').length).toBeGreaterThanOrEqual(1);
   }, 30_000);
 
@@ -134,25 +136,28 @@ describe('live room: bidding in the UI', () => {
       const response = await api(`/api/lots/${lotId}/bids`, rival.token, { method: 'POST', body: { amountCents: cents } });
       expect(response.status).toBe(201);
     };
-    const follows = (value: string) => waitFor(() => { expect(input.value).toBe(value); }, { timeout: 8_000 });
+    // The form leaves the screen while she leads and comes back when she is outbid, so the field is read again each time.
+    const current = () => screen.getByLabelText<HTMLInputElement>('Seu lance (R$)');
+    const follows = (value: string) => waitFor(() => { expect(current().value).toBe(value); }, { timeout: 8_000 });
 
     // Typed by hand: a poll that brings a new minimum must not replace what she typed.
     fireEvent.change(input, { target: { value: '700,00' } });
     await raise(bruno, 55_000);
     const room = screen.getByRole('region', { name: 'Sala do lote' });
     await waitFor(() => { expect(within(room).getByText('Lance atual').closest('div')?.textContent).toContain('R$ 550,00'); }, { timeout: 8_000 });
-    expect(input.value).toBe('700,00');
+    expect(current().value).toBe('700,00');
 
     // The shortcut gives control back to the room: the field advances with the next raise.
     await user.click(within(form).getByRole('button', { name: 'Usar lance mínimo' }));
-    expect(input.value).toBe('600,00');
+    expect(current().value).toBe('600,00');
     await raise(caio, 60_000);
     await follows('650,00');
 
-    // An accepted bid does too.
-    fireEvent.change(input, { target: { value: '700,00' } });
-    await user.click(within(form).getByRole('button', { name: 'Dar lance de R$ 700,00' }));
-    await follows('750,00');
+    // An accepted bid makes her the leader: the form leaves (B39), and comes back at the new minimum when she is outbid.
+    const bidForm = screen.getByRole('form', { name: 'Dar lance' });
+    fireEvent.change(current(), { target: { value: '700,00' } });
+    await user.click(within(bidForm).getByRole('button', { name: 'Dar lance de R$ 700,00' }));
+    await waitFor(() => { expect(screen.queryByRole('form', { name: 'Dar lance' })).toBeNull(); }, { timeout: 8_000 });
     await raise(bruno, 75_000);
     await follows('800,00');
   }, 45_000);
@@ -375,6 +380,94 @@ describe('live room: bidding in the UI', () => {
       refuse.mockRestore();
     }
   }, 30_000);
+
+  it('a leader gets no bid form, and an ended lot shows its final price instead of a minimum (B39)', async () => {
+    const user = userEvent.setup();
+    const auctioneer = await newAccount('auctioneer');
+    const lotId = await liveLotFor(auctioneer.token);
+    const hugo = await fundedBidder(1_000_000);
+    await signInAs(hugo.id);
+
+    window.history.replaceState({}, '', `/lotes/${lotId}`);
+    const live = render(<App />);
+    const form = await screen.findByRole('form', { name: 'Dar lance' });
+    await user.click(within(form).getByRole('button', { name: /^Dar lance/ }));
+    await screen.findByText('Você está ganhando.');
+    expect(screen.queryByRole('form', { name: 'Dar lance' })).toBeNull();
+    live.unmount();
+
+    await sql("update public.lots set ends_at = now() - interval '1 second' where id = $1", [lotId]);
+    window.history.replaceState({}, '', `/lotes/${lotId}`);
+    render(<App />);
+    expect(await screen.findByText('Preço final')).toBeTruthy();
+    expect(screen.getByText('Preço final').closest('div')?.textContent).toContain('R$ 500,00');
+    expect(screen.queryByText('Mínimo para dar lance')).toBeNull();
+
+    // An ended lot nobody bid on says so, instead of a price.
+    const quiet = await liveLotFor(auctioneer.token);
+    await sql("update public.lots set ends_at = now() - interval '1 second' where id = $1", [quiet]);
+    window.history.replaceState({}, '', `/lotes/${quiet}`);
+    const unbid = render(<App />);
+    expect(await screen.findByText('Sem lances')).toBeTruthy();
+    unbid.unmount();
+  }, 30_000);
+
+  it('the lot page can try again after a failed read (B39)', async () => {
+    const user = userEvent.setup();
+    const id = randomUUID();
+    const reads = vi.spyOn(window, 'fetch');
+    const asked = (input: RequestInfo | URL) => (typeof input === 'string' ? input : input instanceof URL ? input.href : input.url);
+    const readsOfLot = () => reads.mock.calls.filter(([input]) => asked(input).includes(`/api/lots/${id}`)).length;
+    window.history.replaceState({}, '', `/lotes/${id}`);
+    render(<App />);
+    await screen.findByRole('alert');
+    const before = readsOfLot();
+    await user.click(screen.getByRole('button', { name: 'Tentar de novo' }));
+    await waitFor(() => { expect(readsOfLot()).toBeGreaterThan(before); });
+    reads.mockRestore();
+  });
+
+  it('a bid in the last two minutes says the end moved, with the new end time (B39, real database)', async () => {
+    const user = userEvent.setup();
+    const auctioneer = await newAccount('auctioneer');
+    const lotId = await liveLotFor(auctioneer.token);
+    await sql("update public.lots set ends_at = now() + interval '60 seconds' where id = $1", [lotId]);
+    const ivo = await fundedBidder(1_000_000);
+    await signInAs(ivo.id);
+
+    window.history.replaceState({}, '', `/lotes/${lotId}`);
+    render(<App />);
+    const form = await screen.findByRole('form', { name: 'Dar lance' });
+    await user.click(within(form).getByRole('button', { name: /^Dar lance/ }));
+    expect(await screen.findByText(/O fim do lote foi adiado para/, undefined, { timeout: 8_000 })).toBeTruthy();
+  }, 30_000);
+
+  it('a room that cannot load says why and has a way back to the lots (B39)', async () => {
+    const user = userEvent.setup();
+    window.history.replaceState({}, '', `/lotes/${randomUUID()}`);
+    render(<App />);
+    expect((await screen.findByRole('alert')).textContent).toBeTruthy();
+    await user.click(within(screen.getByRole('main')).getByRole('link', { name: 'Voltar aos lotes' }));
+    await waitFor(() => { expect(window.location.pathname).toBe('/'); });
+  });
+
+  it('the bid field points to its error when a bid is refused (B39)', async () => {
+    const user = userEvent.setup();
+    const auctioneer = await newAccount('auctioneer');
+    const lotId = await liveLotFor(auctioneer.token);
+    const carla = await fundedBidder(10_000);
+    await signInAs(carla.id);
+
+    window.history.replaceState({}, '', `/lotes/${lotId}`);
+    render(<App />);
+    const form = await screen.findByRole('form', { name: 'Dar lance' });
+    const input = within(form).getByLabelText<HTMLInputElement>('Seu lance (R$)');
+    fireEvent.change(input, { target: { value: '500,00' } });
+    await user.click(within(form).getByRole('button', { name: /^Dar lance/ }));
+    const alert = await within(form).findByRole('alert');
+    expect(input.getAttribute('aria-invalid')).toBe('true');
+    expect(input.getAttribute('aria-describedby')).toBe(alert.id);
+  });
 });
 
 // Signing a test account in through the real Auth API, so the app's own session is used.
