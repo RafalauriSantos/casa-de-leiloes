@@ -59,7 +59,7 @@
 
 body { margin: 0; background: var(--paper); color: var(--ink); }
 main { max-width: 72rem; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
-h1, h2, h3 { font-family: var(--display); font-weight: 600; }
+h1, h2, h3 { font-family: var(--display); font-weight: 600; overflow-wrap: anywhere; min-width: 0; }
 h1 { font-size: 2.6rem; line-height: 1.1; letter-spacing: -0.025em; font-weight: 600; margin: 0.5rem 0 1rem; }
 h2 { font-size: 1.5rem; }
 form { display: grid; gap: 0.75rem; max-width: 36rem; }
@@ -290,9 +290,11 @@ details.lot-facts summary { min-height: 44px; display: flex; align-items: center
 .panel-stats span { color: var(--muted); font-size: 0.9rem; }
 .panel-stats strong { font-size: 1.4rem; font-weight: 500; }
 .own-lot, .catalog-results li { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 0.4rem 1rem; align-items: center; padding: 0.9rem 0; margin: 0; border: 0; border-bottom: 1px solid var(--line); border-radius: 0; background: transparent; }
-.own-lot-body h3 { margin: 0; font-size: 1.05rem; }
+.own-lot-body h3 { margin: 0; font-size: 1.05rem; overflow-wrap: anywhere; }
 .own-lot-body p { margin: 0.15rem 0 0; display: flex; flex-wrap: wrap; gap: 0.2rem 0.8rem; align-items: center; }
 .own-lot-actions { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center; justify-content: flex-end; }
+.own-lot-actions a { min-height: 44px; display: inline-flex; align-items: center; }
+.lot-info p > a { min-height: 44px; display: inline-flex; align-items: center; }
 .own-lot-confirm, .own-lot > form { grid-column: 1 / -1; }
 button.secondary { background: transparent; color: var(--ink); border: 1px solid var(--field); }
 .shortcuts { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0.8rem 0 1rem; }
@@ -323,7 +325,7 @@ button.secondary { background: transparent; color: var(--ink); border: 1px solid
 .featured img { width: 100%; aspect-ratio: 4 / 3; object-fit: contain; background: var(--photo); border-radius: 8px; display: block; }
 .featured-body { display: flex; flex-direction: column; gap: 1.1rem; }
 .featured-status { color: var(--brass); font-size: 0.95rem; }
-.featured-title { margin: 0; font-size: 2.25rem; font-weight: 500; line-height: 1.2; }
+.featured-title { margin: 0; font-size: 2.25rem; font-weight: 500; line-height: 1.2; overflow-wrap: anywhere; min-width: 0; }
 .featured-stats { display: flex; gap: 3rem; padding: 1.1rem 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
 .featured-stats div { display: flex; flex-direction: column; gap: 0.25rem; }
 .featured-stats span { color: var(--muted); font-size: 0.95rem; }
@@ -340,7 +342,7 @@ button.secondary { background: transparent; color: var(--ink); border: 1px solid
 .upcoming-head nav button[aria-pressed="true"] { background: var(--card); color: var(--ink); font-weight: 600; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12); }
 .lot-rows { display: flex; flex-direction: column; }
 .lot-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 1.5rem; align-items: center; padding: 1.25rem 0; border-top: 1px solid var(--line); }
-.lot-row a { display: flex; flex-direction: column; gap: 0.3rem; color: inherit; text-decoration: none; }
+.lot-row a { display: flex; flex-direction: column; gap: 0.3rem; color: inherit; text-decoration: none; min-width: 0; overflow-wrap: anywhere; }
 .lot-row h3 { margin: 0; font-size: 1.2rem; font-weight: 500; }
 .lot-status { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.25rem 0.75rem; color: var(--muted); font-size: 0.95rem; }
 .live-status { color: var(--brass); }
