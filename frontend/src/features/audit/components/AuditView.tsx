@@ -20,6 +20,7 @@ export function AuditView({ report, head, onHead }: { report: AuditReport; head:
       <ul aria-label="Resultados" className="audit-results">
         <li>{chainText(report.chain, lastSeq)}</li>
         <li>{anchorText(report.anchor)}</li>
+        {report.anchorFileUrl && <li><a href={report.anchorFileUrl} target="_blank" rel="noopener noreferrer">Ver o arquivo público da âncora no GitHub</a></li>}
         {report.receiptHead && <li>{receiptText(report.receiptHead)}</li>}
       </ul>
 

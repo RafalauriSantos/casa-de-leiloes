@@ -8,7 +8,11 @@ import { formatWhen, toInstant, toLocalField } from '../time';
 import { CatalogSearch } from './CatalogSearch';
 import { LotFields, lotFormError, toLotInput, type LotFormValues } from './LotForm';
 
-const STEPS = ['Item', 'Dados', 'Publicar'] as const;
+const STEPS = [
+  { key: 'item', label: 'Escolher Item do Acervo' },
+  { key: 'dados', label: 'Condições do Lote' },
+  { key: 'publicar', label: 'Revisar e Publicar' },
+] as const;
 const MINUTE = 60_000;
 
 /** The form opens ready: it starts in five minutes, runs for a week, with a round starting bid. The server still checks every value. */
@@ -70,30 +74,56 @@ export function NewLotFlow({ token }: { token: string }) {
     }
   }
 
+  const origin = item ? [item.attributes.department, item.attributes.culture].filter((v): v is string => typeof v === 'string' && v !== '').join(' • ') : '';
+
   return (
     <section aria-label="Novo lote">
-      <h1>Novo lote</h1>
-      <ol className="flow-steps">
-        {STEPS.map((label, index) => (
-          <li key={label} aria-current={index === step ? 'step' : undefined}>{label}</li>
-        ))}
-      </ol>
+      <div className="new-lot-header">
+        <h1>Novo lote</h1>
+        <ol className="flow-steps">
+          {STEPS.map((entry, index) => (
+            <li
+              key={entry.key}
+              className={index < step ? 'step-done' : undefined}
+              aria-current={index === step ? 'step' : undefined}
+            >
+              <span className="step-badge" aria-hidden="true">{index < step ? '✓' : index + 1}</span>
+              <span className="step-label">{entry.label}</span>
+            </li>
+          ))}
+        </ol>
+      </div>
       {/* Kept mounted so going back finds the same results. */}
       <div hidden={step !== 0}>
         <CatalogSearch token={token} onPick={pick} />
       </div>
       {step === 1 && item && (
         <div className="flow-step">
-          <img src={item.imageUrl} alt="" className="flow-photo" />
-          <div>
-            <h2 tabIndex={-1} ref={focusHeading}>Sobre o item</h2>
-            <p>{[item.title, ...factsOf(item)].join(' · ')}</p>
-            <form onSubmit={review} aria-label="Dados do lote">
+          <div className="flow-card flow-item-card">
+            <div className="flow-photo-wrap">
+              <img src={item.imageUrl} alt="" className="flow-photo" />
+            </div>
+            <div className="flow-item-specs">
+              <h2 tabIndex={-1} ref={focusHeading}>Sobre o item</h2>
+              <p className="sr-only">{[item.title, ...factsOf(item)].join(' · ')}</p>
+              <dl className="spec-list">
+                <div><dt>Categoria / Obra</dt><dd>{item.title}</dd></div>
+                {item.attributes.artist && <div><dt>Autor</dt><dd>{item.attributes.artist}</dd></div>}
+                {item.attributes.date && <div><dt>Período</dt><dd>{item.attributes.date}</dd></div>}
+                {item.attributes.medium && <div><dt>Material</dt><dd>{item.attributes.medium}</dd></div>}
+                {origin && <div><dt>Origem</dt><dd>{origin}</dd></div>}
+              </dl>
+              <button type="button" className="link flow-change-item" onClick={() => { setStep(0); }}>Trocar item</button>
+            </div>
+          </div>
+          <div className="flow-card flow-form-card">
+            <h3 className="flow-form-heading">Configuração do Lote</h3>
+            <form onSubmit={review} aria-label="Dados do lote" className="lot-config-form">
               <LotFields values={values} onChange={setValues} />
               {error && <p role="alert">{error}</p>}
               <div className="flow-actions">
-                <button type="button" className="secondary" onClick={() => { setStep(0); }}>Voltar</button>
-                <button type="submit">Continuar</button>
+                <button type="button" className="secondary" onClick={() => { setStep(0); }}><span aria-hidden="true">← </span>Voltar</button>
+                <button type="submit">Continuar<span aria-hidden="true"> →</span></button>
               </div>
             </form>
           </div>
@@ -101,11 +131,25 @@ export function NewLotFlow({ token }: { token: string }) {
       )}
       {step === 2 && item && (
         <div className="flow-step">
-          <img src={item.imageUrl} alt="" className="flow-photo" />
-          <div>
-            <h2 tabIndex={-1} ref={focusHeading}>Confira e publique</h2>
-            <p><strong>{values.title.trim()}</strong></p>
-            <dl>
+          <div className="flow-card flow-item-card">
+            <div className="flow-photo-wrap">
+              <img src={item.imageUrl} alt="" className="flow-photo" />
+            </div>
+            <div className="flow-item-specs">
+              <h3>Ficha Técnica do Acervo</h3>
+              <dl className="spec-list">
+                <div><dt>Categoria / Obra</dt><dd>{item.title}</dd></div>
+                {item.attributes.artist && <div><dt>Autor</dt><dd>{item.attributes.artist}</dd></div>}
+                {item.attributes.date && <div><dt>Período</dt><dd>{item.attributes.date}</dd></div>}
+                {item.attributes.medium && <div><dt>Material</dt><dd>{item.attributes.medium}</dd></div>}
+                {origin && <div><dt>Origem</dt><dd>{origin}</dd></div>}
+              </dl>
+            </div>
+          </div>
+          <div className="flow-card flow-form-card">
+            <h2 tabIndex={-1} ref={focusHeading} className="flow-form-heading">Confira e publique</h2>
+            <p className="review-lot-title"><strong>{values.title.trim()}</strong></p>
+            <dl className="review-dl">
               <div><dt>Começa</dt><dd>{formatWhen(toInstant(values.startsAt))}</dd></div>
               <div><dt>Termina</dt><dd>{formatWhen(toInstant(values.endsAt))}</dd></div>
               <div><dt>Lance inicial</dt><dd>{formatBRL(toLotInput(values)?.startingBidCents ?? 0)}</dd></div>
@@ -113,7 +157,7 @@ export function NewLotFlow({ token }: { token: string }) {
             </dl>
             {error && <p role="alert">{error}</p>}
             <div className="flow-actions">
-              <button type="button" className="secondary" disabled={busy} onClick={() => { setStep(1); }}>Voltar</button>
+              <button type="button" className="secondary" disabled={busy} onClick={() => { setStep(1); }}><span aria-hidden="true">← </span>Voltar</button>
               <button type="button" disabled={busy} onClick={() => void publish()}>{busy ? 'Publicando…' : 'Publicar lote'}</button>
             </div>
           </div>

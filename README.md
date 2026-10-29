@@ -89,6 +89,13 @@ make seed      # cria os dados de demonstração (com a API no ar, em outro term
 - **Celular:** o teste de navegador cobre estouro horizontal de 320 a 1280 px. Não testei o visual em aparelho real.
 - **Carrossel do destaque:** gira a cada 5 segundos e para com mouse, foco, botão ou preferência de movimento reduzido. Se o lote em destaque sair da lista com o mouse em cima, a pausa continua até o próximo mouse.
 
+## Como conferir a auditoria
+
+1. Abra `/auditoria/<id-do-lote>` (o id aparece na URL do lote). Não precisa de login.
+2. Anote o último hash da lista de lances.
+3. Abra o arquivo público do lote no repositório da âncora: https://github.com/RafalauriSantos/casa-de-leiloes-ancora/blob/main/lots/<id-do-lote>.csv (também há o link "Ver o arquivo público da âncora no GitHub" na própria página).
+4. Confira que cada hash do site aparece no arquivo, na mesma ordem e com a mesma sequência. O arquivo tem uma linha por lance: lote, sequência, hash e horário de publicação.
+
 ## Como a auditoria funciona
 
 - Cada lance é um elo de uma cadeia HMAC: o hash de cada lance depende do anterior e de um segredo que só o servidor tem (`AUDIT_HMAC_SECRET`). Alterar, inserir, reordenar ou remover um lance do meio quebra a cadeia. Remover o último lance não quebra a cadeia: só o recibo (antes da publicação) ou a âncora (depois dela) detectam.
