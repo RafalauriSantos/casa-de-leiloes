@@ -7,7 +7,7 @@ Decisões de design e seus tradeoffs: [docs/DECISIONS.md](docs/DECISIONS.md). On
 ## Acesse
 
 - Site publicado: **https://casadeleiloes.vercel.app**
-- Entre pelos atalhos da tela de login ("Entrar como leiloeiro (demo)" ou um dos dois licitantes) ou com as contas abaixo, senha `demo-leilao-2026`:
+- Entre pelos atalhos da tela de login ("Entrar como leiloeiro" ou um dos dois licitantes) ou com as contas abaixo, senha `demo-leilao-2026`:
   - leiloeiro: `leiloeiro@demo.example`
   - licitantes: `licitante1@demo.example` e `licitante2@demo.example`
 - Ou crie a sua conta escolhendo "Quero comprar" ou "Quero vender". Não há confirmação por e-mail.
@@ -32,7 +32,7 @@ make e2e-browser   # navegador real: largura, jornadas e acessibilidade (precisa
 - **Dados de demonstração:** com a API no ar (`make dev`), rode `make seed` em outro terminal. Ele cria um leiloeiro, dois licitantes com saldo e três lotes, sem duplicar nada numa segunda execução: um lote ao vivo com três lances; um lote encerrado que o licitante 1 arrematou, com comprovante (aparece em "Meus arremates"); e um lote encerrado cujo primeiro lance o seed alterou direto no banco, para a auditoria mostrar "adulterado" sem ninguém precisar mexer no banco. Contas (senha de demonstração `demo-leilao-2026`, só para estas contas):
   - leiloeiro: `leiloeiro@demo.example`
   - licitantes: `licitante1@demo.example` e `licitante2@demo.example`
-  - A tela de login também tem atalhos ("Entrar como leiloeiro (demo)" e os dois licitantes): é o mesmo login real, sem precisar digitar.
+  - A tela de login também tem atalhos ("Entrar como leiloeiro" e os dois licitantes): é o mesmo login real, sem precisar digitar.
 - Os segredos locais (cadeia de auditoria e cron) são gerados uma vez em `.env.dev-secrets` (fora do Git); apague o arquivo para trocá-los. Variáveis já definidas no seu ambiente têm prioridade sobre o arquivo.
 
 ## Produção (Vercel + Supabase)

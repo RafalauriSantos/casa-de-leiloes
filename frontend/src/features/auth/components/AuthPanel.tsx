@@ -97,11 +97,11 @@ export function AuthPanel() {
         <section aria-label="Contas de demonstração" className="demo-accounts">
           <p>Conhecer sem criar conta:</p>
           <button type="button" className="link" disabled={busy} onClick={() => void enterAs(DEMO_ACCOUNTS.auctioneer)}>
-            Entrar como leiloeiro (demo)
+            Entrar como leiloeiro
           </button>
           {DEMO_ACCOUNTS.bidders.map((email, index) => (
             <button key={email} type="button" className="link" disabled={busy} onClick={() => void enterAs(email)}>
-              Entrar como licitante {index + 1} (demo)
+              Entrar como licitante {index + 1}
             </button>
           ))}
         </section>
