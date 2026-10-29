@@ -52,7 +52,7 @@ async function insertLot(starts: string, ends: string): Promise<string> {
 const liveLotsNow = async (): Promise<number> => (await fetchLots({ status: 'live' })).length;
 const liveDotOn = (tab: string) => screen.getByRole('button', { name: tab }).querySelector('.live-dot') !== null;
 /** The list has loaded when it shows a card or the empty hint. */
-const listLoaded = () => screen.queryAllByRole('article').length > 0 || screen.queryByText(/Nenhum lote ao vivo agora/) !== null;
+const listLoaded = () => screen.queryAllByRole('article').length > 0 || screen.queryByText(/Nenhum lote ao vivo agora|Todos os lotes ao vivo estão no destaque acima/) !== null;
 
 const renderShowcase = () => render(<MemoryRouter><Showcase /></MemoryRouter>);
 
@@ -221,4 +221,97 @@ describe('the featured lot links (B42)', () => {
     expect(history.getAttribute('href')).toMatch(/^\/lotes\/[0-9a-f-]+#historico$/);
     view.unmount();
   });
+});
+
+describe('the featured carousel (B45)', () => {
+  it('shows the live lots one at a time in a loop, and the list below does not repeat them', async () => {
+    // Only the two lots of this test are open for its run, so they are the whole carousel; the rest is put back after.
+    const closed = await closeOpenLotsLocally();
+    try {
+      const first = await insertLot('-1 hour', '1 hour');
+      const second = await insertLot('-1 hour', '1 hour');
+      const titleOf = async (id: string) => String((await sql('select title from public.lots where id = $1', [id]))[0]?.title);
+      const titles = [await titleOf(first), await titleOf(second)];
+
+      const view = render(<MemoryRouter><Showcase /></MemoryRouter>);
+      const featured = await screen.findByRole('region', { name: 'Lote ao vivo em destaque' });
+      // The block moves on A, B, A: it loops back to the first lot, which only a loop does.
+      const sequence: string[] = [];
+      const deadline = Date.now() + 25_000;
+      while (Date.now() < deadline && sequence.length < 3) {
+        const shownNow = titles.find((title) => within(featured).queryByText(title));
+        if (shownNow && sequence.at(-1) !== shownNow) sequence.push(shownNow);
+        await new Promise((resolve) => setTimeout(resolve, 300));
+      }
+      expect(sequence).toEqual([titles[0], titles[1], titles[0]]);
+
+      const upcoming = screen.getByRole('region', { name: 'Próximos leilões' });
+      for (const title of titles) expect(within(upcoming).queryByText(title)).toBeNull();
+      view.unmount();
+    } finally {
+      await sql("update public.lots set status = 'active' where id = any($1::uuid[])", [closed]);
+    }
+  }, 30_000);
+
+  it('stops the rotation while the pointer is over the block', async () => {
+    const closed = await closeOpenLotsLocally();
+    try {
+      const first = await insertLot('-1 hour', '1 hour');
+      const second = await insertLot('-1 hour', '1 hour');
+      const titleOf = async (id: string) => String((await sql('select title from public.lots where id = $1', [id]))[0]?.title);
+      const titles = [await titleOf(first), await titleOf(second)];
+
+      const view = render(<MemoryRouter><Showcase /></MemoryRouter>);
+      const featured = await screen.findByRole('region', { name: 'Lote ao vivo em destaque' });
+      const shownAtStart = titles.find((title) => within(featured).queryByText(title));
+      fireEvent.mouseEnter(featured);
+      await new Promise((resolve) => setTimeout(resolve, 6_000));
+      expect(within(featured).queryByText(String(shownAtStart))).not.toBeNull();
+      view.unmount();
+    } finally {
+      await sql("update public.lots set status = 'active' where id = any($1::uuid[])", [closed]);
+    }
+  }, 30_000);
+
+  it('holds the block still with the Pausar destaque button, for anyone who cannot hover', async () => {
+    const closed = await closeOpenLotsLocally();
+    try {
+      const first = await insertLot('-1 hour', '1 hour');
+      const second = await insertLot('-1 hour', '1 hour');
+      const titleOf = async (id: string) => String((await sql('select title from public.lots where id = $1', [id]))[0]?.title);
+      const titles = [await titleOf(first), await titleOf(second)];
+
+      const view = render(<MemoryRouter><Showcase /></MemoryRouter>);
+      const featured = await screen.findByRole('region', { name: 'Lote ao vivo em destaque' });
+      const shownAtStart = String(titles.find((title) => within(featured).queryByText(title)));
+      fireEvent.click(within(featured).getByRole('button', { name: 'Pausar destaque' }));
+      await new Promise((resolve) => setTimeout(resolve, 6_000));
+      expect(within(featured).queryByText(shownAtStart)).not.toBeNull();
+      expect(within(featured).getByRole('button', { name: 'Retomar destaque' })).toBeTruthy();
+      view.unmount();
+    } finally {
+      await sql("update public.lots set status = 'active' where id = any($1::uuid[])", [closed]);
+    }
+  }, 30_000);
+
+  it('clears its timer when the page is left', async () => {
+    const closed = await closeOpenLotsLocally();
+    try {
+      await insertLot('-1 hour', '1 hour');
+      await insertLot('-1 hour', '1 hour');
+      const set = vi.spyOn(window, 'setInterval');
+      const clear = vi.spyOn(window, 'clearInterval');
+      const view = render(<MemoryRouter><Showcase /></MemoryRouter>);
+      await screen.findByRole('region', { name: 'Lote ao vivo em destaque' });
+      // The carousel's timer is the one created with its 5 s delay; the live check uses another delay.
+      const carousel = set.mock.calls.findIndex(([, delay]) => delay === 5_000);
+      expect(carousel).toBeGreaterThanOrEqual(0);
+      view.unmount();
+      expect(clear).toHaveBeenCalledWith(set.mock.results[carousel]?.value);
+      set.mockRestore();
+      clear.mockRestore();
+    } finally {
+      await sql("update public.lots set status = 'active' where id = any($1::uuid[])", [closed]);
+    }
+  }, 30_000);
 });

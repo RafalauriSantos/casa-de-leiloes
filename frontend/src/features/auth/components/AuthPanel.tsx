@@ -57,7 +57,7 @@ export function AuthPanel() {
       <p className="auth-aside-note">Nenhum pagamento real é feito. Os saldos são simulados.</p>
     </aside>
     <form className="auth-form" onSubmit={(event) => void onSubmit(event)} aria-labelledby="auth-title">
-      <h2 id="auth-title">{mode === 'signin' ? 'Entrar' : 'Criar conta'}</h2>
+      <h2 id="auth-title">{mode === 'signin' ? 'Acesse sua conta' : 'Criar conta'}</h2>
       {mode === 'signup' && (
         <>
           <label>
