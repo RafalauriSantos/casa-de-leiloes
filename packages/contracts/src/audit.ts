@@ -60,5 +60,7 @@ export interface AuditReport {
   anchor: AnchorResult;
   /** Only when a `head` was sent. */
   receiptHead?: ReceiptHeadResult;
+  /** Public file of this lot in the anchor repository; only when the anchor is on GitHub. */
+  anchorFileUrl?: string;
   headline: Headline;
 }

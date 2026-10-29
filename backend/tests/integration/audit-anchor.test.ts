@@ -115,6 +115,16 @@ describe('the anchor result of a lot', () => {
     expect(request?.headers['authorization']).toBe('Bearer test-token');
   });
 
+  it('links to the public file of the lot in the anchor repository', async () => {
+    const lot = await lotWithBids(3);
+    await setAnchored(lot.id, 3);
+    github.script(fileOf(lot.id), [await filesWith(lot.id, 3)]);
+
+    const report = await audit(lot.id);
+
+    expect(report.anchorFileUrl).toBe(`https://github.com/owner/anchor/blob/main/lots/${lot.id}.csv`);
+  });
+
   it('is pending when the file holds the first bids and the publisher has not reached the rest', async () => {
     const lot = await lotWithBids(3);
     await setAnchored(lot.id, 1);

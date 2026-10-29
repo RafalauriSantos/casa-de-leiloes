@@ -61,6 +61,7 @@ async function onePass(db: Db, config: Config, reader: AnchorReader | undefined,
     chain,
     anchor,
     ...(receiptHead === undefined ? {} : { receiptHead }),
+    ...(config.anchor.mode === 'github' ? { anchorFileUrl: `https://github.com/${config.anchor.repo}/blob/${config.anchor.branch}/lots/${lotId}.csv` } : {}),
     headline: headlineOf({ chain, anchor, receiptHead, bidCount: bids.length }),
   };
 }

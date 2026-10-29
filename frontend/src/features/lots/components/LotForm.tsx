@@ -71,36 +71,75 @@ export function valuesOf(lot: OwnLot): LotFormValues {
   };
 }
 
+const DURATION_PRESETS = [
+  { label: '+24 horas', hours: 24 },
+  { label: '+3 dias', hours: 72 },
+  { label: '+7 dias', hours: 168 },
+] as const;
+
 /** The five fields of a lot, shared by the edit form and the step 2 of the new lot flow. */
 export function LotFields({ values, onChange }: { values: LotFormValues; onChange: (values: LotFormValues) => void }) {
   const set = (field: keyof LotFormValues) => (event: { target: { value: string } }) => {
     onChange({ ...values, [field]: event.target.value });
   };
+
+  const applyDuration = (hours: number) => {
+    const parsedStart = Date.parse(toInstant(values.startsAt));
+    const baseMs = Number.isNaN(parsedStart) ? Date.now() + 5 * 60_000 : parsedStart;
+    const nextEnd = toLocalField(new Date(baseMs + hours * 3_600_000).toISOString());
+    onChange({ ...values, endsAt: nextEnd });
+  };
+
   return (
     <>
-      <label>
+      <label className="lot-field-full">
         Título
         <input value={values.title} onChange={set('title')} required minLength={3} maxLength={120} />
       </label>
-      <label>
-        Início (horário de Brasília)
-        <input type="datetime-local" value={values.startsAt} onChange={set('startsAt')} required />
-      </label>
-      <label>
-        Fim (horário de Brasília)
-        <input type="datetime-local" value={values.endsAt} onChange={set('endsAt')} required />
-      </label>
-      <label>
-        Lance inicial (R$)
-        <input value={values.startingBid} onChange={set('startingBid')} inputMode="decimal" required placeholder="500,00" />
-      </label>
-      <label>
-        Incremento mínimo (R$)
-        <input value={values.increment} onChange={set('increment')} inputMode="decimal" required placeholder="50,00" />
-      </label>
-      <small>
-        Limites: lance inicial até {formatBRL(MAX_STARTING_BID_CENTS)}, incremento até {formatBRL(MAX_INCREMENT_CENTS)}.
-      </small>
+      <div className="lot-field-grid">
+        <label>
+          Início (horário de Brasília)
+          <input type="datetime-local" value={values.startsAt} onChange={set('startsAt')} required />
+        </label>
+        <label>
+          Fim (horário de Brasília)
+          <input type="datetime-local" value={values.endsAt} onChange={set('endsAt')} required />
+        </label>
+      </div>
+      <div className="duration-presets" role="group" aria-label="Atalhos de duração">
+        {DURATION_PRESETS.map((preset) => (
+          <button
+            key={preset.hours}
+            type="button"
+            className="chip duration-chip"
+            onClick={() => { applyDuration(preset.hours); }}
+          >
+            {preset.label}
+          </button>
+        ))}
+      </div>
+      <div className="lot-field-grid">
+        <div className="lot-field-col">
+          <label>
+            Lance inicial (R$)
+            <span className="currency-field">
+              <span className="currency-adornment" aria-hidden="true">R$</span>
+              <input value={values.startingBid} onChange={set('startingBid')} inputMode="decimal" required placeholder="500,00" />
+            </span>
+          </label>
+          <small className="field-limit">Máximo: {formatBRL(MAX_STARTING_BID_CENTS)}</small>
+        </div>
+        <div className="lot-field-col">
+          <label>
+            Incremento mínimo (R$)
+            <span className="currency-field">
+              <span className="currency-adornment" aria-hidden="true">R$</span>
+              <input value={values.increment} onChange={set('increment')} inputMode="decimal" required placeholder="50,00" />
+            </span>
+          </label>
+          <small className="field-limit">Máximo: {formatBRL(MAX_INCREMENT_CENTS)}</small>
+        </div>
+      </div>
     </>
   );
 }

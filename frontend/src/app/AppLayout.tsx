@@ -66,6 +66,7 @@ export function AppLayout() {
           )}
           <div className="header-end">
             {me !== undefined && bidder && available !== undefined && <HeaderBalance availableCents={available} />}
+            {me !== undefined && <span className="header-theme-signed-in"><ThemeToggle iconOnly /></span>}
             {me !== undefined && (
               <AccountMenu name={me.displayName} roleLabel={bidder ? 'Conta de licitante' : 'Conta de leiloeiro'} links={links} />
             )}

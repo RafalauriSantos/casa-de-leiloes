@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { formatBRL } from '@/lib/format';
 import { useAuth } from '@/features/auth';
 import { fetchLots, type ShowcaseStatus } from '../api';
-import { formatWhen } from '../time';
+import { formatRemaining, formatWhen } from '../time';
 import { LotCard } from './LotCard';
 
 /** Same cadence as the live room: a lot that ends or starts while the page is open changes the dot within this time. */
@@ -45,6 +45,12 @@ export function Showcase() {
   const [paused, setPaused] = useState(false);
   // A button holds the block still for anyone who cannot hover, or who needs it still (WCAG 2.2.2).
   const [held, setHeld] = useState(false);
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    const tick = setInterval(() => { setNow(Date.now()); }, 1_000);
+    return () => { clearInterval(tick); };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -105,15 +111,22 @@ export function Showcase() {
     <section aria-label="Vitrine">
       <div className="showcase-hero">
         <h1>Leilões ao vivo</h1>
-        <form onSubmit={(event) => { event.preventDefault(); setQuery(search.trim()); }} role="search">
-          <label>
-            Buscar por título
-            <input value={search} onChange={(event) => { setSearch(event.target.value); }} placeholder="Relógio, mapa, Sèvres" />
+        <form className="showcase-search" onSubmit={(event) => { event.preventDefault(); setQuery(search.trim()); }} role="search">
+          <label className="showcase-search-label">
+            <span className="sr-only">Buscar por título</span>
+            <svg className="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+            <input value={search} onChange={(event) => { setSearch(event.target.value); }} placeholder="Buscar por título, artista ou período..." />
           </label>
-          <button type="submit">Buscar</button>
+          {query !== '' && (
+            <button type="button" className="search-clear" aria-label="Limpar busca" onClick={() => { setSearch(''); setQuery(''); }}>✕</button>
+          )}
+          <button type="submit" className="showcase-search-btn">Buscar</button>
         </form>
       </div>
-      {liveLot && (
+      {liveLot && query === '' && (
         <section
           className="featured"
           aria-label="Lote ao vivo em destaque"
@@ -122,21 +135,64 @@ export function Showcase() {
           onFocus={() => { setPaused(true); }}
           onBlur={() => { setPaused(false); }}
         >
-          <Link to={`/lotes/${liveLot.id}`} className="featured-cover" aria-hidden="true" tabIndex={-1}>
-            <img src={liveLot.imageUrl} alt="" />
-          </Link>
+          <div className="featured-media">
+            <Link to={`/lotes/${liveLot.id}`} className="featured-cover" aria-hidden="true" tabIndex={-1}>
+              <img src={liveLot.imageUrl} alt="" />
+            </Link>
+            <div className="featured-carousel-pill" role="group" aria-label="Controles do destaque">
+              <button
+                type="button"
+                className="carousel-nav-btn"
+                aria-label="Lote anterior"
+                onClick={() => { setLiveIndex((index) => (index - 1 + liveLots.length) % liveLots.length); }}
+              >
+                <span aria-hidden="true">‹</span>
+              </button>
+              <span className="carousel-counter" aria-hidden="true">
+                Lote {(liveIndex % liveLots.length) + 1} de {liveLots.length}
+              </span>
+              <button
+                type="button"
+                className="carousel-nav-btn"
+                onClick={() => { setLiveIndex((index) => (index + 1) % liveLots.length); }}
+              >
+                <span className="sr-only">Próximo lote</span>
+                <span aria-hidden="true">›</span>
+              </button>
+              <span className="carousel-divider" aria-hidden="true" />
+              <button
+                type="button"
+                className="carousel-pause-btn"
+                onClick={() => { setHeld((value) => !value); }}
+              >
+                <span aria-hidden="true">{held ? '▶' : '⏸'}</span>
+                <span>{held ? 'Retomar' : 'Pausar'}<span className="sr-only"> destaque</span></span>
+              </button>
+            </div>
+          </div>
           <div className="featured-body">
-            <span className="featured-status">Ao vivo agora</span>
+            <div className="featured-badge-row">
+              <span className="featured-status">
+                <span className="live-dot" aria-hidden="true" />
+                AO VIVO AGORA
+              </span>
+            </div>
             <Link to={`/lotes/${liveLot.id}`} className="featured-title">{liveLot.title}</Link>
             <div className="featured-stats">
-              <div><span>Lance atual</span><strong>{formatBRL(liveLot.currentAmountCents ?? liveLot.startingBidCents)}</strong></div>
-              <div><span>Termina em</span><strong>{formatWhen(liveLot.endsAt)}</strong></div>
+              <div className="featured-stat-col">
+                <span className="featured-stat-label">Lance atual</span>
+                <strong className="featured-stat-value">{formatBRL(liveLot.currentAmountCents ?? liveLot.startingBidCents)}</strong>
+                <small className="featured-stat-sub">+ {formatBRL(liveLot.incrementCents)} incremento mínimo</small>
+              </div>
+              <div className="featured-stat-col featured-stat-end">
+                <span className="featured-stat-label">Encerra em</span>
+                <strong className="featured-stat-countdown">{formatRemaining(Math.max(0, Date.parse(liveLot.endsAt) - now))}</strong>
+                <small className="featured-stat-sub">{formatWhen(liveLot.endsAt)}</small>
+              </div>
             </div>
             <div className="featured-actions">
               <Link className="featured-bid" to={`/lotes/${liveLot.id}`}>{isAuctioneer ? 'Ver lote' : 'Dar lance'}</Link>
-              <Link to={`/lotes/${liveLot.id}#historico`}>Histórico</Link>
-              <button type="button" className="link" onClick={() => { setLiveIndex((index) => (index + 1) % liveLots.length); }}>Próximo lote</button>
-              <button type="button" className="link" onClick={() => { setHeld((value) => !value); }}>{held ? 'Retomar destaque' : 'Pausar destaque'}</button>
+              <Link className="featured-history" to={`/lotes/${liveLot.id}#historico`}>Histórico</Link>
             </div>
           </div>
         </section>
@@ -176,7 +232,7 @@ export function Showcase() {
           </div>
         )}
         {state.status === 'ready' && state.lots.length > 0 && listed.length === 0 && (
-          <p>Todos os lotes ao vivo estão no destaque acima.</p>
+          <p className="featured-all-note">Todos os lotes ao vivo estão no destaque acima.</p>
         )}
         {listed.length > 0 && (
           <div className="lot-rows">
