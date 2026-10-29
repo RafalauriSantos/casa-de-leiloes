@@ -29,7 +29,7 @@ make seed      # cria os dados de demonstração (com a API no ar, em outro term
 ## Testes
 
 - `make ci`: lint, tipos, build, testes com cobertura e `npm audit`. É a definição de verde que eu usei.
-- `make ci-local`: roda o mesmo `make ci` como o GitHub Actions (`.github/workflows/ci.yml`), com Node do `.nvmrc`, Supabase recriado do zero (apaga o banco local), sem seed e com ambiente limpo. Eu usei esse comando para validar as entregas quando o GitHub Actions não tinha minutos.
+- `make ci-local`: roda o mesmo `make ci` como o GitHub Actions (`.github/workflows/ci.yml`), com Node do `.nvmrc`, Supabase recriado do zero (apaga o banco local), sem seed e com ambiente limpo. Rodei o `make ci` localmente antes de cada merge. Usei o `make ci-local` para reproduzir o job do GitHub Actions, com ambiente limpo, quando os minutos da conta acabaram.
 - `make e2e-browser`: 14 testes em navegador real, com jornadas, acessibilidade e largura de tela de 320 a 1280 px.
 - `make e2e-live`: consulta a API real do The Met. Não roda no `make ci`.
 
