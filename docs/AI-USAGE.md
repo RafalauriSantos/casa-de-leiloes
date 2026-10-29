@@ -1,52 +1,52 @@
-# Where and how AI was used
+# Onde e como a IA foi usada
 
-The submission form asks where and how AI was used, and what was reviewed or adjusted. This file answers from what the
-repository shows (B22).
+O formulário de envio pergunta onde e como a IA foi usada, e o que foi revisado ou ajustado. Este arquivo responde a partir
+do que o repositório mostra (B22).
 
-## Where
+## Onde
 
-- **Code, tests, migrations, docs and commit messages:** written by an AI coding agent (Claude Code), in sessions the
-  owner (Rafael Lauri) directed. The commits carry the owner's name because they were made from the owner's machine
-  and account; nearly all of their content was produced by the agent.
-- **Analysis and design:** the agent drafted the reading of the brief, the user journeys with their acceptance criteria
-  (`docs/TRACEABILITY.md`) and the design decisions (`docs/DECISIONS.md`). The owner approved each phase before the next
-  one started, and took the product decisions (below).
-- **Reviews:** two reviewer agents, also AI, set up in the owner's local agent settings (not in this repository): `pr-reviewer` reads the final diff of every
-  pull request; `blind-reviewer` gets only the branch and its base, with no description of the change, and is used for
-  money, bids, settlement, authentication, permissions and migrations. Their findings are AI reviews, not human ones.
+- **Código, testes, migrations, documentação e mensagens de commit:** escritos por um agente de IA de código (Claude Code),
+  em sessões dirigidas pelo dono do projeto (Rafael Lauri). Os commits levam o nome do dono porque foram feitos da máquina
+  e da conta dele; quase todo o conteúdo foi produzido pelo agente.
+- **Análise e design:** o agente redigiu a leitura do enunciado, as jornadas com seus critérios de aceite
+  (`docs/TRACEABILITY.md`) e as decisões de design (`docs/DECISIONS.md`). O dono aprovou cada fase antes da seguinte e
+  tomou as decisões de produto (abaixo).
+- **Revisões:** um agente revisor de IA, `pr-reviewer`, configurado nas configurações locais do dono (fora deste repositório).
+  Ele lê o diff final de cada pull request, em contexto limpo, e devolve PASS ou FAIL. Os achados são revisões de IA, não
+  humanas.
 
-## How (the guard rails around the agent)
+## Como (as travas em volta do agente)
 
-- A test first, seen failing for the right reason, then the code. Real Postgres, real Supabase Auth, real HTTP and real
-  clocks; only the Met catalog and the GitHub anchor are served from recorded answers in CI.
-- `make ci` (lint, types, build, tests with coverage, dependency audit) is the only definition of green, locally and in CI.
-- For high-risk rules, a hand mutation: the rule is broken on purpose and a test must fail (examples in D24 and D25).
-- Money, bids, settlement, authentication, permissions and migrations merge only after the owner writes "pode mergear"
-  for that pull request.
+- Um teste primeiro, visto falhando pelo motivo certo, e só depois o código. Postgres real, Supabase Auth real, HTTP real e
+  relógio real; só o acervo do Met e a âncora do GitHub são servidos de respostas gravadas no CI.
+- `make ci` (lint, tipos, build, testes com cobertura, auditoria de dependências) é a única definição de verde, local e no CI.
+- Para regras de alto risco, uma mutação manual: a regra é quebrada de propósito e um teste precisa falhar (exemplos em D24 e D25).
+- Dinheiro, lances, liquidação, autenticação, permissões e migrations só entram depois que o dono escreve "pode mergear"
+  para aquele pull request.
 
-## What the owner decided
+## O que o dono decidiu
 
-The decisions marked "decided by the owner" or "the owner chose" in `docs/DECISIONS.md`, among them: the public anchor
-with the settlement waiting for publication (D21, option B), no read-back of the anchor before payment, the owner's
-release of a tampered lot (D20), the limit of 1,000 bids per lot (D23), the shared demo password (D9c), the sign-up
-choosing the role (D24) and the scope of the optionals of the brief (B19 to B21).
+As decisões marcadas como "decidida pelo dono" ou "o dono escolheu" em `docs/DECISIONS.md`, entre elas: a âncora pública
+com a liquidação esperando a publicação (D21, opção B), a ausência de releitura da âncora antes do pagamento, a liberação de
+lote adulterado pelo dono (D20), o limite de 1.000 lances por lote (D23), a senha compartilhada de demonstração (D9c), a
+escolha do papel no cadastro (D24) e o escopo dos opcionais do enunciado (B19 a B21).
 
-## AI output that was wrong and was corrected
+## Saídas da IA que estavam erradas e foram corrigidas
 
-Examples the history shows:
+Exemplos que o histórico mostra:
 
-- The first anti-sniping rule did not follow the brief; it was changed to "a late bid extends the end by two minutes"
+- A primeira regra de anti-sniping não seguia o enunciado; foi trocada por "um lance tardio estende o fim em dois minutos"
   (PR #7).
-- The audit missed a change of a stored bid time finer than a millisecond (PR #19).
-- Showcase cards showed the starting bid even after bids (PR #42).
-- A seed test passed only on a fresh database and failed on the next local run (B13).
-- On 2026-10-26 a session began e-mail confirmation and password recovery, which the brief does not ask for (it lists
-  password recovery under "não precisa fazer"). The owner had the work checked against the brief, and it was dropped
-  before any commit.
+- A auditoria não percebia a alteração de um horário de lance mais fino que o milissegundo (PR #19).
+- Os cards vitrine mostravam o lance inicial mesmo depois de haver lances (PR #42).
+- Um teste da seed passava só em banco novo e falhava na execução local seguinte (B13).
+- Em 26/10/2026, uma sessão começou confirmação de e-mail e recuperação de senha, que o enunciado não pede (ele lista a
+  recuperação de senha em "não precisa fazer"). O dono mandou conferir o trabalho com o enunciado, e ele foi descartado
+  antes de qualquer commit.
 
-## What the owner reviewed by hand
+## O que o dono revisou à mão
 
-<!-- To be written by the owner before submitting: which changes the owner read, ran or tested by hand. Not filled in by the agent. -->
+<!-- A ser escrito pelo dono antes do envio: quais mudanças o dono leu, executou ou testou à mão. Não preenchido pelo agente. -->
 
 ## Registro escrito pelo dono
 
