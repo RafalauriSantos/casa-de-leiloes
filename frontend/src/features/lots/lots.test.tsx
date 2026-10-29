@@ -85,9 +85,11 @@ describe('auctioneer journey: find an item, publish, edit, cancel', () => {
     expect(within(lot).getByText('Agendado')).toBeTruthy();
     expect(within(lot).getByText(/Cancelar lote/)).toBeTruthy();
 
-    // Edit before it starts: the change is saved and shown.
+    // Edit before it starts: the change is saved and shown, and the amounts open formatted with two decimals.
     await user.click(within(lot).getByRole('button', { name: 'Editar' }));
     const editForm = within(lot).getByRole('form', { name: 'Salvar alterações' });
+    expect(within(editForm).getByLabelText<HTMLInputElement>('Lance inicial (R$)').value).toBe('500,00');
+    expect(within(editForm).getByLabelText<HTMLInputElement>('Incremento mínimo (R$)').value).toBe('50,00');
     const editTitle = within(editForm).getByLabelText<HTMLInputElement>('Título');
     await user.clear(editTitle);
     await user.type(editTitle, `${marker} editado`);
@@ -115,6 +117,28 @@ describe('auctioneer journey: find an item, publish, edit, cancel', () => {
     await user.type(await screen.findByLabelText('Buscar item no acervo'), 'nada-disto-existe');
     await user.click(screen.getByRole('button', { name: 'Buscar' }));
     expect(await screen.findByText('Nenhum item com imagem pública para essa busca.')).toBeTruthy();
+  });
+
+  it('refuses an amount above the limit before the summary step, with a clear message in Portuguese', async () => {
+    const user = userEvent.setup();
+    await signedInAuctioneer();
+    window.history.replaceState({}, '', '/leiloeiro/novo');
+    render(<App />);
+    await user.click(await screen.findByRole('button', { name: 'Vaso' }));
+    const [first] = await screen.findAllByRole('button', { name: 'Usar este item' });
+    if (!first) throw new Error('the catalog search returned no item to pick');
+    await user.click(first);
+    const form = screen.getByRole('form', { name: 'Dados do lote' });
+    fireEvent.change(within(form).getByLabelText('Lance inicial (R$)'), { target: { value: '200000000' } });
+    await user.click(within(form).getByRole('button', { name: 'Continuar' }));
+    expect((await screen.findByRole('alert')).textContent).toBe('O lance inicial pode ser de até R$ 10.000.000,00.');
+    expect(screen.queryByRole('button', { name: 'Publicar lote' })).toBeNull();
+
+    fireEvent.change(within(form).getByLabelText('Lance inicial (R$)'), { target: { value: '500,00' } });
+    fireEvent.change(within(form).getByLabelText('Incremento mínimo (R$)'), { target: { value: '200000' } });
+    await user.click(within(form).getByRole('button', { name: 'Continuar' }));
+    expect((await screen.findByRole('alert')).textContent).toBe('O incremento mínimo pode ser de até R$ 100.000,00.');
+    expect(screen.queryByRole('button', { name: 'Publicar lote' })).toBeNull();
   });
 
   it('refuses inverted times with the reason, and keeps the form for a corrected retry', async () => {

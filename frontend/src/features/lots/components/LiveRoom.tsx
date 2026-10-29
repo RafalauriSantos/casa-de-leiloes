@@ -1,8 +1,8 @@
-import { BID_LIMIT_MESSAGE, MAX_BIDS_PER_LOT, type BidReceipt, type LiveLot } from '@casa/contracts';
+import { BID_LIMIT_MESSAGE, MAX_BIDS_PER_LOT, type BidReceipt, type ErrorCode, type LiveLot } from '@casa/contracts';
 import { useEffect, useRef, useState, type SyntheticEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { ApiRequestError } from '@/lib/api-client';
-import { formatBRL, parseReaisToCents } from '@/lib/format';
+import { formatBRL, formatReaisInput, parseReaisToCents } from '@/lib/format';
 import { useAuth } from '@/features/auth';
 import { fetchWallet } from '@/features/wallet';
 import { fetchLive, placeBid } from '../api';
@@ -37,7 +37,7 @@ export function LiveRoom({ lotId }: { lotId: string }) {
   const [stale, setStale] = useState(false);
   const [amount, setAmount] = useState('');
   const [busy, setBusy] = useState(false);
-  const [bidError, setBidError] = useState<string>();
+  const [bidError, setBidError] = useState<{ message: string; code?: ErrorCode }>();
   /** The bidder's available balance, shown under the bid form (the canvas's "Disponível para lances"). */
   const [available, setAvailable] = useState<number>();
   // The receipts belong to the user named in `owner`, so another user never sees them, not even for one render.
@@ -45,6 +45,8 @@ export function LiveRoom({ lotId }: { lotId: string }) {
   const receipts = stored.owner === userId ? stored.list : [];
   const signedInUser = useRef(userId);
   signedInUser.current = userId;
+  /** Whether the bidder has typed a custom value in the bid field; while false, polls follow `nextMinimumCents`. */
+  const edited = useRef(false);
   useEffect(() => {
     setStored({ owner: userId, list: userId ? readReceipts(userId, lotId) : [] });
   }, [userId, lotId]);
@@ -73,9 +75,9 @@ export function LiveRoom({ lotId }: { lotId: string }) {
         if (mine > applied.current) {
           applied.current = mine;
           setLoad({ status: 'ready', room });
+          if (!edited.current) setAmount(formatReaisInput(room.nextMinimumCents));
         }
         setStale(false);
-        setAmount((current) => (current === '' ? (room.nextMinimumCents / 100).toFixed(2).replace('.', ',') : current));
       } catch (error: unknown) {
         inFlight.current = false;
         if (!alive.current) return;
@@ -119,7 +121,7 @@ export function LiveRoom({ lotId }: { lotId: string }) {
     if (!token || !userId) return;
     const cents = parseReaisToCents(amount);
     if (cents === undefined) {
-      setBidError('Informe o lance em reais, por exemplo 550,00.');
+      setBidError({ message: 'Informe o lance em reais, por exemplo 550,00.' });
       return;
     }
     setBusy(true);
@@ -133,11 +135,16 @@ export function LiveRoom({ lotId }: { lotId: string }) {
       if (signedInUser.current === userId) {
         readCount.current++;
         applied.current = readCount.current;
+        edited.current = false;
         setLoad({ status: 'ready', room: accepted });
-        setAmount((accepted.nextMinimumCents / 100).toFixed(2).replace('.', ','));
+        setAmount(formatReaisInput(accepted.nextMinimumCents));
       }
     } catch (error: unknown) {
-      setBidError(error instanceof ApiRequestError ? error.message : 'Não foi possível registrar o lance.');
+      setBidError(
+        error instanceof ApiRequestError
+          ? { message: error.message, code: error.code }
+          : { message: 'Não foi possível registrar o lance.' },
+      );
     } finally {
       setBusy(false);
     }
@@ -198,12 +205,33 @@ export function LiveRoom({ lotId }: { lotId: string }) {
         <form onSubmit={(event) => void submit(event)} aria-label="Dar lance">
           <div className="bid-head">
             <label htmlFor="bid-amount">Seu lance (R$)</label>
-            <button type="button" className="link" onClick={() => { setAmount((room.nextMinimumCents / 100).toFixed(2).replace('.', ',')); setBidError(undefined); }}>
+            <button
+              type="button"
+              className="link"
+              onClick={() => {
+                edited.current = false;
+                setAmount(formatReaisInput(room.nextMinimumCents));
+                setBidError(undefined);
+              }}
+            >
               Usar lance mínimo
             </button>
           </div>
-          <input id="bid-amount" value={amount} onChange={(event) => { setAmount(event.target.value); setBidError(undefined); }} inputMode="decimal" required />
-          {bidError && <p role="alert">{bidError}</p>}
+          <input
+            id="bid-amount"
+            value={amount}
+            onChange={(event) => {
+              edited.current = true;
+              setAmount(event.target.value);
+              setBidError(undefined);
+            }}
+            inputMode="decimal"
+            required
+          />
+          {bidError && <p role="alert">{bidError.message}</p>}
+          {bidError?.code === 'insufficient_funds' && (
+            <p><Link to="/carteira">Depositar na carteira</Link></p>
+          )}
           <button type="submit" disabled={busy || remaining <= 0}>
             {busy ? 'Enviando…' : bidButtonLabel(amount)}
           </button>

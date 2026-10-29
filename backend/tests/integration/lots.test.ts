@@ -156,6 +156,23 @@ describe('POST /api/lots (auctioneers only)', () => {
     expect(await errorCode(response)).toBe('validation_error');
   });
 
+  it('refuses amounts above the ceiling with a message in Portuguese, never a default English schema error', async () => {
+    const now = await dbNow(server);
+    const tooHighStart = await create(auctioneer, lotBody(now, { startingBidCents: 20_000_000_000 }));
+    expect(tooHighStart.status).toBe(422);
+    expect(await tooHighStart.json()).toEqual({
+      code: 'validation_error',
+      message: 'O lance inicial pode ser de até R$ 10.000.000,00.',
+    });
+
+    const tooHighIncrement = await create(auctioneer, lotBody(now, { incrementCents: 200_000_000 }));
+    expect(tooHighIncrement.status).toBe(422);
+    expect(await tooHighIncrement.json()).toEqual({
+      code: 'validation_error',
+      message: 'O incremento mínimo pode ser de até R$ 100.000,00.',
+    });
+  });
+
   it('accepts a lot that is exactly one minute long, the shortest allowed', async () => {
     const now = await dbNow(server);
     const response = await create(auctioneer, lotBody(now, { startsAt: new Date(now.getTime() + minutes(10)).toISOString(), endsAt: new Date(now.getTime() + minutes(11)).toISOString() }));

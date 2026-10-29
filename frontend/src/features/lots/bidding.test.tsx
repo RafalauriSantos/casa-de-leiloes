@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { randomBytes, randomUUID } from 'node:crypto';
 import pg from 'pg';
@@ -109,12 +109,55 @@ describe('live room: bidding in the UI', () => {
     const outbid = await api(`/api/lots/${lotId}/bids`, bruno.token, { method: 'POST', body: { amountCents: 55_000 } });
     expect(outbid.status).toBe(201);
     expect(await screen.findByText('Você foi superado.', undefined, { timeout: 8_000 })).toBeTruthy();
-    // The current bid is shown in the room (and again in the history).
+    // The current bid is shown in the room (and again in the history), and the bid field and button advance to the new minimum.
     expect(within(room).getByText('Lance atual').closest('div')?.textContent).toContain('R$ 550,00');
+    expect(within(form).getByLabelText<HTMLInputElement>('Seu lance (R$)').value).toBe('600,00');
+    expect(within(form).getByRole('button', { name: 'Dar lance de R$ 600,00' })).toBeTruthy();
     expect(within(room).getAllByText('Você').length).toBeGreaterThanOrEqual(1);
   }, 30_000);
 
-  it('a refused bid shows the exact reason and keeps the amount typed', async () => {
+  it('keeps the amount a bidder typed through the polls, and follows the minimum again after the shortcut or an accepted bid', async () => {
+    const user = userEvent.setup();
+    const auctioneer = await newAccount('auctioneer');
+    const lotId = await liveLotFor(auctioneer.token);
+    const ana = await fundedBidder(1_000_000);
+    const bruno = await fundedBidder(1_000_000);
+    const caio = await fundedBidder(1_000_000);
+    await signInAs(ana.id);
+
+    window.history.replaceState({}, '', `/lotes/${lotId}`);
+    render(<App />);
+    const form = await screen.findByRole('form', { name: 'Dar lance' });
+    const input = within(form).getByLabelText<HTMLInputElement>('Seu lance (R$)');
+    // Two rivals take turns: the server refuses a second bid in a row from the leader.
+    const raise = async (rival: Account, cents: number) => {
+      const response = await api(`/api/lots/${lotId}/bids`, rival.token, { method: 'POST', body: { amountCents: cents } });
+      expect(response.status).toBe(201);
+    };
+    const follows = (value: string) => waitFor(() => { expect(input.value).toBe(value); }, { timeout: 8_000 });
+
+    // Typed by hand: a poll that brings a new minimum must not replace what she typed.
+    fireEvent.change(input, { target: { value: '700,00' } });
+    await raise(bruno, 55_000);
+    const room = screen.getByRole('region', { name: 'Sala do lote' });
+    await waitFor(() => { expect(within(room).getByText('Lance atual').closest('div')?.textContent).toContain('R$ 550,00'); }, { timeout: 8_000 });
+    expect(input.value).toBe('700,00');
+
+    // The shortcut gives control back to the room: the field advances with the next raise.
+    await user.click(within(form).getByRole('button', { name: 'Usar lance mínimo' }));
+    expect(input.value).toBe('600,00');
+    await raise(caio, 60_000);
+    await follows('650,00');
+
+    // An accepted bid does too.
+    fireEvent.change(input, { target: { value: '700,00' } });
+    await user.click(within(form).getByRole('button', { name: 'Dar lance de R$ 700,00' }));
+    await follows('750,00');
+    await raise(bruno, 75_000);
+    await follows('800,00');
+  }, 45_000);
+
+  it('a refused bid shows the exact reason, links to the wallet when funds are short, and keeps the amount typed', async () => {
     const user = userEvent.setup();
     const auctioneer = await newAccount('auctioneer');
     const lotId = await liveLotFor(auctioneer.token);
@@ -128,6 +171,7 @@ describe('live room: bidding in the UI', () => {
     fireEvent.change(input, { target: { value: '500,00' } });
     await user.click(within(form).getByRole('button', { name: /^Dar lance/ }));
     expect((await within(form).findByRole('alert')).textContent).toBe('Saldo disponível insuficiente: você tem R$ 100,00 para lances.');
+    expect(within(form).getByRole('link', { name: 'Depositar na carteira' }).getAttribute('href')).toBe('/carteira');
     expect(input.value).toBe('500,00');
   });
 
