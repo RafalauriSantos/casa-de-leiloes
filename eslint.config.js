@@ -7,7 +7,8 @@ const MODULE_INTERNALS = String.raw`^\.\./(?!\.\.)[^/]+/(?!index$).+`;
 const MODULE_DEEP = String.raw`(^|/)modules/[^/]+/(?!index$).+`;
 
 export default defineConfig(
-  { ignores: ['eslint.config.js', '**/dist/**', '**/node_modules/**', '**/.vercel/**', 'supabase/.temp/**'] },
+  // frontend/public holds static files served as they are (theme-init.js runs before the app is loaded).
+  { ignores: ['eslint.config.js', '**/dist/**', '**/node_modules/**', '**/.vercel/**', 'supabase/.temp/**', 'frontend/public/**'] },
   js.configs.recommended,
   ...tseslint.configs.strictTypeChecked,
   {

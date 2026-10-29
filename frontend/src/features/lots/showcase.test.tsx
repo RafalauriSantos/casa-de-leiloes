@@ -175,4 +175,39 @@ describe('showcase: the Ao vivo dot goes off when a lot ends with the page open 
       await sql("update public.lots set status = 'active' where id = any($1::uuid[])", [closed]);
     }
   });
+
+  it('the storefront checks for a live lot while its tab is visible, and stops while the tab is hidden (B41)', async () => {
+    const reads = vi.spyOn(window, 'fetch');
+    const liveReads = () => reads.mock.calls.filter(([input]) => urlOf(input).includes('status=live')).length;
+    const setVisibility = (value: 'visible' | 'hidden') => {
+      Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => value });
+      document.dispatchEvent(new Event('visibilitychange'));
+    };
+    window.history.replaceState({}, '', '/');
+    const added = vi.spyOn(document, 'addEventListener');
+    const removed = vi.spyOn(document, 'removeEventListener');
+    const view = render(<MemoryRouter><Showcase /></MemoryRouter>);
+    await waitFor(() => { expect(liveReads()).toBeGreaterThanOrEqual(2); }, { timeout: 8_000 });
+    // The check listens for the tab being shown, and the same listener is removed when the storefront leaves (B41).
+    const listener = added.mock.calls.find(([type]) => type === 'visibilitychange')?.[1];
+    expect(listener).toBeDefined();
+
+    setVisibility('hidden');
+    const whileHidden = liveReads();
+    await new Promise((resolve) => setTimeout(resolve, 3_500));
+    expect(liveReads()).toBe(whileHidden);
+
+    setVisibility('visible');
+    await waitFor(() => { expect(liveReads()).toBeGreaterThan(whileHidden); }, { timeout: 8_000 });
+    view.unmount();
+    expect(removed).toHaveBeenCalledWith('visibilitychange', listener);
+    const afterLeaving = liveReads();
+    setVisibility('visible');
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    expect(liveReads()).toBe(afterLeaving);
+    added.mockRestore();
+    removed.mockRestore();
+    reads.mockRestore();
+    Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'visible' });
+  }, 30_000);
 });
