@@ -12,8 +12,8 @@ export async function signInAs(page: Page, demo: Demo): Promise<void> {
   await page.goto("/entrar");
   const label =
     demo === "leiloeiro"
-      ? "Entrar como leiloeiro (demo)"
-      : `Entrar como ${demo} (demo)`;
+      ? "Entrar como leiloeiro"
+      : `Entrar como ${demo}`;
   await page.getByRole("button", { name: label }).click();
   await page.waitForURL((url) => url.pathname !== "/entrar");
 }

@@ -65,7 +65,7 @@ describe('AuthPanel', () => {
     const user = userEvent.setup();
     render(<MemoryRouter><AuthPanel /></MemoryRouter>);
 
-    await user.click(screen.getByRole('button', { name: 'Entrar como leiloeiro (demo)' }));
+    await user.click(screen.getByRole('button', { name: 'Entrar como leiloeiro' }));
 
     await waitFor(async () => {
       const { data } = await supabase.auth.getSession();
@@ -95,7 +95,7 @@ describe('AuthPanel', () => {
     render(<App />);
     await waitFor(() => { expect(window.location.pathname).toBe('/entrar'); });
 
-    await user.click(await screen.findByRole('button', { name: 'Entrar como licitante 1 (demo)' }));
+    await user.click(await screen.findByRole('button', { name: 'Entrar como licitante 1' }));
     await waitFor(() => { expect(window.location.pathname).toBe('/carteira'); });
   });
 });
