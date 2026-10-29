@@ -67,7 +67,7 @@ export function AppLayout() {
           <div className="header-end">
             {me !== undefined && bidder && available !== undefined && <HeaderBalance availableCents={available} />}
             {me !== undefined && (
-              <AccountMenu name={me.displayName} roleLabel={bidder ? 'Conta de licitante' : 'Conta de leiloeiro'} availableCents={bidder ? available : undefined} links={links} />
+              <AccountMenu name={me.displayName} roleLabel={bidder ? 'Conta de licitante' : 'Conta de leiloeiro'} links={links} />
             )}
             {auth.status === 'error' && <button type="button" className="link" onClick={() => void signOut()}>Sair</button>}
             {auth.status === 'signed-out' && (onSignIn ? <Link to="/">Voltar aos lotes</Link> : <Link to="/entrar" className="enter-link">Entrar</Link>)}

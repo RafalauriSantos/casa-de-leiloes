@@ -465,3 +465,9 @@ section[aria-label="Auditoria"] > h1 { font-size: 1rem; font-weight: 600; color:
 
 /* The account's name stays in the accessible name on every phone and tablet width: visually hidden where it is not shown. */
 @media (max-width: 900px) { .account-name { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; } }
+
+/* Placeholders use the muted text token: the browser default is too faint on the dark field (B43). */
+input::placeholder { color: var(--muted); opacity: 1; }
+
+/* The result of an action the person just took: a block they cannot miss, not a plain line (B43). */
+.notice-ok { border: 1px solid var(--live); border-left-width: 4px; border-radius: 8px; background: var(--card); padding: 0.6rem 0.9rem; margin: 0.75rem 0; overflow-wrap: anywhere; }
