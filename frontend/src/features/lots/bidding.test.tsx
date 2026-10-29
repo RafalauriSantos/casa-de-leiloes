@@ -109,12 +109,14 @@ describe('live room: bidding in the UI', () => {
     const outbid = await api(`/api/lots/${lotId}/bids`, bruno.token, { method: 'POST', body: { amountCents: 55_000 } });
     expect(outbid.status).toBe(201);
     expect(await screen.findByText('Você foi superado.', undefined, { timeout: 8_000 })).toBeTruthy();
-    // The current bid is shown in the room (and again in the history).
+    // The current bid is shown in the room (and again in the history), and the bid field and button advance to the new minimum.
     expect(within(room).getByText('Lance atual').closest('div')?.textContent).toContain('R$ 550,00');
+    expect(within(form).getByLabelText<HTMLInputElement>('Seu lance (R$)').value).toBe('600,00');
+    expect(within(form).getByRole('button', { name: 'Dar lance de R$ 600,00' })).toBeTruthy();
     expect(within(room).getAllByText('Você').length).toBeGreaterThanOrEqual(1);
   }, 30_000);
 
-  it('a refused bid shows the exact reason and keeps the amount typed', async () => {
+  it('a refused bid shows the exact reason, links to the wallet when funds are short, and keeps the amount typed', async () => {
     const user = userEvent.setup();
     const auctioneer = await newAccount('auctioneer');
     const lotId = await liveLotFor(auctioneer.token);
@@ -128,6 +130,7 @@ describe('live room: bidding in the UI', () => {
     fireEvent.change(input, { target: { value: '500,00' } });
     await user.click(within(form).getByRole('button', { name: /^Dar lance/ }));
     expect((await within(form).findByRole('alert')).textContent).toBe('Saldo disponível insuficiente: você tem R$ 100,00 para lances.');
+    expect(within(form).getByRole('link', { name: 'Depositar na carteira' }).getAttribute('href')).toBe('/carteira');
     expect(input.value).toBe('500,00');
   });
 

@@ -1,7 +1,7 @@
 import { MAX_INCREMENT_CENTS, MAX_STARTING_BID_CENTS, type LotInput, type OwnLot } from '@casa/contracts';
 import { useState, type SyntheticEvent } from 'react';
 import { ApiRequestError } from '@/lib/api-client';
-import { formatBRL, parseReaisToCents } from '@/lib/format';
+import { formatBRL, formatReaisInput, parseReaisToCents } from '@/lib/format';
 import { toInstant, toLocalField } from '../time';
 
 export interface LotFormValues {
@@ -20,11 +20,38 @@ interface Props {
   onDone: (lot: OwnLot) => void;
 }
 
-/** The form's values as the API receives them; `undefined` when a field is not a valid amount or time. */
-export function toLotInput(values: LotFormValues): LotInput | undefined {
+/** Returns the validation message when a field is not valid or exceeds the ceiling, or undefined when acceptable. */
+export function lotFormError(values: LotFormValues): string | undefined {
+  const title = values.title.trim();
+  if (title.length < 3) return 'O título precisa ter pelo menos 3 caracteres.';
+  if (title.length > 120) return 'O título pode ter até 120 caracteres.';
   const startingBidCents = parseReaisToCents(values.startingBid);
   const incrementCents = parseReaisToCents(values.increment);
-  if (values.startsAt === '' || values.endsAt === '' || startingBidCents === undefined || incrementCents === undefined) return undefined;
+  if (
+    values.startsAt === '' ||
+    values.endsAt === '' ||
+    Number.isNaN(Date.parse(toInstant(values.startsAt))) ||
+    Number.isNaN(Date.parse(toInstant(values.endsAt))) ||
+    startingBidCents === undefined ||
+    incrementCents === undefined
+  ) {
+    return 'Confira o valor (por exemplo 500,00) e as datas.';
+  }
+  if (startingBidCents > MAX_STARTING_BID_CENTS) {
+    return `O lance inicial pode ser de até ${formatBRL(MAX_STARTING_BID_CENTS)}.`;
+  }
+  if (incrementCents > MAX_INCREMENT_CENTS) {
+    return `O incremento mínimo pode ser de até ${formatBRL(MAX_INCREMENT_CENTS)}.`;
+  }
+  return undefined;
+}
+
+/** The form's values as the API receives them; `undefined` when a field is not a valid amount or time. */
+export function toLotInput(values: LotFormValues): LotInput | undefined {
+  if (lotFormError(values) !== undefined) return undefined;
+  const startingBidCents = parseReaisToCents(values.startingBid);
+  const incrementCents = parseReaisToCents(values.increment);
+  if (startingBidCents === undefined || incrementCents === undefined) return undefined;
   return {
     title: values.title.trim(),
     startsAt: toInstant(values.startsAt),
@@ -39,8 +66,8 @@ export function valuesOf(lot: OwnLot): LotFormValues {
     title: lot.title,
     startsAt: toLocalField(lot.startsAt),
     endsAt: toLocalField(lot.endsAt),
-    startingBid: String(lot.startingBidCents / 100).replace('.', ','),
-    increment: String(lot.incrementCents / 100).replace('.', ','),
+    startingBid: formatReaisInput(lot.startingBidCents),
+    increment: formatReaisInput(lot.incrementCents),
   };
 }
 
@@ -85,9 +112,10 @@ export function LotForm({ initial, submitLabel, onSubmit, onDone }: Props) {
 
   async function submit(event: SyntheticEvent<HTMLFormElement>) {
     event.preventDefault();
+    const message = lotFormError(values);
     const input = toLotInput(values);
-    if (!input) {
-      setError('Confira o valor (por exemplo 500,00) e as datas.');
+    if (message || !input) {
+      setError(message ?? 'Confira o valor (por exemplo 500,00) e as datas.');
       return;
     }
     setBusy(true);

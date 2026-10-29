@@ -6,7 +6,7 @@ import { formatBRL } from '@/lib/format';
 import { createLot } from '../api';
 import { formatWhen, toInstant, toLocalField } from '../time';
 import { CatalogSearch } from './CatalogSearch';
-import { LotFields, toLotInput, type LotFormValues } from './LotForm';
+import { LotFields, lotFormError, toLotInput, type LotFormValues } from './LotForm';
 
 const STEPS = ['Item', 'Dados', 'Publicar'] as const;
 const MINUTE = 60_000;
@@ -47,8 +47,9 @@ export function NewLotFlow({ token }: { token: string }) {
 
   function review(event: SyntheticEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!toLotInput(values)) {
-      setError('Confira o valor (por exemplo 500,00) e as datas.');
+    const message = lotFormError(values);
+    if (message) {
+      setError(message);
       return;
     }
     setError(undefined);

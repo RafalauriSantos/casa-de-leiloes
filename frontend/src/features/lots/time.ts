@@ -10,7 +10,8 @@ export const formatWhen = (iso: string): string => WHEN.format(new Date(iso));
  * The value of a datetime-local field is a wall-clock time in Brazil. It is sent with the explicit
  * offset, so the server stores the right instant whatever the browser's own zone is.
  */
-export const toInstant = (local: string): string => `${local}:00${BRAZIL_OFFSET}`;
+export const toInstant = (local: string): string =>
+  /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(local) ? `${local}:00${BRAZIL_OFFSET}` : `${local}${BRAZIL_OFFSET}`;
 
 /** The inverse, for editing: the instant as the field's value. */
 export function toLocalField(iso: string): string {

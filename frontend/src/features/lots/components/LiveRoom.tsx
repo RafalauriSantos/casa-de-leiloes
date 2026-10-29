@@ -1,8 +1,8 @@
-import { BID_LIMIT_MESSAGE, MAX_BIDS_PER_LOT, type BidReceipt, type LiveLot } from '@casa/contracts';
+import { BID_LIMIT_MESSAGE, MAX_BIDS_PER_LOT, type BidReceipt, type ErrorCode, type LiveLot } from '@casa/contracts';
 import { useEffect, useRef, useState, type SyntheticEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { ApiRequestError } from '@/lib/api-client';
-import { formatBRL, parseReaisToCents } from '@/lib/format';
+import { formatBRL, formatReaisInput, parseReaisToCents } from '@/lib/format';
 import { useAuth } from '@/features/auth';
 import { fetchWallet } from '@/features/wallet';
 import { fetchLive, placeBid } from '../api';
@@ -25,7 +25,7 @@ function bidButtonLabel(amount: string): string {
 
 type Load = { status: 'loading' } | { status: 'error'; message: string } | { status: 'ready'; room: LiveLot };
 
-export function LiveRoom({ lotId }: { lotId: string }) {
+export function LiveRoom({ lotId, onStateChange }: { lotId: string; onStateChange?: (state: LiveLot['state']) => void }) {
   const auth = useAuth();
   const token = auth.status === 'signed-in' ? auth.token : undefined;
   const role = auth.status === 'signed-in' ? auth.me.role : undefined;
@@ -37,7 +37,7 @@ export function LiveRoom({ lotId }: { lotId: string }) {
   const [stale, setStale] = useState(false);
   const [amount, setAmount] = useState('');
   const [busy, setBusy] = useState(false);
-  const [bidError, setBidError] = useState<string>();
+  const [bidError, setBidError] = useState<{ message: string; code?: ErrorCode }>();
   /** The bidder's available balance, shown under the bid form (the canvas's "Disponível para lances"). */
   const [available, setAvailable] = useState<number>();
   // The receipts belong to the user named in `owner`, so another user never sees them, not even for one render.
@@ -45,6 +45,10 @@ export function LiveRoom({ lotId }: { lotId: string }) {
   const receipts = stored.owner === userId ? stored.list : [];
   const signedInUser = useRef(userId);
   signedInUser.current = userId;
+  const onStateChangeRef = useRef(onStateChange);
+  onStateChangeRef.current = onStateChange;
+  /** Whether the bidder has typed a custom value in the bid field; while false, polls follow `nextMinimumCents`. */
+  const edited = useRef(false);
   useEffect(() => {
     setStored({ owner: userId, list: userId ? readReceipts(userId, lotId) : [] });
   }, [userId, lotId]);
@@ -54,11 +58,12 @@ export function LiveRoom({ lotId }: { lotId: string }) {
   const readCount = useRef(0);
   const applied = useRef(0);
 
-  // Poll the room every 3 s, pause while the tab is hidden, and show when the connection is failing.
+  // Poll the room every 3 s while it has not ended, pause while the tab is hidden, and show when the connection is failing.
   useEffect(() => {
     // Refs, not plain variables: the callbacks below read them after awaits.
     const alive = { current: true };
     const inFlight = { current: false };
+    let ended = false;
     const read = async () => {
       if (inFlight.current) return;
       inFlight.current = true;
@@ -73,21 +78,23 @@ export function LiveRoom({ lotId }: { lotId: string }) {
         if (mine > applied.current) {
           applied.current = mine;
           setLoad({ status: 'ready', room });
+          onStateChangeRef.current?.(room.state);
+          if (!edited.current) setAmount(formatReaisInput(room.nextMinimumCents));
         }
+        ended = room.state === 'ended';
         setStale(false);
-        setAmount((current) => (current === '' ? (room.nextMinimumCents / 100).toFixed(2).replace('.', ',') : current));
       } catch (error: unknown) {
         inFlight.current = false;
         if (!alive.current) return;
         setStale(true);
         setLoad((current) => (current.status === 'ready' ? current : { status: 'error', message: error instanceof ApiRequestError ? error.message : 'Não foi possível carregar a sala.' }));
       }
-      // Unmounted reads already returned above, so only the tab's visibility is left to check here.
-      if (document.visibilityState === 'visible') timer.current = setTimeout(() => void read(), POLL_MS);
+      // Unmounted reads already returned above, so only the tab's visibility and whether the lot ended are left to check here.
+      if (!ended && document.visibilityState === 'visible') timer.current = setTimeout(() => void read(), POLL_MS);
     };
     const onVisible = () => {
       clearTimeout(timer.current);
-      if (document.visibilityState === 'visible') void read();
+      if (!ended && document.visibilityState === 'visible') void read();
     };
     void read();
     document.addEventListener('visibilitychange', onVisible);
@@ -108,18 +115,20 @@ export function LiveRoom({ lotId }: { lotId: string }) {
     return () => { cancelled = true; };
   }, [token, role, load.status === 'ready' ? load.room.bidCount : 0]);
 
-  // Re-render every second so the countdown moves.
+  // Re-render every second while the lot is live so the countdown moves.
+  const isLive = load.status === 'ready' && load.room.state === 'live';
   useEffect(() => {
+    if (!isLive) return;
     const id = setInterval(() => { setNow(Date.now()); }, 1000);
     return () => { clearInterval(id); };
-  }, []);
+  }, [isLive]);
 
   async function submit(event: SyntheticEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!token || !userId) return;
     const cents = parseReaisToCents(amount);
     if (cents === undefined) {
-      setBidError('Informe o lance em reais, por exemplo 550,00.');
+      setBidError({ message: 'Informe o lance em reais, por exemplo 550,00.' });
       return;
     }
     setBusy(true);
@@ -133,11 +142,17 @@ export function LiveRoom({ lotId }: { lotId: string }) {
       if (signedInUser.current === userId) {
         readCount.current++;
         applied.current = readCount.current;
+        edited.current = false;
         setLoad({ status: 'ready', room: accepted });
-        setAmount((accepted.nextMinimumCents / 100).toFixed(2).replace('.', ','));
+        onStateChangeRef.current?.(accepted.state);
+        setAmount(formatReaisInput(accepted.nextMinimumCents));
       }
     } catch (error: unknown) {
-      setBidError(error instanceof ApiRequestError ? error.message : 'Não foi possível registrar o lance.');
+      setBidError(
+        error instanceof ApiRequestError
+          ? { message: error.message, code: error.code }
+          : { message: 'Não foi possível registrar o lance.' },
+      );
     } finally {
       setBusy(false);
     }
@@ -198,12 +213,33 @@ export function LiveRoom({ lotId }: { lotId: string }) {
         <form onSubmit={(event) => void submit(event)} aria-label="Dar lance">
           <div className="bid-head">
             <label htmlFor="bid-amount">Seu lance (R$)</label>
-            <button type="button" className="link" onClick={() => { setAmount((room.nextMinimumCents / 100).toFixed(2).replace('.', ',')); setBidError(undefined); }}>
+            <button
+              type="button"
+              className="link"
+              onClick={() => {
+                edited.current = false;
+                setAmount(formatReaisInput(room.nextMinimumCents));
+                setBidError(undefined);
+              }}
+            >
               Usar lance mínimo
             </button>
           </div>
-          <input id="bid-amount" value={amount} onChange={(event) => { setAmount(event.target.value); setBidError(undefined); }} inputMode="decimal" required />
-          {bidError && <p role="alert">{bidError}</p>}
+          <input
+            id="bid-amount"
+            value={amount}
+            onChange={(event) => {
+              edited.current = true;
+              setAmount(event.target.value);
+              setBidError(undefined);
+            }}
+            inputMode="decimal"
+            required
+          />
+          {bidError && <p role="alert">{bidError.message}</p>}
+          {bidError?.code === 'insufficient_funds' && (
+            <p><Link to="/carteira">Depositar na carteira</Link></p>
+          )}
           <button type="submit" disabled={busy || remaining <= 0}>
             {busy ? 'Enviando…' : bidButtonLabel(amount)}
           </button>
