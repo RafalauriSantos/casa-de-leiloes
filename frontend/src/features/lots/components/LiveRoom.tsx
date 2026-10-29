@@ -1,6 +1,6 @@
 import { BID_LIMIT_MESSAGE, MAX_BIDS_PER_LOT, type BidReceipt, type ErrorCode, type LiveLot } from '@casa/contracts';
 import { useEffect, useRef, useState, type SyntheticEvent } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { ApiRequestError } from '@/lib/api-client';
 import { formatBRL, formatReaisInput, parseReaisToCents } from '@/lib/format';
 import { useAuth } from '@/features/auth';
@@ -10,6 +10,13 @@ import { addReceipt, readReceipts } from '../receipts';
 import { clockOffset, formatRemaining, formatWhen, remainingMs, STATE_LABEL } from '../time';
 
 const POLL_MS = 3_000;
+/** While the connection fails, the room waits longer each time, up to this (B42). */
+const MAX_RETRY_MS = 30_000;
+
+/** The wait before the next read: doubles after a failure, up to MAX_RETRY_MS, and goes back to POLL_MS after a success. */
+export function nextPollDelay(current: number, ok: boolean): number {
+  return ok ? POLL_MS : Math.min(current * 2, MAX_RETRY_MS);
+}
 
 /** Why a lot takes no bid yet or any more, in the words the server uses for the same refusals (bidding rules). A cancelled lot has no room: the public read hides it (D17). */
 const NOT_LIVE_MESSAGE: Partial<Record<LiveLot['state'], string>> = {
@@ -61,6 +68,7 @@ export function LiveRoom({ lotId }: { lotId: string }) {
     // Refs, not plain variables: the callbacks below read them after awaits.
     const alive = { current: true };
     const inFlight = { current: false };
+    let delay = POLL_MS;
     const read = async () => {
       if (inFlight.current) return;
       inFlight.current = true;
@@ -78,9 +86,11 @@ export function LiveRoom({ lotId }: { lotId: string }) {
           if (!edited.current) setAmount(formatReaisInput(room.nextMinimumCents));
         }
         setStale(false);
+        delay = nextPollDelay(delay, true);
       } catch (error: unknown) {
         inFlight.current = false;
         if (!alive.current) return;
+        delay = nextPollDelay(delay, false);
         setStale(true);
         setLoad((current) => (current.status === 'ready'
           ? current
@@ -91,7 +101,7 @@ export function LiveRoom({ lotId }: { lotId: string }) {
           }));
       }
       // Unmounted reads already returned above, so only the tab's visibility is left to check here.
-      if (document.visibilityState === 'visible') timer.current = setTimeout(() => void read(), POLL_MS);
+      if (document.visibilityState === 'visible') timer.current = setTimeout(() => void read(), delay);
     };
     const onVisible = () => {
       clearTimeout(timer.current);
@@ -126,6 +136,13 @@ export function LiveRoom({ lotId }: { lotId: string }) {
     if (seenEnd.current !== '' && Date.parse(endsAt) > Date.parse(seenEnd.current)) setMovedTo(endsAt);
     seenEnd.current = endsAt;
   }, [endsAt]);
+
+  // The Histórico link of the featured lot points here: once the room is on screen, scroll to the history.
+  const { hash } = useLocation();
+  useEffect(() => {
+    if (load.status !== 'ready' || hash !== '#historico') return;
+    document.getElementById('historico')?.scrollIntoView({ block: 'start' });
+  }, [load.status, hash]);
 
   // Re-render every second so the countdown moves.
   useEffect(() => {
@@ -293,7 +310,7 @@ export function LiveRoom({ lotId }: { lotId: string }) {
       {room.state === 'live' && role === undefined && <p>Entre como licitante para dar lances.</p>}
       {role === 'auctioneer' && <p>Leiloeiros não dão lances.</p>}
 
-      <h3>Histórico</h3>
+      <h3 id="historico">Histórico</h3>
       {room.history.length === 0 ? (
         <p>Nenhum lance ainda.</p>
       ) : (

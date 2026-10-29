@@ -4,6 +4,7 @@ import { randomBytes, randomUUID } from 'node:crypto';
 import pg from 'pg';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { App } from '@/app/App';
+import { nextPollDelay } from './components/LiveRoom';
 import { supabase } from '@/lib/supabase';
 
 // The live room, end to end in the UI: real API, real Postgres and Auth, catalog from captured responses.
@@ -467,6 +468,54 @@ describe('live room: bidding in the UI', () => {
     const alert = await within(form).findByRole('alert');
     expect(input.getAttribute('aria-invalid')).toBe('true');
     expect(input.getAttribute('aria-describedby')).toBe(alert.id);
+  });
+
+  it('the room waits longer between reads while the connection fails (B42)', async () => {
+    const auctioneer = await newAccount('auctioneer');
+    const lotId = await liveLotFor(auctioneer.token);
+    const reads: number[] = [];
+    const real = window.fetch.bind(window);
+    const failing = vi.spyOn(window, 'fetch').mockImplementation((input, init) => {
+      const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
+      if (url.includes(`/api/lots/${lotId}/live`)) {
+        reads.push(Date.now());
+        // The first three reads fail; from the fourth on the connection is back.
+        if (reads.length <= 3) return Promise.reject(new TypeError('connection lost'));
+      }
+      return real(input, init);
+    });
+    window.history.replaceState({}, '', `/lotes/${lotId}`);
+    render(<App />);
+    await waitFor(() => { expect(reads.length).toBeGreaterThanOrEqual(5); }, { timeout: 120_000 });
+    failing.mockRestore();
+    const gaps = reads.slice(1).map((time, index) => time - (reads[index] ?? time));
+    // While failing, each wait is longer than the last (6, 12, 24 s); after the first success it is back to 3 s.
+    expect(gaps[1] ?? 0).toBeGreaterThan((gaps[0] ?? 0) * 1.5);
+    expect(gaps[3] ?? 0).toBeLessThan(4_500);
+  }, 150_000);
+
+  it('the wait doubles after each failure up to 30 s, and goes back to 3 s after a success (B42)', () => {
+    expect(nextPollDelay(3_000, false)).toBe(6_000);
+    expect(nextPollDelay(24_000, false)).toBe(30_000);
+    expect(nextPollDelay(30_000, false)).toBe(30_000);
+    expect(nextPollDelay(30_000, true)).toBe(3_000);
+  });
+
+  it('a lot page opened on the history anchor scrolls to the history (B42)', async () => {
+    const auctioneer = await newAccount('auctioneer');
+    const lotId = await liveLotFor(auctioneer.token);
+    const element = Element.prototype as { scrollIntoView?: unknown };
+    const original = element.scrollIntoView;
+    const scrolled = vi.fn();
+    element.scrollIntoView = scrolled;
+    try {
+      window.history.replaceState({}, '', `/lotes/${lotId}#historico`);
+      render(<App />);
+      await screen.findByRole('heading', { name: 'Histórico' });
+      await waitFor(() => { expect(scrolled).toHaveBeenCalled(); });
+    } finally {
+      element.scrollIntoView = original;
+    }
   });
 });
 
