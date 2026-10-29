@@ -50,6 +50,13 @@ describe('AuditView, from data', () => {
     expect(screen.getByText('Cadeia quebrada no lance 2')).toBeTruthy();
   });
 
+  it('marks the bid where the chain breaks in the bid table itself, not only in the line above (B40)', () => {
+    view(report({ chain: { status: 'tampered', brokenAtSeq: 2 }, headline: { kind: 'tampered' } }));
+    const table = screen.getByRole('table', { name: 'Histórico de lances' });
+    expect(within(table).getAllByText('quebra aqui')).toHaveLength(1);
+    expect(within(table).getByText('quebra aqui').closest('tr')?.textContent).toContain('b2b2b2b2b2b2');
+  });
+
   it('shows "Não confirmado" for a head that was not found, without the word adulterado in the headline', () => {
     view(report({ receiptHead: { status: 'not_in_history' }, headline: { kind: 'unconfirmed' } }), HASH('f'));
 
