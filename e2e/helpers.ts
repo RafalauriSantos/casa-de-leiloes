@@ -1,7 +1,7 @@
 import type { Page, APIRequestContext } from "@playwright/test";
 
 /** The demo accounts the login screen offers as shortcuts (real sign-ins, seeded locally). */
-export type Demo = "licitante 1" | "leiloeiro";
+export type Demo = "licitante 1" | "licitante 2" | "leiloeiro";
 
 export async function signInAs(page: Page, demo: Demo): Promise<void> {
   // A signed-in session is redirected away from the sign-in screen, so the session is cleared first.

@@ -30,6 +30,14 @@ test("a bidder who bids too low is told why, on the lot room", async ({
   await signInAs(page, "licitante 1");
   await page.goto(`/lotes/${lot}`);
   const form = page.getByRole("form", { name: "Dar lance" });
+  const leading = page.getByText("Você está ganhando.");
+  await expect(form.or(leading)).toBeVisible();
+  // The leader gets no bid form, so when bidder 1 leads the lot, bidder 2 places the low bid.
+  if (await leading.isVisible()) {
+    await signInAs(page, "licitante 2");
+    await page.goto(`/lotes/${lot}`);
+  }
+  await expect(form).toBeVisible();
   await form.getByLabel("Seu lance (R$)").fill("1,00");
   await form.getByRole("button", { name: /^Dar lance/ }).click();
   // The server's reason, whichever it is for this demo state: below the minimum, already leading, or no funds.

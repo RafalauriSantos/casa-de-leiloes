@@ -90,7 +90,7 @@ Each criterion of the brief's journeys (defined in phase 2 of the delivery proce
 | 7.2 intact or tampered, and where it breaks | `audit.test.ts` ("names ..." cases); `audit.test.tsx` ("shows the tampered headline in an alert, with where the chain breaks") | Covered |
 | 7.3 detects an edited value, a bid removed in the middle, the last bid removed, an inserted bid, a swapped order, a direct database change | `audit.test.ts` ("names an edited amount, bidder and time", "names the seq expected where a bid was removed from the middle", "names the head_seq when the last bid was removed ...", "names a forged bid added at the end", "names two bids whose order was swapped"); `backend/src/shared/bid-chain.test.ts` | Covered, with a declared limit: a last bid removed with the head rewritten before its publication is caught only by the bidder's receipt (README, D22) |
 | 7.4 no personal data, not even indirect | `audit.test.ts` ("exposes no name, e-mail, user id or secret", "truncates every time to the second") | Covered |
-| 7.5 the technique explained in the README | README, "Histórico de lances" and "Auditoria pública" | Covered (documentation, no test) |
+| 7.5 the technique explained in the README | README, "Como a auditoria funciona" | Covered (documentation, no test) |
 
 ## J8: cross-cutting
 

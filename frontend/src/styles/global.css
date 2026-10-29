@@ -334,7 +334,7 @@ button.secondary { background: transparent; color: var(--ink); border: 1px solid
 .featured-stats strong { font-size: 2.4rem; font-weight: 600; font-variant-numeric: tabular-nums; }
 .featured-stats div + div strong { font-size: 1.5rem; font-weight: 500; }
 .featured-stats div:first-child strong { white-space: nowrap; }
-.featured-actions { display: flex; align-items: center; gap: 1.5rem; }
+.featured-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 1.5rem; }
 .featured-actions a { color: var(--muted); font-size: 1rem; }
 .featured-bid { display: inline-flex; align-items: center; min-height: 52px; padding: 0 2.25rem; border-radius: 6px; background: var(--accent); color: var(--accent-ink); font-size: 1.05rem; font-weight: 500; text-decoration: none; }
 .upcoming-head { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 1rem; margin-bottom: 0.5rem; }
