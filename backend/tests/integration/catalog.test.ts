@@ -39,9 +39,13 @@ describe('GET /api/catalog/search (auctioneers only)', () => {
     expect(await response.json()).toEqual({ code: 'forbidden', message: expect.any(String) as string });
   });
 
-  it('refuses a missing or too short query with 422 before calling the catalog', async () => {
-    expect((await search(null)).status).toBe(422);
+  it('refuses a one-letter query with 422, and answers an empty search with the featured items (B44)', async () => {
     expect((await search('a')).status).toBe(422);
+    const featured = await search(null);
+    expect(featured.status).toBe(200);
+    const { items } = (await featured.json()) as SearchPage;
+    expect(items.map((item) => item.title)).toContain('Relógio de carruagem');
+    expect(items.length).toBe(6);
   });
 
   it('returns the public-domain items with an image, as the catalog presents them', async () => {
@@ -118,6 +122,17 @@ describe('GET /api/catalog/search (auctioneers only)', () => {
       expect(((await response.json()) as { code: string }).code).toBe('catalog_unavailable');
     } finally {
       await unreachable.close();
+    }
+  });
+
+  it('answers 503 for the featured list too when the Met is down, never an empty list (B44, no fail-open)', async () => {
+    met.objectsMode('down');
+    try {
+      const response = await search(null);
+      expect(response.status).toBe(503);
+      expect(((await response.json()) as { code: string }).code).toBe('catalog_unavailable');
+    } finally {
+      met.objectsMode('ok');
     }
   });
 

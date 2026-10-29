@@ -4,8 +4,9 @@ import { authMiddleware, type AuthEnv } from '../../shared/auth';
 import type { Queryable } from '../../shared/db';
 import { AppError } from '../../shared/errors';
 import { requireRole } from '../identity';
-import { searchItems } from './met-client';
+import { fetchItem, searchItems } from './met-client';
 import { catalogSearchQuery } from './schemas';
+import { FEATURED_ITEM_IDS } from './featured';
 
 export function catalogRoutes(deps: { db: Queryable; config: Config }): Hono<AuthEnv> {
   const { db, config } = deps;
@@ -16,6 +17,10 @@ export function catalogRoutes(deps: { db: Queryable; config: Config }): Hono<Aut
     async (c) => {
       const query = catalogSearchQuery.safeParse({ q: c.req.query('q') ?? '', page: c.req.query('page') ?? '1' });
       if (!query.success) throw new AppError('validation_error', query.error.issues.map((issue) => issue.message).join(' '));
+      if (query.data.q === '') {
+        const items = await Promise.all(FEATURED_ITEM_IDS.map((id) => fetchItem(config.metApiUrl, id)));
+        return c.json({ items, total: items.length, page: 1, pages: 1, hasNext: false });
+      }
       return c.json(await searchItems(config.metApiUrl, query.data.q, query.data.page));
     },
   );

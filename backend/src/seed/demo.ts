@@ -1,5 +1,6 @@
 import { DEMO_ACCOUNTS } from '@casa/contracts';
 import type { Db } from '../shared/db';
+import { translateTitle } from '../modules/catalog';
 
 /**
  * The demo data the brief asks for (criterion 8.1): one auctioneer, two bidders with balance, one live lot with bids.
@@ -220,7 +221,7 @@ async function insertLot(deps: SeedDeps, auctioneerId: string, item: DemoItem, s
                               starts_at, ends_at, starting_bid_cents, increment_cents)
      values ($1, $2, $3, $4, $5, '{}', ${startsAt}, now() + interval '30 days', 50000, 5000)
      returning id`,
-    [auctioneerId, item.externalId, item.title, item.imageUrl, item.sourceUrl],
+    [auctioneerId, item.externalId, translateTitle(item.title), item.imageUrl, item.sourceUrl],
   );
   if (!row) throw new Error('seed: the lot was not created');
   return row.id;
