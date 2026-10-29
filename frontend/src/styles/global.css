@@ -471,3 +471,8 @@ input::placeholder { color: var(--muted); opacity: 1; }
 
 /* The result of an action the person just took: a block they cannot miss, not a plain line (B43). */
 .notice-ok { border: 1px solid var(--live); border-left-width: 4px; border-radius: 8px; background: var(--card); padding: 0.6rem 0.9rem; margin: 0.75rem 0; overflow-wrap: anywhere; }
+
+/* The sign-in screen: the theme switch is a round icon button without underline, the demo shortcuts are centred (B45). */
+button.theme-toggle-icon { text-decoration: none; color: var(--ink); border: 1px solid var(--line); border-radius: 50%; }
+.demo-accounts { justify-content: center; text-align: center; }
+.demo-accounts button.link { justify-content: center; text-align: center; }

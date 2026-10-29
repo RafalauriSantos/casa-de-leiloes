@@ -9,6 +9,8 @@ import { LotCard } from './LotCard';
 
 /** Same cadence as the live room: a lot that ends or starts while the page is open changes the dot within this time. */
 const LIVE_CHECK_MS = 3_000;
+/** The featured lot moves on to the next live lot this often, looping over them (B45). */
+const CAROUSEL_MS = 5_000;
 
 const TABS: Array<{ value: ShowcaseStatus; label: string }> = [
   { value: 'live', label: 'Ao vivo' },
@@ -34,8 +36,15 @@ export function Showcase() {
   const [attempt, setAttempt] = useState(0);
   /** Whether a lot is open right now. Unknown or failed reads count as none: the tab never claims a live lot it has not seen. */
   const [hasLive, setHasLive] = useState(false);
-  /** The first lot open right now, shown as the featured lot of the showcase. */
-  const [liveLot, setLiveLot] = useState<LotSummary>();
+  /** Every lot open right now; the featured block shows one at a time, moving on in a loop (B45). */
+  const [liveLots, setLiveLots] = useState<LotSummary[]>([]);
+  const [liveIndex, setLiveIndex] = useState(0);
+  const liveLot = liveLots.length > 0 ? liveLots[liveIndex % liveLots.length] : undefined;
+  const featuredIds = new Set(liveLots.map((lot) => lot.id));
+  // The block is paused while a person points at it or focuses it, and never moves when they ask for less motion (B45).
+  const [paused, setPaused] = useState(false);
+  // A button holds the block still for anyone who cannot hover, or who needs it still (WCAG 2.2.2).
+  const [held, setHeld] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -60,13 +69,13 @@ export function Showcase() {
         .then((lots) => {
           if (!cancelled && request === latest) {
             setHasLive(lots.length > 0);
-            setLiveLot(lots[0]);
+            setLiveLots(lots);
           }
         })
         .catch(() => {
           if (!cancelled && request === latest) {
             setHasLive(false);
-            setLiveLot(undefined);
+            setLiveLots([]);
           }
         });
     };
@@ -79,6 +88,18 @@ export function Showcase() {
       document.removeEventListener('visibilitychange', check);
     };
   }, [attempt]);
+
+  useEffect(() => {
+    const count = liveLots.length;
+    const reducedMotion = typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (count < 2 || paused || held || reducedMotion) return;
+    const timer = setInterval(() => { setLiveIndex((index) => (index + 1) % count); }, CAROUSEL_MS);
+    return () => { clearInterval(timer); };
+  }, [liveLots.length, paused, held]);
+
+  // On the live tab the featured lots are above the list, so the list does not repeat them (B45).
+  // Without a search, the live lots are above the list; a search lists what it finds, live lots included.
+  const listed = tab === 'live' && query === '' && state.status === 'ready' ? state.lots.filter((lot) => !featuredIds.has(lot.id)) : state.status === 'ready' ? state.lots : [];
 
   return (
     <section aria-label="Vitrine">
@@ -93,11 +114,20 @@ export function Showcase() {
         </form>
       </div>
       {liveLot && (
-        <section className="featured" aria-label="Lote ao vivo em destaque">
-          <img src={liveLot.imageUrl} alt="" />
+        <section
+          className="featured"
+          aria-label="Lote ao vivo em destaque"
+          onMouseEnter={() => { setPaused(true); }}
+          onMouseLeave={() => { setPaused(false); }}
+          onFocus={() => { setPaused(true); }}
+          onBlur={() => { setPaused(false); }}
+        >
+          <Link to={`/lotes/${liveLot.id}`} className="featured-cover" aria-hidden="true" tabIndex={-1}>
+            <img src={liveLot.imageUrl} alt="" />
+          </Link>
           <div className="featured-body">
             <span className="featured-status">Ao vivo agora</span>
-            <p className="featured-title">{liveLot.title}</p>
+            <Link to={`/lotes/${liveLot.id}`} className="featured-title">{liveLot.title}</Link>
             <div className="featured-stats">
               <div><span>Lance atual</span><strong>{formatBRL(liveLot.currentAmountCents ?? liveLot.startingBidCents)}</strong></div>
               <div><span>Termina em</span><strong>{formatWhen(liveLot.endsAt)}</strong></div>
@@ -105,6 +135,8 @@ export function Showcase() {
             <div className="featured-actions">
               <Link className="featured-bid" to={`/lotes/${liveLot.id}`}>{isAuctioneer ? 'Ver lote' : 'Dar lance'}</Link>
               <Link to={`/lotes/${liveLot.id}#historico`}>Histórico</Link>
+              <button type="button" className="link" onClick={() => { setLiveIndex((index) => (index + 1) % liveLots.length); }}>Próximo lote</button>
+              <button type="button" className="link" onClick={() => { setHeld((value) => !value); }}>{held ? 'Retomar destaque' : 'Pausar destaque'}</button>
             </div>
           </div>
         </section>
@@ -143,9 +175,12 @@ export function Showcase() {
             )}
           </div>
         )}
-        {state.status === 'ready' && state.lots.length > 0 && (
+        {state.status === 'ready' && state.lots.length > 0 && listed.length === 0 && (
+          <p>Todos os lotes ao vivo estão no destaque acima.</p>
+        )}
+        {listed.length > 0 && (
           <div className="lot-rows">
-            {state.lots.map((lot) => <LotCard key={lot.id} lot={lot} />)}
+            {listed.map((lot) => <LotCard key={lot.id} lot={lot} />)}
           </div>
         )}
       </section>

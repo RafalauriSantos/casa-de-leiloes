@@ -80,7 +80,7 @@ describe('bidder journey', () => {
     // Sign out: the wallet is closed and the login is offered
     await user.click(screen.getByRole('button', { expanded: false }));
     await user.click(screen.getByRole('button', { name: 'Sair' }));
-    expect(await screen.findByRole('heading', { name: 'Entrar' })).toBeTruthy();
+    expect(await screen.findByRole('heading', { name: 'Acesse sua conta' })).toBeTruthy();
     expect(screen.queryByRole('heading', { name: 'Carteira' })).toBeNull();
 
     // A wrong password gives one generic message
@@ -163,7 +163,7 @@ describe('visitor', () => {
   it('is sent to the login from the wallet and sees the not-found page for unknown routes', async () => {
     window.history.replaceState({}, '', '/carteira');
     const { unmount } = render(<App />);
-    expect(await screen.findByRole('heading', { name: 'Entrar' })).toBeTruthy();
+    expect(await screen.findByRole('heading', { name: 'Acesse sua conta' })).toBeTruthy();
     unmount();
 
     window.history.replaceState({}, '', '/nao-existe');

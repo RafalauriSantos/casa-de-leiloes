@@ -85,7 +85,7 @@ describe('the showcase error state (2.5)', () => {
     await user.click(screen.getByRole('button', { name: 'Tentar de novo' }));
     // The list is back when it shows a card or the empty hint; the alert alone also goes away while it loads.
     await waitFor(() => {
-      expect(screen.queryAllByRole('article').length > 0 || screen.queryByText(/Nenhum lote ao vivo agora/) !== null).toBe(true);
+      expect(screen.queryAllByRole('article').length > 0 || screen.queryByText(/Nenhum lote ao vivo agora|Todos os lotes ao vivo estão no destaque acima/) !== null).toBe(true);
     });
     expect(screen.queryByRole('alert')).toBeNull();
   });

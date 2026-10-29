@@ -110,6 +110,7 @@ Each criterion of the brief's journeys (defined in phase 2 of the delivery proce
 | 8.12 the featured lot's Histórico link opens the lot's bid history; a live room that cannot read waits longer between reads (B42) | `frontend/src/features/lots/showcase.test.tsx` (the link); `frontend/src/features/lots/bidding.test.tsx` (the growing wait) | Covered |
 | 8.13 the account menu shows the role without repeating the balance; the publish notice is a visible block; the placeholders are legible in the dark theme (B43, first part) | `frontend/src/journey.test.tsx` (the open menu shows the role and no balance, checked under a mutation that puts the balance back); the notice and the placeholder were checked on screen and by measurement | Open |
 | 8.14 an empty search shows the featured items; the Met's titles are translated for the known terms, and the rest stays in English (B44, D48) | `backend/src/modules/catalog/translate.test.ts`; `backend/tests/integration/catalog.test.ts` (the featured items on an empty search) | Covered |
+| 8.15 the featured block shows the live lots in a loop, and the list below does not repeat them; the sign-in screen names its heading once and centres its shortcuts (B45) | `frontend/src/features/lots/showcase.test.tsx` (the carousel, mutated for the rotation and the filter); the sign-in look was checked on screen | Covered |
 
 ## J9: optionals of the brief (section 05)
 
