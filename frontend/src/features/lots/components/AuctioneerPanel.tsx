@@ -15,7 +15,7 @@ export function AuctioneerPanel({ token }: { token: string }) {
         <h1>Painel do leiloeiro</h1>
         <Link className="my-lot-action" to="/leiloeiro/novo">Novo lote</Link>
       </header>
-      {notice && <p role="status">{notice}</p>}
+      {notice && <p role="status" className="notice-ok">{notice}</p>}
       <OwnLots token={token} />
     </section>
   );

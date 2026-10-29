@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { signOut } from '@/features/auth';
-import { formatBRL } from '@/lib/format';
 import { ThemeToggle } from './ThemeToggle';
 
 export type NavItem = { to: string; label: string };
@@ -9,12 +8,11 @@ export type NavItem = { to: string; label: string };
 interface Props {
   name: string;
   roleLabel: string;
-  availableCents?: number;
   links: NavItem[];
 }
 
 /** The account: the name opens a panel with who is signed in, the places of their role (on a phone, where the header has no links), the theme and the exit. */
-export function AccountMenu({ name, roleLabel, availableCents, links }: Props) {
+export function AccountMenu({ name, roleLabel, links }: Props) {
   const [open, setOpen] = useState(false);
   const root = useRef<HTMLDivElement>(null);
   const button = useRef<HTMLButtonElement>(null);
@@ -51,7 +49,7 @@ export function AccountMenu({ name, roleLabel, availableCents, links }: Props) {
         <div role="dialog" aria-label="Menu da conta" className="account-panel">
           <div className="account-who">
             <strong>{name}</strong>
-            <span>{roleLabel}{availableCents === undefined ? '' : ` · saldo ${formatBRL(availableCents)}`}</span>
+            <span>{roleLabel}</span>
           </div>
           <nav aria-label="Seus lugares" className="account-nav">
             {links.map((link) => <NavLink key={link.to} to={link.to} end>{link.label}</NavLink>)}

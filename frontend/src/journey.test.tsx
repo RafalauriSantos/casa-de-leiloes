@@ -63,9 +63,13 @@ describe('bidder journey', () => {
     await waitFor(() => { expect(within(screen.getByLabelText('Saldos')).getAllByText('R$ 350,00')).toHaveLength(2); });
 
     // The account menu names the account and its role, offers the bidder's places, and closes with Escape
+    // The balance reaches the header only after the wallet loads; wait for it, so the menu is open with the balance known.
+    await screen.findByText('Saldo');
     await user.click(screen.getByRole('button', { expanded: false }));
     const menu = screen.getByRole('dialog', { name: 'Menu da conta' });
     expect(within(menu).getByText('Conta de licitante', { exact: false })).toBeTruthy();
+    // The balance is in the header; the menu names the role only (B43).
+    expect(within(menu).queryByText(/saldo/i)).toBeNull();
     expect(within(menu).getByRole('link', { name: 'Meus arremates' })).toBeTruthy();
     await user.tab();
     expect(menu.contains(document.activeElement)).toBe(true);
