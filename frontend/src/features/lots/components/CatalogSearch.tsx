@@ -1,5 +1,5 @@
 import { CATALOG_SEARCH_WINDOW, type CatalogPage, type ItemSummary } from '@casa/contracts';
-import { useState, type SyntheticEvent } from 'react';
+import { useEffect, useState, type SyntheticEvent } from 'react';
 import { ApiRequestError } from '@/lib/api-client';
 import { searchCatalog } from '../api';
 
@@ -39,6 +39,11 @@ export function CatalogSearch({ token, onPick }: Props) {
     void load(term, 1);
   }
 
+  // Before anything is typed, the screen shows the featured items of the catalog (B44).
+  useEffect(() => {
+    void load('', 1);
+  }, []);
+
   function search(event: SyntheticEvent<HTMLFormElement>) {
     event.preventDefault();
     run(q.trim());
@@ -65,10 +70,14 @@ export function CatalogSearch({ token, onPick }: Props) {
       {results.status === 'ready' && results.page.total === 0 && <p>Nenhum item com imagem pública para essa busca.</p>}
       {results.status === 'ready' && results.page.total > 0 && (
         <>
-          <p className="catalog-count">
-            {results.page.total.toLocaleString('pt-BR')} resultados · Página {results.page.page} de {results.page.pages}
-            {results.page.total > CATALOG_SEARCH_WINDOW && ' · o acervo deixa ver só os primeiros 10.000 resultados de cada busca'}
-          </p>
+          {searched === '' ? (
+            <h3>Destaques do acervo</h3>
+          ) : (
+            <p className="catalog-count">
+              {results.page.total.toLocaleString('pt-BR')} resultados · Página {results.page.page} de {results.page.pages}
+              {results.page.total > CATALOG_SEARCH_WINDOW && ' · o acervo deixa ver só os primeiros 10.000 resultados de cada busca'}
+            </p>
+          )}
           <ul className="catalog-results">
             {results.page.items.map((item) => (
               <li key={item.externalId}>

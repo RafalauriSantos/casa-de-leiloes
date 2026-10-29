@@ -59,7 +59,7 @@ describe('POST /api/lots (auctioneers only)', () => {
     expect(lot.title).toBe('Vaso Sèvres Indien');
     expect(lot.imageUrl).toMatch(/^https:\/\/images\.metmuseum\.org\//);
     expect(lot.sourceUrl).toMatch(/metmuseum\.org/);
-    expect(lot.attributes).toEqual({ artist: 'Sèvres Manufactory', date: '1760', medium: 'Soft-paste porcelain', department: 'European Sculpture and Decorative Arts', culture: null });
+    expect(lot.attributes).toEqual({ artist: 'Sèvres Manufactory', date: '1760', medium: 'Soft-paste porcelain', department: 'Escultura e Artes Decorativas Europeias', culture: null });
     expect(lot.state).toBe('scheduled');
     expect(lot.currentAmountCents).toBeNull();
     expect(lot.bidCount).toBe(0);

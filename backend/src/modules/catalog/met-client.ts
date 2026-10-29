@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { CATALOG_PAGE_SIZE, CATALOG_SEARCH_WINDOW, type CatalogPage, type ItemSummary } from '@casa/contracts';
 import { AppError } from '../../shared/errors';
+import { translateAttribute, translateTitle } from './translate';
 
 /**
  * Client of the Met's public collection API. Every failure of the catalog (network, timeout, 5xx,
@@ -23,23 +24,23 @@ const objectBody = z.object({
   department: z.string().optional(),
   culture: z.string().optional(),
 });
-type MetObject = z.infer<typeof objectBody>;
+export type MetObject = z.infer<typeof objectBody>;
 
 const orNull = (value: string | undefined): string | null => (value && value.trim() !== '' ? value : null);
 
 /** An item we can sell: public domain and with an image. Anything else is not offered. */
-function toItem(object: MetObject): ItemSummary | undefined {
+export function toItem(object: MetObject): ItemSummary | undefined {
   if (!object.isPublicDomain || !object.primaryImageSmall) return undefined;
   return {
     externalId: String(object.objectID),
-    title: object.title,
+    title: translateTitle(object.title),
     imageUrl: object.primaryImageSmall,
     sourceUrl: object.objectURL,
     attributes: {
       artist: orNull(object.artistDisplayName),
       date: orNull(object.objectDate),
       medium: orNull(object.medium),
-      department: orNull(object.department),
+      department: orNull(object.department === undefined ? undefined : translateAttribute(object.department)),
       culture: orNull(object.culture),
     },
   };

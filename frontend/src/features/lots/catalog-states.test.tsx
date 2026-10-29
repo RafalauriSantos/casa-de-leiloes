@@ -119,3 +119,12 @@ describe('the catalog search pages through the whole collection (B24)', () => {
     expect(screen.getByText(/só os primeiros 10\.000 resultados/)).toBeTruthy();
   });
 });
+
+describe('the auctioneer sees items before typing (B44)', () => {
+  it('the new-lot search opens with the featured items, without a search', async () => {
+    const token = await auctioneerToken();
+    render(<CatalogSearch token={token} onPick={() => {}} />);
+    expect(await screen.findByText('Destaques do acervo')).toBeTruthy();
+    expect((await screen.findAllByRole('button', { name: 'Usar este item' })).length).toBe(6);
+  });
+});
