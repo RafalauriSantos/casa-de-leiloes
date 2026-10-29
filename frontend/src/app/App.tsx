@@ -1,4 +1,4 @@
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Link, Route, Routes } from 'react-router-dom';
 import { AuthProvider } from '@/features/auth';
 import { AuctioneerPage } from '@/pages/auctioneer';
 import { NewLotPage } from '@/pages/new-lot';
@@ -26,7 +26,16 @@ export function App() {
             <Route path="carteira" element={<WalletPage />} />
             <Route path="arremates" element={<WinsPage />} />
             <Route path="comprovante/:code" element={<ReceiptPage />} />
-            <Route path="*" element={<p>Página não encontrada.</p>} />
+            <Route
+              path="*"
+              element={(
+                <section>
+                  <h1>Página não encontrada</h1>
+                  <p>O endereço não existe ou mudou.</p>
+                  <Link to="/">Voltar aos lotes</Link>
+                </section>
+              )}
+            />
           </Route>
         </Routes>
       </AuthProvider>
