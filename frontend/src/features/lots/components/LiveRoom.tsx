@@ -23,7 +23,7 @@ function bidButtonLabel(amount: string): string {
   return cents === undefined ? 'Dar lance' : `Dar lance de ${formatBRL(cents)}`;
 }
 
-type Load = { status: 'loading' } | { status: 'error'; message: string } | { status: 'ready'; room: LiveLot };
+type Load = { status: 'loading' } | { status: 'error'; message: string; code?: ErrorCode } | { status: 'ready'; room: LiveLot };
 
 export function LiveRoom({ lotId }: { lotId: string }) {
   const auth = useAuth();
@@ -82,7 +82,13 @@ export function LiveRoom({ lotId }: { lotId: string }) {
         inFlight.current = false;
         if (!alive.current) return;
         setStale(true);
-        setLoad((current) => (current.status === 'ready' ? current : { status: 'error', message: error instanceof ApiRequestError ? error.message : 'Não foi possível carregar a sala.' }));
+        setLoad((current) => (current.status === 'ready'
+          ? current
+          : {
+            status: 'error',
+            message: error instanceof ApiRequestError ? error.message : 'Não foi possível carregar a sala.',
+            code: error instanceof ApiRequestError ? error.code : undefined,
+          }));
       }
       // Unmounted reads already returned above, so only the tab's visibility is left to check here.
       if (document.visibilityState === 'visible') timer.current = setTimeout(() => void read(), POLL_MS);
@@ -109,6 +115,17 @@ export function LiveRoom({ lotId }: { lotId: string }) {
       .catch(() => { if (!cancelled) setAvailable(undefined); });
     return () => { cancelled = true; };
   }, [token, role, load.status === 'ready' ? load.room.bidCount : 0]);
+
+  // A bid in the last two minutes moves the end of the lot (anti-sniping): say so, with the new end.
+  const endsAt = load.status === 'ready' ? load.room.endsAt : undefined;
+  // The end seen before this one; empty until the room has loaded once.
+  const seenEnd = useRef('');
+  const [movedTo, setMovedTo] = useState<string>();
+  useEffect(() => {
+    if (endsAt === undefined) return;
+    if (seenEnd.current !== '' && Date.parse(endsAt) > Date.parse(seenEnd.current)) setMovedTo(endsAt);
+    seenEnd.current = endsAt;
+  }, [endsAt]);
 
   // Re-render every second so the countdown moves.
   useEffect(() => {
@@ -151,11 +168,20 @@ export function LiveRoom({ lotId }: { lotId: string }) {
   }
 
   if (load.status === 'loading') return <p>Carregando a sala…</p>;
-  if (load.status === 'error') return <p role="alert">{load.message}</p>;
+  if (load.status === 'error') {
+    return (
+      <section>
+        <p role="alert">{load.message}</p>
+        {load.code === 'unauthenticated' && <p><Link to="/entrar">Entrar de novo</Link></p>}
+        <p><Link to="/">Voltar aos lotes</Link></p>
+      </section>
+    );
+  }
   const { room } = load;
   const remaining = remainingMs(room.endsAt, offset, now);
   const full = room.bidCount >= MAX_BIDS_PER_LOT;
-  const canBid = room.state === 'live' && role === 'bidder' && !full;
+  // The leader gets no form: a bid from the leader is always refused (already_leading), so the form would only fail.
+  const canBid = room.state === 'live' && role === 'bidder' && !full && room.position !== 'leading';
 
   return (
     <section aria-label="Sala do lote">
@@ -175,10 +201,17 @@ export function LiveRoom({ lotId }: { lotId: string }) {
       {room.state === 'scheduled' && <p>Começa em {formatWhen(room.startsAt)}</p>}
       {room.state === 'ended' && <p>Encerrado em {formatWhen(room.endsAt)}</p>}
       {stale && <p role="status">Conexão instável: a tela pode estar atrasada. Tentando de novo…</p>}
+      {movedTo && <p role="status">O fim do lote foi adiado para {formatWhen(movedTo)}.</p>}
 
       <dl>
-        <div><dt>Lance atual</dt><dd>{room.currentAmountCents === null ? 'nenhum' : formatBRL(room.currentAmountCents)}</dd></div>
-        <div><dt>Mínimo para dar lance</dt><dd>{formatBRL(room.nextMinimumCents)}</dd></div>
+        {room.state === 'ended' ? (
+          <div><dt>Preço final</dt><dd>{room.currentAmountCents === null ? 'Sem lances' : formatBRL(room.currentAmountCents)}</dd></div>
+        ) : (
+          <>
+            <div><dt>Lance atual</dt><dd>{room.currentAmountCents === null ? 'nenhum' : formatBRL(room.currentAmountCents)}</dd></div>
+            <div><dt>Mínimo para dar lance</dt><dd>{formatBRL(room.nextMinimumCents)}</dd></div>
+          </>
+        )}
         <div><dt>Lances</dt><dd>{room.bidCount}</dd></div>
       </dl>
 
@@ -227,8 +260,10 @@ export function LiveRoom({ lotId }: { lotId: string }) {
             }}
             inputMode="decimal"
             required
+            aria-invalid={bidError ? true : undefined}
+            aria-describedby={bidError ? 'bid-error' : undefined}
           />
-          {bidError && <p role="alert">{bidError.message}</p>}
+          {bidError && <p role="alert" id="bid-error">{bidError.message}</p>}
           {bidError?.code === 'insufficient_funds' && (
             <p><Link to="/carteira">Depositar na carteira</Link></p>
           )}

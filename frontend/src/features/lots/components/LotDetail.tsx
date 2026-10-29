@@ -16,19 +16,29 @@ function isWide(): boolean {
 
 export function LotDetail({ id }: { id: string }) {
   const [state, setState] = useState<State>({ status: 'loading' });
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
+    setState({ status: 'loading' });
     fetchLot(id)
       .then((lot) => { if (!cancelled) setState({ status: 'ready', lot }); })
       .catch((error: unknown) => {
         if (!cancelled) setState({ status: 'error', message: error instanceof ApiRequestError ? error.message : 'Erro inesperado.' });
       });
     return () => { cancelled = true; };
-  }, [id]);
+  }, [id, attempt]);
 
   if (state.status === 'loading') return <p>Carregando lote…</p>;
-  if (state.status === 'error') return <p role="alert">{state.message}</p>;
+  if (state.status === 'error') {
+    return (
+      <section>
+        <p role="alert">{state.message}</p>
+        <p><button type="button" className="secondary" onClick={() => { setAttempt((n) => n + 1); }}>Tentar de novo</button></p>
+        <p><Link to="/">Voltar aos lotes</Link></p>
+      </section>
+    );
+  }
   const { lot } = state;
   const attributes = Object.entries(lot.attributes).filter((entry): entry is [string, string] => entry[1] !== null);
   const labels: Record<string, string> = { artist: 'Artista', date: 'Data', medium: 'Técnica', department: 'Departamento', culture: 'Cultura' };
