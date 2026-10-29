@@ -1,5 +1,5 @@
 import { randomBytes, randomUUID } from 'node:crypto';
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import pg from 'pg';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -210,4 +210,15 @@ describe('showcase: the Ao vivo dot goes off when a lot ends with the page open 
     reads.mockRestore();
     Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'visible' });
   }, 30_000);
+});
+
+describe('the featured lot links (B42)', () => {
+  it('Histórico goes to the bid history of the lot, not to the same place as Dar lance', async () => {
+    await insertLot('-1 hour', '1 hour');
+    const view = render(<MemoryRouter><Showcase /></MemoryRouter>);
+    const featured = await screen.findByRole('region', { name: 'Lote ao vivo em destaque' });
+    const history = within(featured).getByRole('link', { name: 'Histórico' });
+    expect(history.getAttribute('href')).toMatch(/^\/lotes\/[0-9a-f-]+#historico$/);
+    view.unmount();
+  });
 });

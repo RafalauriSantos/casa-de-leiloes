@@ -104,7 +104,7 @@ export function Showcase() {
             </div>
             <div className="featured-actions">
               <Link className="featured-bid" to={`/lotes/${liveLot.id}`}>{isAuctioneer ? 'Ver lote' : 'Dar lance'}</Link>
-              <Link to={`/lotes/${liveLot.id}`}>Histórico</Link>
+              <Link to={`/lotes/${liveLot.id}#historico`}>Histórico</Link>
             </div>
           </div>
         </section>
