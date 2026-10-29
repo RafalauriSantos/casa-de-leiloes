@@ -5,7 +5,7 @@
       "root": "frontend/",
       "rewrites": [
         {
-          "source": "/((?!.*\\.).*)",
+          "source": "/(.*)",
           "destination": "/index.html"
         }
       ]
