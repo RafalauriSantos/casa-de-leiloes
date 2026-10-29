@@ -2,10 +2,28 @@ import { supabase } from '@/lib/supabase';
 
 export type AuthResult = { ok: true } | { ok: true; notice: string } | { ok: false; message: string };
 
+/** The part of an Auth error that tells the causes apart; `code` is the Auth error code when the server sends one. */
+export interface SignInError {
+  code?: string;
+  status?: number;
+}
+
+/**
+ * What a failed sign-in says. A wrong e-mail and password share one message, so the screen never reveals whether the
+ * e-mail exists. Everything else says what happened, and an unknown failure is never blamed on the person.
+ */
+export function signInFailure(error: SignInError): AuthResult {
+  if (error.code === 'invalid_credentials') return { ok: false, message: 'E-mail ou senha incorretos.' };
+  if (error.code === 'email_not_confirmed') return { ok: false, message: 'Confirme o e-mail que enviamos antes de entrar.' };
+  if (error.code === 'over_request_rate_limit' || error.status === 429) {
+    return { ok: false, message: 'Muitas tentativas. Tente de novo em alguns minutos.' };
+  }
+  return { ok: false, message: 'Não foi possível entrar agora. Tente de novo em instantes.' };
+}
+
 export async function signIn(email: string, password: string): Promise<AuthResult> {
   const { error } = await supabase.auth.signInWithPassword({ email, password });
-  // One generic message for every failure: never reveal whether the e-mail exists.
-  return error ? { ok: false, message: 'E-mail ou senha incorretos.' } : { ok: true };
+  return error ? signInFailure(error) : { ok: true };
 }
 
 /** What a sign-up answer means for the screen. No session means the project wants the e-mail confirmed first. */

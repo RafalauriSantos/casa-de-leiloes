@@ -21,6 +21,7 @@ export function OwnLots({ token }: { token: string }) {
   const [load, setLoad] = useState<Load>({ status: 'loading' });
   const [editing, setEditing] = useState<string>();
   const [notice, setNotice] = useState<string>();
+  const [failure, setFailure] = useState<string>();
   const [attempt, setAttempt] = useState(0);
   /** The lot with bids whose cancellation waits for a second click: it refunds the leader (B19). */
   const [confirming, setConfirming] = useState<string>();
@@ -39,13 +40,16 @@ export function OwnLots({ token }: { token: string }) {
     setAttempt((n) => n + 1);
   };
   const fail = (error: unknown) => {
-    setNotice(error instanceof ApiRequestError ? error.message : 'Não foi possível concluir a ação.');
+    setNotice(undefined);
+    setFailure(error instanceof ApiRequestError ? error.message : 'Não foi possível concluir a ação.');
   };
 
   async function cancel(lot: OwnLot) {
     setConfirming(undefined);
+    setFailure(undefined);
     try {
       await cancelLot(token, lot.id);
+      setFailure(undefined);
       setNotice(lot.bidCount > 0 ? `Lote "${lot.title}" cancelado. O valor do lance líder voltou para o licitante.` : `Lote "${lot.title}" cancelado.`);
       reload();
     } catch (error: unknown) {
@@ -64,6 +68,7 @@ export function OwnLots({ token }: { token: string }) {
       )}
       <h2 id="lots-title">Meus lotes</h2>
       {notice && <p role="status">{notice}</p>}
+      {failure && <p role="alert">{failure}</p>}
       {load.status === 'loading' && <p>Carregando seus lotes…</p>}
       {load.status === 'error' && (
         <>
@@ -112,6 +117,7 @@ export function OwnLots({ token }: { token: string }) {
               onSubmit={(input: LotInput) => updateLot(token, lot.id, input)}
               onDone={() => {
                 setEditing(undefined);
+                setFailure(undefined);
                 setNotice('Lote atualizado.');
                 reload();
               }}

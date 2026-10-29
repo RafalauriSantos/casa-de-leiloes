@@ -1,8 +1,9 @@
 import { DEMO_ACCOUNTS } from '@casa/contracts';
 import { useState, type SyntheticEvent } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useSearchParams } from 'react-router-dom';
 import { signIn, signUp } from '../api';
 import { useAuth } from '../auth-context';
+import { safeNext } from '../next';
 
 type Mode = 'signin' | 'signup';
 
@@ -17,8 +18,12 @@ export function AuthPanel() {
   const [notice, setNotice] = useState<string>();
   const [busy, setBusy] = useState(false);
   const auth = useAuth();
+  const [params] = useSearchParams();
+  const next = params.get('next');
 
-  if (auth.status === 'signed-in') return <Navigate to={auth.me.role === 'auctioneer' ? '/leiloeiro' : '/'} replace />;
+  if (auth.status === 'signed-in') {
+    return <Navigate to={next !== null ? safeNext(next) : auth.me.role === 'auctioneer' ? '/leiloeiro' : '/'} replace />;
+  }
 
   async function onSubmit(event: SyntheticEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -74,13 +79,13 @@ export function AuthPanel() {
       )}
       <label>
         E-mail
-        <input name="email" type="email" required autoComplete="email" />
+        <input name="email" type="email" required autoComplete="email" aria-invalid={error ? true : undefined} aria-describedby={error ? 'auth-error' : undefined} />
       </label>
       <label>
         Senha
-        <input name="password" type="password" required minLength={6} autoComplete={mode === 'signin' ? 'current-password' : 'new-password'} />
+        <input name="password" type="password" required minLength={6} autoComplete={mode === 'signin' ? 'current-password' : 'new-password'} aria-invalid={error ? true : undefined} aria-describedby={error ? 'auth-error' : undefined} />
       </label>
-      {error && <p role="alert">{error}</p>}
+      {error && <p role="alert" id="auth-error">{error}</p>}
       {notice && <p role="status">{notice}</p>}
       <button type="submit" disabled={busy}>
         {busy ? 'Aguarde…' : mode === 'signin' ? 'Entrar' : 'Criar conta'}
