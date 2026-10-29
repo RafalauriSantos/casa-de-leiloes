@@ -102,6 +102,7 @@ Each criterion of the brief's journeys (defined in phase 2 of the delivery proce
 | 8.4 one error shape, never a fake success | `failures.test.ts`; `catalog.test.ts` (503 cases); the `code` assertions across the integration tests | Covered |
 | 8.5 the demo data also holds an ended lot with a receipt and a tampered lot (B17, B18) | `seed.test.ts` ("also leaves an ended lot with a winner and a receipt, and a settled lot whose history was changed"; "running it again creates nothing new") | Covered locally; the hosted run is pending (D9c) |
 | 8.6 every screen has its own document title; moving to a screen moves focus to its heading, or to its main region while the heading is still loading; going back to the first screen moves focus too; the first load keeps focus where the browser put it; the not-found page has a heading and a link back; the role radios show a focus ring (B36) | `frontend/src/app/navigation.test.tsx` (titles, not-found page, focus after a move, return to the first screen, lot page whose title loads later); the focus ring is checked on screen | Covered |
+| 8.7 a sign-in failure says its cause; a protected page brings the person back after sign-in; a screen for another role links to the right home; a failed cancellation is an alert; the sign-in fields name their error (B37) | `frontend/src/features/auth/auth.test.tsx` (causes, return path, field links); `journey.test.tsx` (wrong-role link) | Open |
 
 ## J9: optionals of the brief (section 05)
 

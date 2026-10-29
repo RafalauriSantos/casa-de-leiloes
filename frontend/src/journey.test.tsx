@@ -138,6 +138,7 @@ describe('auctioneer access', () => {
     render(<App />);
 
     expect((await screen.findByRole('alert')).textContent).toBe('Esta área é exclusiva para licitantes.');
+    expect(screen.getByRole('link', { name: 'Ir para o painel' }).getAttribute('href')).toBe('/leiloeiro');
     expect(screen.queryByRole('link', { name: 'Carteira' })).toBeNull();
   });
 });
