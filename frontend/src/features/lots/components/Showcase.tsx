@@ -52,7 +52,9 @@ export function Showcase() {
     let cancelled = false;
     // Only the newest answer counts: an older response that arrives late cannot overwrite a newer one.
     let latest = 0;
+    // A hidden tab asks nothing: the check runs again as soon as the tab is shown (B41).
     const check = () => {
+      if (document.visibilityState !== 'visible') return;
       const request = ++latest;
       fetchLots({ status: 'live' })
         .then((lots) => {
@@ -70,9 +72,11 @@ export function Showcase() {
     };
     check();
     const timer = setInterval(check, LIVE_CHECK_MS);
+    document.addEventListener('visibilitychange', check);
     return () => {
       cancelled = true;
       clearInterval(timer);
+      document.removeEventListener('visibilitychange', check);
     };
   }, [attempt]);
 
