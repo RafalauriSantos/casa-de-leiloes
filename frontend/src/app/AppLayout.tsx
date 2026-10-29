@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
 import { signOut, useAuth } from '@/features/auth';
 import { AccountMenu, type NavItem } from './AccountMenu';
@@ -23,6 +24,33 @@ export function AppLayout() {
   const available = useAvailableBalance(auth.status === 'signed-in' && bidder ? auth.token : undefined, pathname);
   const links = me === undefined ? VISITOR_LINKS : bidder ? BIDDER_LINKS : AUCTIONEER_LINKS;
   const onSignIn = pathname === '/entrar' && auth.status === 'signed-out';
+  const mainRef = useRef<HTMLElement>(null);
+  const previousPath = useRef(pathname);
+
+  // Each screen names itself in the tab. A move to another screen puts focus on its heading, or on its main region
+  // while the heading is still on its way (a lot page loads its title). The first screen the app opens keeps focus where the browser put it.
+  useEffect(() => {
+    document.title = screen ? `${screen.title} · Casa de Leilões` : 'Página não encontrada · Casa de Leilões';
+    const moved = previousPath.current !== pathname;
+    previousPath.current = pathname;
+    const main = mainRef.current;
+    if (!moved || !main) return;
+    const focusHeading = (): boolean => {
+      const heading = main.querySelector('h1');
+      if (!heading) return false;
+      heading.setAttribute('tabindex', '-1');
+      heading.focus();
+      return true;
+    };
+    if (focusHeading()) return;
+    main.setAttribute('tabindex', '-1');
+    main.focus();
+    const observer = new MutationObserver(() => {
+      if (focusHeading()) observer.disconnect();
+    });
+    observer.observe(main, { childList: true, subtree: true });
+    return () => { observer.disconnect(); };
+  }, [pathname, screen]);
 
   return (
     <>
@@ -47,7 +75,7 @@ export function AppLayout() {
           </div>
         </div>
       </header>
-      <main data-title-in-header={screen?.h1 ? '' : undefined}>
+      <main ref={mainRef} data-title-in-header={screen?.h1 ? '' : undefined}>
         <Outlet />
       </main>
     </>

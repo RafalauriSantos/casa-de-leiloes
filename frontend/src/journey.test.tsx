@@ -163,7 +163,7 @@ describe('visitor', () => {
 
     window.history.replaceState({}, '', '/nao-existe');
     render(<App />);
-    expect(await screen.findByText('Página não encontrada.')).toBeTruthy();
+    expect(await screen.findByRole('heading', { level: 1, name: 'Página não encontrada' })).toBeTruthy();
   });
 });
 
