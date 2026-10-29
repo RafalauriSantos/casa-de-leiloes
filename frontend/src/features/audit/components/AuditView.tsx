@@ -34,15 +34,18 @@ export function AuditView({ report, head, onHead }: { report: AuditReport; head:
               <tr><th>Nº</th><th>Licitante</th><th>Valor</th><th>Horário</th><th>Hash</th></tr>
             </thead>
             <tbody>
-              {report.bids.map((bid) => (
-                <tr key={bid.seq}>
-                  <td>{bid.seq}</td>
+              {report.bids.map((bid) => {
+                const broken = report.chain.status === 'tampered' && report.chain.brokenAtSeq === bid.seq;
+                return (
+                <tr key={bid.seq} className={broken ? 'audit-row-broken' : undefined}>
+                  <td>{bid.seq}{broken && <strong className="audit-break"> quebra aqui</strong>}</td>
                   <td><code>{bid.bidderLabel}</code></td>
                   <td>{formatBRL(bid.amountCents)}</td>
                   <td>{SECOND.format(new Date(bid.placedAt))}</td>
                   <td><code className="audit-hash">{bid.hash}</code></td>
                 </tr>
-              ))}
+                );
+              })}
             </tbody>
           </table>
         </div>

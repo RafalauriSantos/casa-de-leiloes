@@ -124,6 +124,8 @@ section[aria-labelledby] { margin-bottom: 1.5rem; }
 .audit-scroll table { border-collapse: collapse; width: 100%; font-size: 0.92rem; }
 .audit-scroll th, .audit-scroll td { text-align: left; padding: 0.4rem 0.6rem; border-bottom: 1px solid var(--line); }
 .audit-hash { word-break: break-all; font-size: 0.78rem; }
+.audit-row-broken td { border-top: 2px solid var(--danger); border-bottom: 2px solid var(--danger); }
+.audit-break { color: var(--danger); }
 
 /* Showcase and live room, redesigned (slice 1 of the Claude Design screens). */
 .lot-layout { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 2.5rem; align-items: start; margin-top: 1rem; }
