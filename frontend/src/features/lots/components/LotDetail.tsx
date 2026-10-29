@@ -64,17 +64,7 @@ export function LotDetail({ id }: { id: string }) {
           <p><Link to={`/auditoria/${lot.id}`}>Auditar histórico</Link></p>
         </div>
         <div className="lot-room">
-          <LiveRoom
-            key={lot.id}
-            lotId={lot.id}
-            onStateChange={(next) => {
-              setState((current) =>
-                current.status === 'ready' && current.lot.state !== next
-                  ? { status: 'ready', lot: { ...current.lot, state: next } }
-                  : current,
-              );
-            }}
-          />
+          <LiveRoom key={lot.id} lotId={lot.id} />
         </div>
       </div>
     </article>

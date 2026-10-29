@@ -25,7 +25,7 @@ function bidButtonLabel(amount: string): string {
 
 type Load = { status: 'loading' } | { status: 'error'; message: string } | { status: 'ready'; room: LiveLot };
 
-export function LiveRoom({ lotId, onStateChange }: { lotId: string; onStateChange?: (state: LiveLot['state']) => void }) {
+export function LiveRoom({ lotId }: { lotId: string }) {
   const auth = useAuth();
   const token = auth.status === 'signed-in' ? auth.token : undefined;
   const role = auth.status === 'signed-in' ? auth.me.role : undefined;
@@ -45,8 +45,6 @@ export function LiveRoom({ lotId, onStateChange }: { lotId: string; onStateChang
   const receipts = stored.owner === userId ? stored.list : [];
   const signedInUser = useRef(userId);
   signedInUser.current = userId;
-  const onStateChangeRef = useRef(onStateChange);
-  onStateChangeRef.current = onStateChange;
   /** Whether the bidder has typed a custom value in the bid field; while false, polls follow `nextMinimumCents`. */
   const edited = useRef(false);
   useEffect(() => {
@@ -58,12 +56,11 @@ export function LiveRoom({ lotId, onStateChange }: { lotId: string; onStateChang
   const readCount = useRef(0);
   const applied = useRef(0);
 
-  // Poll the room every 3 s while it has not ended, pause while the tab is hidden, and show when the connection is failing.
+  // Poll the room every 3 s, pause while the tab is hidden, and show when the connection is failing.
   useEffect(() => {
     // Refs, not plain variables: the callbacks below read them after awaits.
     const alive = { current: true };
     const inFlight = { current: false };
-    let ended = false;
     const read = async () => {
       if (inFlight.current) return;
       inFlight.current = true;
@@ -78,10 +75,8 @@ export function LiveRoom({ lotId, onStateChange }: { lotId: string; onStateChang
         if (mine > applied.current) {
           applied.current = mine;
           setLoad({ status: 'ready', room });
-          onStateChangeRef.current?.(room.state);
           if (!edited.current) setAmount(formatReaisInput(room.nextMinimumCents));
         }
-        ended = room.state === 'ended';
         setStale(false);
       } catch (error: unknown) {
         inFlight.current = false;
@@ -89,12 +84,12 @@ export function LiveRoom({ lotId, onStateChange }: { lotId: string; onStateChang
         setStale(true);
         setLoad((current) => (current.status === 'ready' ? current : { status: 'error', message: error instanceof ApiRequestError ? error.message : 'Não foi possível carregar a sala.' }));
       }
-      // Unmounted reads already returned above, so only the tab's visibility and whether the lot ended are left to check here.
-      if (!ended && document.visibilityState === 'visible') timer.current = setTimeout(() => void read(), POLL_MS);
+      // Unmounted reads already returned above, so only the tab's visibility is left to check here.
+      if (document.visibilityState === 'visible') timer.current = setTimeout(() => void read(), POLL_MS);
     };
     const onVisible = () => {
       clearTimeout(timer.current);
-      if (!ended && document.visibilityState === 'visible') void read();
+      if (document.visibilityState === 'visible') void read();
     };
     void read();
     document.addEventListener('visibilitychange', onVisible);
@@ -115,13 +110,11 @@ export function LiveRoom({ lotId, onStateChange }: { lotId: string; onStateChang
     return () => { cancelled = true; };
   }, [token, role, load.status === 'ready' ? load.room.bidCount : 0]);
 
-  // Re-render every second while the lot is live so the countdown moves.
-  const isLive = load.status === 'ready' && load.room.state === 'live';
+  // Re-render every second so the countdown moves.
   useEffect(() => {
-    if (!isLive) return;
     const id = setInterval(() => { setNow(Date.now()); }, 1000);
     return () => { clearInterval(id); };
-  }, [isLive]);
+  }, []);
 
   async function submit(event: SyntheticEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -144,7 +137,6 @@ export function LiveRoom({ lotId, onStateChange }: { lotId: string; onStateChang
         applied.current = readCount.current;
         edited.current = false;
         setLoad({ status: 'ready', room: accepted });
-        onStateChangeRef.current?.(accepted.state);
         setAmount(formatReaisInput(accepted.nextMinimumCents));
       }
     } catch (error: unknown) {

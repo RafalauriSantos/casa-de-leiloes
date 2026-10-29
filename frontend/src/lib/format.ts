@@ -26,4 +26,3 @@ export function parseReaisToCents(input: string): number | undefined {
   const cents = Number(`${digits}${decimalPart.padEnd(2, '0')}`);
   return cents > 0 ? cents : undefined;
 }
-

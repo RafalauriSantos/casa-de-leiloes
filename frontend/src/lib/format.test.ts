@@ -56,4 +56,3 @@ describe('parseReaisToCents', () => {
     expect(parseReaisToCents('19,99')).toBe(1_999);
   });
 });
-
