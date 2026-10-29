@@ -1,89 +1,101 @@
 # Casa de Leilões
 
-Casa de leilões online (teste técnico Verzel "Elite Dev"). Hoje existem cadastro, login, papéis, carteira com depósito simulado, vitrine com lotes publicados a partir do catálogo público do The Met, lances ao vivo, comprovante de arremate e auditoria pública do histórico de lances.
-
-Decisões de design e seus tradeoffs: [docs/DECISIONS.md](docs/DECISIONS.md). Onde e como a IA foi usada, e o que foi revisado: [docs/AI-USAGE.md](docs/AI-USAGE.md).
+Casa de leilões online para o teste técnico Verzel "Elite Dev". Leiloeiros publicam lotes a partir de itens do acervo público do The Met. Licitantes depositam saldo simulado, acompanham os lotes ao vivo, dão lances e, se vencerem, recebem um comprovante. Qualquer pessoa, sem login, audita o histórico de lances de um lote.
 
 ## Acesse
 
-- Site publicado: **https://casadeleiloes.vercel.app**
-- Entre pelos atalhos da tela de login ("Entrar como leiloeiro" ou um dos dois licitantes) ou com as contas abaixo, senha `demo-leilao-2026`:
+- **Site:** https://casadeleiloes.vercel.app
+- **Contas de demonstração** (senha `demo-leilao-2026`):
   - leiloeiro: `leiloeiro@demo.example`
   - licitantes: `licitante1@demo.example` e `licitante2@demo.example`
-- Ou crie a sua conta escolhendo "Quero comprar" ou "Quero vender". Não há confirmação por e-mail.
-- A auditoria de qualquer lote abre sem login, em `/auditoria/<lote>`.
+- Os três logins respondem em produção.
+- Abra `/auditoria/<id-do-lote>` para auditar um lote sem login.
 
 ## Rodar localmente
 
-Requisitos: Node 22, Docker (rodando), `make` e `openssl`.
+Requisitos: Node 22 (versão do `.nvmrc`), Docker em execução, `make` e `openssl`.
 
 ```bash
 npm ci
-make db-up      # sobe o Supabase local (Postgres e Auth reais) e aplica supabase/migrations sozinho
-make dev        # API em http://localhost:8787 e site em http://localhost:5173
-make ci         # lint, tipos, build, testes com cobertura e npm audit (a única definição de verde)
-make e2e-live   # bate na API real do The Met (não roda no ci; use antes de publicar)
-make e2e-browser   # navegador real: largura, jornadas e acessibilidade (precisa de `npx playwright install chromium` uma vez)
+make db-up     # sobe o Supabase local (Postgres e Auth) e aplica as migrations
+make dev       # API em http://localhost:8787 e site em http://localhost:5173
+make seed      # cria os dados de demonstração; rode com a API no ar, em outro terminal
 ```
 
-- **Com Docker Compose (opcional):** depois de `make db-up`, rode `make compose` no lugar de `make dev`. Ele sobe a API (`localhost:8787`) e o site (`localhost:5173`) em contêineres, com as variáveis lidas do Supabase local. O Supabase continua pelo próprio CLI (também em Docker), e o Node continua necessário para ele. Os contêineres usam a rede do host: no Linux funciona direto; no Docker Desktop (Mac/Windows), ative "host networking" nas configurações (versão 4.34 ou mais nova). Para parar: `./scripts/with-local-env.sh docker compose down`.
-- `make test`, `make dev` e `make ci` exigem `make db-up` antes (portas 54321 da API/Auth e 54322 do Postgres).
-- `make db-reset` recria o banco local do zero a partir das migrations.
-- **Dados de demonstração:** com a API no ar (`make dev`), rode `make seed` em outro terminal. Ele cria um leiloeiro, dois licitantes com saldo e três lotes, sem duplicar nada numa segunda execução: um lote ao vivo com três lances; um lote encerrado que o licitante 1 arrematou, com comprovante (aparece em "Meus arremates"); e um lote encerrado cujo primeiro lance o seed alterou direto no banco, para a auditoria mostrar "adulterado" sem ninguém precisar mexer no banco. Contas (senha de demonstração `demo-leilao-2026`, só para estas contas):
-  - leiloeiro: `leiloeiro@demo.example`
-  - licitantes: `licitante1@demo.example` e `licitante2@demo.example`
-  - A tela de login também tem atalhos ("Entrar como leiloeiro" e os dois licitantes): é o mesmo login real, sem precisar digitar.
-- Os segredos locais (cadeia de auditoria e cron) são gerados uma vez em `.env.dev-secrets` (fora do Git); apague o arquivo para trocá-los. Variáveis já definidas no seu ambiente têm prioridade sobre o arquivo.
+- `make seed` cria um leiloeiro e dois licitantes com saldo. Cria três lotes de demonstração (um ao vivo com lances, um encerrado arrematado pelo licitante 1 e um encerrado com o histórico alterado no banco, que a auditoria mostra como adulterado) e seis lotes agendados com itens do The Met. Rodar de novo reaproveita os lotes, sem duplicar.
+- `make db-reset` recria o banco local do zero. Visto em execuções de `make ci` sobre banco reaproveitado; a causa não foi isolada. `make db-reset` ou `make ci-local` dão um banco limpo.
+- `make compose` sobe API e site em contêineres, depois de `make db-up`.
 
-## Produção (Vercel + Supabase)
+## Testes
 
-- Site e API no mesmo projeto Vercel (Vercel Services: `frontend/` e `backend/`, rota `/api/*` para o back). A branch de produção é `main`.
-- Variáveis (Vercel, ambiente Production): `DATABASE_URL` (pooler de transação, porta 6543, com `?sslmode=require`), `SUPABASE_URL`, `AUDIT_HMAC_SECRET`, `CRON_SECRET`, `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`. Modelo em `.env.example`. As `VITE_*` são lidas **na hora do build** do site.
-- Âncora pública do histórico (D21): `ANCHOR_MODE` é obrigatório (`github` em produção, `off` no desenvolvimento local e nos testes; sem ele o servidor não sobe). Com `github`, também são obrigatórios `ANCHOR_GITHUB_REPO` (`dono/repositorio`) e `ANCHOR_GITHUB_TOKEN` (token do GitHub só para esse repositório, permissão *Contents* com escrita; na Vercel, marcado como sensível). Opcionais: `ANCHOR_GITHUB_BRANCH` (padrão `main`) e `ANCHOR_GITHUB_API_URL`. Nos deploys de *Preview*, use `ANCHOR_MODE=off`. O mesmo cron de cada minuto liquida os lotes e depois publica as pontas pendentes; se uma publicação falhar ou ficar pendente por 10 minutos ou mais, o cron responde HTTP 500 (ninguém é avisado ainda por e-mail ou mensagem: o registro fica em `net._http_response` do Supabase). Ao ligar a âncora pela primeira vez, os lotes antigos com lances são publicados aos poucos, e o cron responde 500 por alguns minutos até terminar.
-- No Supabase: aplicar `supabase/migrations` em ordem (arquivo por arquivo, ou `npx supabase db push --db-url "$DATABASE_URL"`), desligar "Confirm email" (Auth > Sign In / Providers) e manter as chaves de assinatura assimétricas.
-- Encerramento agendado (a cada minuto): `DATABASE_URL=... CRON_SECRET=... APP_URL=https://<dominio> npx tsx backend/scripts/schedule-close-due.ts`. Guarda URL e segredo no Vault do Supabase. Um lote vencido também é liquidado quando alguém o abre, dá lance nele ou consulta a carteira de quem lidera. O endpoint do cron liquida os lotes vencidos que ninguém abriu: o vencedor paga, o leiloeiro recebe, quem foi superado já teve o valor liberado e um comprovante fica gravado. Um lote que não confere com o próprio histórico não é liquidado e a resposta do endpoint vem com HTTP 500 e o contador `failed` maior que zero. Um lote com falha continua vencido e é tentado de novo a cada minuto, até que a falha seja corrigida.
+- `make ci` roda lint, tipos, build, testes com cobertura e `npm audit`.
+- `make ci-local` roda o mesmo `make ci` como o GitHub Actions (`.github/workflows/ci.yml`): Node do `.nvmrc`, Supabase local recriado do zero (apaga o banco local), sem seed e com ambiente limpo. Use-o quando o GitHub Actions não estiver disponível.
+- `make e2e-browser` roda 14 testes em navegador real: jornadas, acessibilidade e largura da tela de 320 a 1280 px.
+- `make e2e-live` consulta a API real do The Met. Não roda no `make ci`.
 
-### Cabeçalhos de segurança
+## Deploy
 
-Definidos em `vercel.json` (`headers`) e aplicados a todas as respostas, do site e da API:
+1. O site e a API ficam no mesmo projeto Vercel (`vercel.json`). O banco e o login ficam no Supabase.
+2. Aplique as migrations em `supabase/migrations`, em ordem, no projeto Supabase.
+3. No Supabase, desligue "Confirm email" em Auth.
+4. Configure as variáveis de `.env.example` no Vercel. `ANCHOR_MODE` é obrigatório: `github` em produção e `off` em preview e local. Com `github`, também são obrigatórios `ANCHOR_GITHUB_REPO` (repositório da âncora) e `ANCHOR_GITHUB_TOKEN`.
+5. Agende o encerramento a cada minuto com `npx tsx backend/scripts/schedule-close-due.ts` (usa `DATABASE_URL`, `CRON_SECRET` e `APP_URL`). O mesmo agendamento publica as pontas na âncora. Com `ANCHOR_MODE=github`, sem ele nenhum lote com lances é liquidado.
 
-- `Content-Security-Policy`: scripts e estilos só do próprio site (sem `unsafe-inline`); imagens de qualquer `https:` (os itens vêm de acervos públicos); conexões com o próprio site e com `*.supabase.co`; sem `frame-ancestors` de outras origens e sem `object-src`.
-- `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy` (câmera, microfone, localização e pagamento desligados).
+## Requisitos do enunciado
 
-Limite conhecido: a sessão do Supabase fica no `localStorage` (padrão do Supabase Auth). A CSP reduz o risco de um script injetado, mas não impede que um script já presente na página leia essa sessão.
+| Requisito | Situação |
+|---|---|
+| Deploy publicado | https://casadeleiloes.vercel.app |
+| Papéis leiloeiro e licitante | Implementados |
+| Vitrine com abas Ao vivo, Agendados e Encerrados | Implementada |
+| Painel do leiloeiro: buscar, criar, cancelar, ver resultado e total recebido | Implementado |
+| Sala ao vivo: contagem, posição do licitante e atualização a cada 3 s | Implementada |
+| Carteira: total, comprometido, disponível e depósito simulado | Implementada |
+| Meus arremates com comprovante e link | Implementado |
+| Auditoria pública com veredito | Implementada |
+| Mensagens de recusa com o motivo | Implementadas |
+| Anti-sniping de 2 minutos | Implementado |
+| Seed: leiloeiro, dois clientes e lote com lances | `make seed` |
+| Opcional: busca de lotes | Implementada (por título) |
+| Opcional: cancelamento com estorno | Implementado |
+| Opcional: Docker Compose | `make compose` |
+| Opcional: testes automatizados | `make ci` |
+| Opcional: tema claro e escuro | Implementado |
 
-## Arquitetura e domínio (DDD, na medida do tamanho do projeto)
+## Comportamentos inesperados
 
-O código segue as ideias do DDD que valem a pena num projeto desse tamanho, sem as camadas que só adicionariam código:
+- **Depósito simulado:** é saldo fictício. Cada depósito vai de R$ 1,00 a R$ 100.000,00.
+- **Chave de depósito:** repetir a mesma chave não credita de novo, e a mesma chave com outro valor é recusada. A chave fica na página aberta: recarregar a página gera outra.
+- **Papel fixo:** o papel escolhido no cadastro não muda depois. Leiloeiro não tem carteira nem dá lances.
+- **Extensão do lote:** lance nos últimos 2 minutos estende o fim em 2 minutos, sem limite de extensões.
+- **Limite de lances:** cada lote aceita 1.000 lances.
+- **Pagamento espera a publicação:** ao encerrar, o lote só é pago depois que o hash do último lance está na âncora pública. Enquanto espera, o valor do líder continua reservado.
+- **Catálogo do The Met:** a busca mostra 12 itens por página, só de domínio público e com imagem. Títulos e atributos ficam em inglês, exceto termos de um glossário (ex.: "Clock" → "Relógio").
+- **Auditoria:** a página diz "Íntegro até o lance N" ou "Sem divergência até o lance M", nunca "íntegro" para o lote inteiro. "Não confirmado" não é acusação; "adulterado" aparece quando a cadeia quebra ou a âncora contradiz o histórico.
+- **Contas de demonstração são públicas:** qualquer pessoa entra como leiloeiro demo e pode cancelar o lote ao vivo.
 
-- **Linguagem do domínio:** os nomes do código são os do leilão: lote, lance, ponta (o hash do último lance), recibo, liquidação, âncora, auditoria.
-- **Áreas separadas por funcionalidade** (`backend/src/modules`: `lots`, `bidding`, `wallet`, `settlement`, `anchor`, `audit`, `catalog`, `identity`), cada uma só enxergável pelo seu `index.ts`. A regra de negócio fica em `rules.ts` (funções puras, sem banco, rede nem relógio próprio), o SQL em `service.ts` e o HTTP em `routes.ts`. O `make ci` impede que uma área acesse as entranhas de outra.
-- **O lote é o ponto de consistência:** todo lance e toda liquidação travam a linha do lote, e as carteiras na mesma ordem, dentro de uma transação. É isso que garante que dois lances simultâneos não passem e que o dinheiro não se perca.
-- **O que não usamos, de propósito:** interfaces de repositório e entidades com métodos. A garantia do dinheiro está nas transações do Postgres e nos testes com requisições paralelas reais, e uma camada de abstração esconderia a ordem dos travamentos. As decisões e seus custos estão em `docs/DECISIONS.md`.
+## Limites conhecidos
 
-## Comportamentos inesperados (declarados)
+- **Publicação da âncora:** o cron roda a cada minuto. Quem acessa o banco diretamente pode apagar o último lance antes da publicação; só o recibo do licitante detecta esse caso.
+- **Sem releitura da âncora antes do pagamento:** o sistema confere o histórico no banco, mas não relê o arquivo no GitHub antes de pagar.
+- **Sem aviso ao vencedor:** nenhum e-mail ou mensagem é enviado.
+- **Âncora indisponível:** a auditoria mostra "Âncora não verificada" e não afirma nada sobre ela.
+- **Sala ao vivo:** mostra os 50 lances mais recentes; a posição de "superado" considera o histórico inteiro.
+- **Vitrine:** mostra até 60 lotes por lista.
+- **Busca no catálogo:** cada busca faz até 13 requisições ao Met (1 busca e até 12 detalhes), sem cache.
+- **Sessão no `localStorage`:** padrão do Supabase Auth. A política de conteúdo (CSP) reduz o risco, mas não impede que um script já presente na página leia a sessão.
+- **Logout:** encerra a sessão em todos os dispositivos, mas o token já emitido vale no servidor até expirar (1 hora).
+- **Sem confirmação de e-mail:** o cadastro cria a conta na hora. A confirmação não foi implementada.
+- **Layout em celular:** o teste de navegador cobre estouro horizontal em 320, 360, 390, 768 e 1280 px. Não há teste visual em aparelho real.
+- **Carrossel do destaque:** gira a cada 5 segundos e para com mouse, foco, botão ou preferência de movimento reduzido. Se o lote em destaque sair da lista com o mouse em cima, a pausa continua até o próximo mouse.
 
-- **Depósito simulado:** a carteira é só um saldo fictício, sem pagamento real. Cada depósito vai de R$ 1,00 a R$ 100.000,00.
-- **Depósito repetido:** cada depósito leva uma chave de idempotência. Clicar duas vezes ou repetir a requisição não credita duas vezes; usar a mesma chave com outro valor é recusado (409).
-- **Só licitante tem carteira:** leiloeiro recebe 403 na carteira e não vê o menu "Carteira". No cadastro, a pessoa escolhe "Quero comprar" (licitante, o padrão) ou "Quero vender" (leiloeiro). O papel fica fixo: não dá para trocar depois, e quem quiser os dois precisa de duas contas. Qualquer pessoa pode abrir uma conta de leiloeiro, sem verificação (o dinheiro é simulado). O leiloeiro de demonstração vem do `make seed`.
-- **Chave de idempotência só na tela aberta:** ela vive na memória da página. Se o depósito foi creditado mas a resposta se perdeu, repetir o mesmo valor **sem recarregar a página** não credita de novo; recarregar a página antes de tentar outra vez gera uma chave nova e pode creditar duas vezes.
-- **Livro-caixa sem edição:** movimentos de dinheiro não podem ser alterados nem apagados, e um usuário com histórico de depósito não pode ser excluído.
-- **Cadastro sem confirmação de e-mail:** desligada de propósito para a demonstração; o provedor de e-mail do Supabase hospedado também recusa domínios reservados como `example.com`.
-- **Catálogo do The Met:** a busca mostra no máximo 12 resultados e só itens de domínio público com imagem. Itens sem imagem pública não aparecem. Se o catálogo estiver fora, a busca e a criação de lote mostram erro; a vitrine e as páginas de lote continuam funcionando, porque lotes guardam uma cópia do item.
-- **Limites conhecidos:** cada busca no catálogo faz até 13 requisições ao The Met (1 busca e até 12 detalhes), sem cache; a vitrine mostra até 60 lotes por lista; a sala mostra os 50 lances mais recentes (a posição de "superado" considera o histórico inteiro).
-- **Horário:** o leiloeiro informa início e fim no horário de Brasília (UTC-03:00); o servidor guarda em UTC. A contagem de estado (agendado, ao vivo, encerrado) vem do relógio do banco, não do navegador.
-- **Lances:** só licitantes dão lance, e só em lote ao vivo. O primeiro lance é pelo menos o lance inicial; os seguintes, pelo menos o lance atual mais o incremento. O líder não cobre o próprio lance. O valor comprometido fica bloqueado enquanto o lance lidera e volta ao disponível quando o licitante é superado.
-- **Limite de lances por lote:** cada lote aceita no máximo 1.000 lances. O 1.000º é aceito e o 1.001º é recusado com a mensagem "Este lote atingiu o limite de 1.000 lances." (a sala também avisa e esconde o formulário). Motivo: a prova pública de cada lote é um arquivo de tamanho limitado, e um lote maior que isso não poderia ser publicado. Um lote cheio não aceita mais lances até o fim, mesmo que alguém pagasse mais.
-- **Anti-sniping:** um lance feito nos últimos 2 minutos estende o fim do lote em 2 minutos (a partir do fim atual). Não há limite para essas extensões. Um lance exatamente no fim é recusado.
-- **Histórico de lances:** cada lance tem um encadeamento criptográfico (HMAC com segredo que só existe no servidor). Os licitantes aparecem por pseudônimo, estável dentro do lote e diferente entre lotes, nunca pelo nome ou pela conta. Um lance não pode ser repetido por clique duplo: a segunda tentativa do mesmo líder recebe "você já está ganhando".
-- **Sala ao vivo:** a tela consulta o estado a cada 3 segundos e pausa com a aba oculta. A contagem regressiva usa o relógio do servidor, não o do seu computador. Se a conexão falhar, a tela avisa que pode estar atrasada.
-- **Editar e cancelar lote:** editar só antes do início e sem lances. Cancelar, só antes do fim, com ou sem lances. Num lote com lances, a tela pede confirmação e o cancelamento devolve na hora o valor comprometido de quem lidera para o saldo disponível (quem já tinha sido superado já estava liberado); ninguém paga nada. O leiloeiro pode retirar um lote até o último segundo.
-- **Auditoria pública (`/auditoria/<lote>`):** qualquer pessoa, sem login, vê o histórico de lances (pseudônimo, valor, horário até o segundo e o hash de cada lance) e três resultados separados: a cadeia de hashes, a âncora pública (arquivo por lote no repositório `casa-de-leiloes-ancora`, no GitHub) e, se a pessoa informar a ponta do seu recibo, se essa ponta está no histórico. A página nunca diz que o lote inteiro está "íntegro": só "íntegro até o lance N" quando o recibo foi encontrado e a âncora confere, ou "sem divergência até o lance M publicado" quando não há recibo.
-- **Janela de publicação (limite declarado):** o hash de um lance vai para a âncora pública em até cerca de 1 minuto depois do lance. Quem tem acesso direto ao banco poderia apagar o **último** lance dentro dessa janela e reescrever a ponta do lote; a âncora ainda não teria nada para comparar. Só o recibo guardado pelo licitante (a ponta) pega esse caso: a página responde "Não confirmado". Por isso o pagamento **espera a publicação**: depois do fim do lote, a liquidação só paga quando o hash do último lance já está na âncora pública. Enquanto espera, ninguém é cobrado e nada é creditado; o lance vencedor continua comprometido no saldo de quem lidera. Normalmente isso soma no máximo cerca de 1 minuto depois do fim do lote, e mais se o GitHub estiver fora do ar (os lances continuam sendo aceitos). Depois de 10 minutos esperando, a chamada agendada responde erro a cada chamada, como alerta (antes disso, ela responde erro quando o publicador falha, e de novo a cada nova tentativa dele, depois de 1, 2, 4, 8 e no máximo 15 minutos). Um lote adulterado e ainda não publicado também espera: o publicador se recusa a publicar um histórico que não confere, e é ele quem faz a chamada responder erro. **Limite declarado:** se a publicação nunca puder acontecer (token recusado, arquivo grande demais, histórico adulterado ou arquivo da âncora que contradiz o histórico), nada encerra a espera sozinho: o dinheiro continua comprometido, ninguém é pago e o alerta continua até uma pessoa resolver a causa. Só o histórico adulterado (ou uma cópia do lote que não confere com o último lance) tem liberação, feita pelo dono (D20): um script com a conexão privilegiada mostra o que o sistema vê, confere o segredo com as últimas liquidações vendidas (se houver), pede o líder e o valor que o dono confirma e só então, com CONFIRMAR, devolve o dinheiro comprometido ao saldo do líder, marcando o lote como cancelado, sem venda, com quem decidiu e por quê registrados. Não existe endpoint para isso. Se nenhuma liquidação vendida existir para conferir o segredo, o script pede a palavra SEGREDO, que não prova nada sobre o segredo; quem chamar a função direto não tem nem essa pergunta. Uma escolha errada entre as duas fontes não tem desfazer: a decisão é gravada uma vez, e o dinheiro só volta por uma correção manual da carteira, fora desta tabela. Token recusado, arquivo acima do limite e arquivo da âncora que contradiz um histórico íntegro não têm liberação ainda: são limites declarados, que exigem corrigir a causa ou uma nova decisão. O vencedor ainda não é avisado, e o leiloeiro vê o lote só como cancelado, sem o motivo: o dono o avisa por fora (limite declarado). Um lote sem lances cuja cópia tem valor mas nenhum líder não tem resposta que o libere: a liquidação também o recusa e ele continua aberto (limite declarado). O lote some da vitrine e da sala para ele e para o público (a página do lote responde não encontrado); a página de auditoria ainda abre para um lote liberado, mostrando o histórico. A liquidação confere o histórico e o `anchored_seq`, mas não lê o arquivo da âncora: quem alterasse o arquivo no GitHub dentro de cerca de 1 minuto depois da publicação e antes do pagamento seria visto pela auditoria ("diverge"), mas o pagamento já teria saído. Se o GitHub aceitar a escrita e guardar outro conteúdo, o pagamento já pode ter saído quando a auditoria perceber: não há leitura de volta antes do pagamento (limite declarado). Lotes sem lances, e ambientes com a âncora desligada (preview e local), não esperam.
-- **"Não confirmado" não é acusação:** uma ponta que não está no histórico (digitada errada, de outro lote ou inventada) dá "Não confirmado" e nunca "Adulterado". "Adulterado" só aparece quando a cadeia está quebrada ou a âncora contradiz o histórico.
-- **Âncora indisponível:** se o GitHub não puder ser lido na hora (fora do ar, limite de requisições, token recusado), a página diz "Âncora não verificada" e não afirma nada sobre ela. Cada leitura da âncora é guardada por 30 segundos e há um teto de 30 chamadas por minuto por servidor.
-- **Contas de demonstração são públicas:** a senha está neste README e nos atalhos da tela de login, então qualquer pessoa pode entrar como o leiloeiro demo e, por exemplo, cancelar o lote ao vivo (o licitante que lidera recebe o estorno). Rodar o seed de novo cria outro lote ao vivo.
-- **Tema claro e escuro:** o site segue o tema do sistema até a pessoa escolher outro no botão do menu ("Usar tema escuro" / "Usar tema claro"). A escolha fica guardada só neste navegador; numa janela anônima ou com armazenamento bloqueado, ela vale só até fechar a página.
-- **Logout:** encerra a sessão em todos os dispositivos; o token de acesso já emitido ainda vale no servidor até expirar (até 1 hora).
+## Como a auditoria funciona
 
-- **Títulos e atributos do acervo vêm em inglês, exceto os termos do glossário** (`backend/src/modules/catalog/translate.ts`). O Met descreve os objetos em inglês. Só traduzimos o título e o departamento quando são exatamente um termo do glossário (ex.: "Clock" → "Relógio", "The American Wing" → "Ala Americana"); um título com outras palavras fica em inglês. Lotes já criados mantêm o texto que foram copiados (D48).
+- Cada lance vira um elo de uma cadeia HMAC: o hash de cada lance depende do anterior e de um segredo que só o servidor tem (`AUDIT_HMAC_SECRET`). Alterar, inserir, reordenar ou remover um lance do meio quebra a cadeia. Remover o último lance não quebra a cadeia: só o recibo (antes da publicação) ou a âncora (depois dela) detectam.
+- Cada licitante aparece por um pseudônimo derivado do HMAC, estável dentro do lote e diferente entre lotes. Os horários públicos são mostrados até o segundo.
+- O hash de cada lance é publicado, uma linha por lance, em um arquivo por lote no repositório da âncora (GitHub). Depois que o hash está publicado, reescrever a cadeia no banco faz a auditoria divergir da âncora.
+- O recibo de arremate guarda a ponta do lote. Colar a ponta na auditoria mostra se ela está no histórico.
+
+## Uso de IA
+
+O código, os testes, as migrations, a documentação e as revisões foram feitos com apoio de IA (Claude Code), com aprovação do dono do projeto em cada entrega. Detalhes e erros da IA estão em [docs/AI-USAGE.md](docs/AI-USAGE.md).

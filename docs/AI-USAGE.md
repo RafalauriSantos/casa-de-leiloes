@@ -47,3 +47,15 @@ Examples the history shows:
 ## What the owner reviewed by hand
 
 <!-- To be written by the owner before submitting: which changes the owner read, ran or tested by hand. Not filled in by the agent. -->
+
+## Registro escrito pelo dono
+
+Texto escrito pelo dono do projeto, sem edição:
+
+Uso de IA no projeto Casa de Leilões
+
+Usei IA no desenvolvimento inteiro. Eu definia os requisitos e a ordem das tarefas pela importância, e delegava cada parte a subagentes. A IA escrevia o código, os testes e a documentação, e fazia as auditorias e as revisões. Eu conferia cada resultado: pedia a saída real dos testes, mandava refazer o que não batia com os requisitos, aprovava cada merge e cada ação que mexia em dados ou permissões.
+
+Os processos do projeto, como testar antes de corrigir e revisar cada PR de forma independente, existiram porque a primeira resposta da IA nem sempre estava certa. Ela errou em alguns pontos, como relatar testes sem saída real, abrir PR antes da revisão e afirmar uma segurança que não se sustentava. Esses erros foram pegos nas revisões e nas minhas medições.
+
+Não revisei cada linha gerada. Revisei o que os testes, as revisões e as medições no navegador mostraram.
