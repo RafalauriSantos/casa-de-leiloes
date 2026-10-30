@@ -415,7 +415,7 @@ Built so far: each accepted bid returns a bid receipt `{seq, head, placedAt}` in
   - Catalog "Explorar lotes": heading with brass dash rule, state filter tabs ("Ao vivo", "Agendados", "Encerrados"), and a responsive 4-column grid (2 on tablet, 1 on mobile). The lot in the hero spotlight is excluded from the catalog below to eliminate duplicate cards on the same screen.
   - Functional catalog pagination (`< (1) 2 3 >`) with 4 lots per page matching the reference layout.
   - `LotCard.tsx`: vertical museum card structure with status badge, title link, price details, countdown with SVG clock icon, and outline "Ver lote" button.
-- **Tradeoff:** The carousel pause/rotation controls are visible with subtle contrast and pause on hover, click, and keyboard focus, complying with WCAG 2.2.2.
+- **Tradeoff (owner, 2026-10-29):** no visible pause button on the hero. The rotation stops while the pointer is over the block or focus is inside it, and never runs with `prefers-reduced-motion`. On touch screens there is no hover, so WCAG 2.2.2 is not fully met there; the owner chose the cleaner image over the button. On phones (320 to 600 px) the three state tabs share one row.
 - **Test:** `frontend/src/features/lots/showcase.test.tsx` and `frontend/src/features/lots/components/LotCard.test.tsx`.
 
 

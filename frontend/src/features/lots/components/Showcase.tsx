@@ -58,8 +58,6 @@ export function Showcase() {
   // The block is paused while a person points at it or focuses it, and never moves when they ask for less motion (B45).
   const [page, setPage] = useState(1);
   const [paused, setPaused] = useState(false);
-  // A button holds the block still for anyone who cannot hover, or who needs it still (WCAG 2.2.2).
-  const [held, setHeld] = useState(false);
   const [now, setNow] = useState(() => Date.now());
 
   useEffect(() => {
@@ -113,10 +111,10 @@ export function Showcase() {
   useEffect(() => {
     const count = liveLots.length;
     const reducedMotion = typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (count < 2 || paused || held || reducedMotion) return;
+    if (count < 2 || paused || reducedMotion) return;
     const timer = setInterval(() => { setLiveIndex((index) => (index + 1) % count); }, CAROUSEL_MS);
     return () => { clearInterval(timer); };
-  }, [liveLots.length, paused, held]);
+  }, [liveLots.length, paused]);
 
   useEffect(() => {
     setPage(1);
@@ -153,7 +151,7 @@ export function Showcase() {
         <section
           className="featured"
           aria-label="Lote ao vivo em destaque"
-          data-paused={paused || held ? '' : undefined}
+          data-paused={paused ? '' : undefined}
           onMouseEnter={() => { setPaused(true); }}
           onMouseLeave={() => { setPaused(false); }}
           onFocus={() => { setPaused(true); }}
@@ -164,23 +162,6 @@ export function Showcase() {
               <img src={liveLot.imageUrl} alt="" />
               <span className="featured-progress" aria-hidden="true" />
             </div>
-            {liveLots.length > 1 && (
-              <div className="featured-carousel-pill" role="group" aria-label="Controles do destaque">
-                <span className="carousel-counter" aria-hidden="true">
-                  ‹ Lote {(liveIndex % liveLots.length) + 1} de {liveLots.length} ›
-                </span>
-                <span className="carousel-divider" aria-hidden="true" />
-                <button
-                  type="button"
-                  className="carousel-pause-btn"
-                  aria-label={held ? 'Retomar destaque' : 'Pausar destaque'}
-                  onClick={() => { setHeld((value) => !value); }}
-                >
-                  <span aria-hidden="true">{held ? '▶' : '⏸'}</span>
-                  <span>{held ? 'Retomar' : 'Pausar'}</span>
-                </button>
-              </div>
-            )}
           </div>
           <div key={liveLot.id} className="featured-body">
             <div className="featured-badge-row">

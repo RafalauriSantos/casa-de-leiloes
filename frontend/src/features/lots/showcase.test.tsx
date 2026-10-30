@@ -273,27 +273,6 @@ describe('the featured carousel (B45)', () => {
     }
   }, 30_000);
 
-  it('holds the block still with the Pausar destaque button, for anyone who cannot hover', async () => {
-    const closed = await closeOpenLotsLocally();
-    try {
-      const first = await insertLot('-1 hour', '1 hour');
-      const second = await insertLot('-1 hour', '1 hour');
-      const titleOf = async (id: string) => String((await sql('select title from public.lots where id = $1', [id]))[0]?.title);
-      const titles = [await titleOf(first), await titleOf(second)];
-
-      const view = render(<MemoryRouter><Showcase /></MemoryRouter>);
-      const featured = await screen.findByRole('region', { name: 'Lote ao vivo em destaque' });
-      const shownAtStart = String(titles.find((title) => within(featured).queryByText(title)));
-      fireEvent.click(within(featured).getByRole('button', { name: 'Pausar destaque' }));
-      await new Promise((resolve) => setTimeout(resolve, 6_000));
-      expect(within(featured).queryByText(shownAtStart)).not.toBeNull();
-      expect(within(featured).getByRole('button', { name: 'Retomar destaque' })).toBeTruthy();
-      view.unmount();
-    } finally {
-      await sql("update public.lots set status = 'active' where id = any($1::uuid[])", [closed]);
-    }
-  }, 30_000);
-
   it('clears its timer when the page is left', async () => {
     const closed = await closeOpenLotsLocally();
     try {
