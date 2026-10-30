@@ -685,20 +685,51 @@ html[data-theme="dark"] .featured-cover {
   bottom: 1rem;
   display: inline-flex;
   align-items: center;
-  gap: 0.25rem;
-  padding: 0.2rem 0.55rem;
+  gap: 0.35rem;
+  padding: 0.25rem 0.65rem;
   border-radius: 999px;
   background: var(--card);
   border: 1px solid var(--line);
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   color: var(--ink);
-  opacity: 0;
-  pointer-events: none;
+  opacity: 0.95;
+  pointer-events: auto;
+  z-index: 2;
+  transition: opacity 0.2s ease;
 }
+.featured-carousel-pill:hover,
 .featured-carousel-pill:focus-within {
   opacity: 1;
-  pointer-events: auto;
+}
+.featured-carousel-pill .carousel-counter {
+  font-weight: 500;
+  color: var(--muted);
+}
+.featured-carousel-pill .carousel-divider {
+  width: 1px;
+  height: 12px;
+  background: var(--line);
+  margin: 0 0.1rem;
+}
+.featured-carousel-pill .carousel-pause-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0 0.2rem;
+  font-size: 0.8rem;
+  color: var(--ink);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-family: inherit;
+  border-radius: 4px;
+}
+.featured-carousel-pill .carousel-pause-btn:hover {
+  color: var(--brand);
+}
+.featured-carousel-pill .carousel-pause-btn:focus-visible {
+  outline: 2px solid var(--brand);
 }
 .featured-body {
   display: flex;

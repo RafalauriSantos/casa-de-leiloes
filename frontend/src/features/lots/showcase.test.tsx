@@ -5,7 +5,7 @@ import { MemoryRouter } from 'react-router-dom';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { supabase } from '@/lib/supabase';
 import { fetchLots } from './api';
-import { Showcase } from './components/Showcase';
+import { getPaginationRange, Showcase } from './components/Showcase';
 
 // The Ao vivo tab shows its live dot only while a lot is open right now. Real API and Postgres, as in the other
 // frontend tests. The shared database may hold lots from other tests, so most tests compare the dot with the live
@@ -315,3 +315,29 @@ describe('the featured carousel (B45)', () => {
     }
   }, 30_000);
 });
+
+describe('getPaginationRange: generates 5-page sliding window', () => {
+  it('returns all pages when total is 5 or less', () => {
+    expect(getPaginationRange(1, 1)).toEqual([1]);
+    expect(getPaginationRange(1, 3)).toEqual([1, 2, 3]);
+    expect(getPaginationRange(3, 5)).toEqual([1, 2, 3, 4, 5]);
+  });
+
+  it('anchors to start when current page is <= 3', () => {
+    expect(getPaginationRange(1, 10)).toEqual([1, 2, 3, 4, 5]);
+    expect(getPaginationRange(2, 10)).toEqual([1, 2, 3, 4, 5]);
+    expect(getPaginationRange(3, 10)).toEqual([1, 2, 3, 4, 5]);
+  });
+
+  it('anchors to end when current page is within 2 of total', () => {
+    expect(getPaginationRange(8, 10)).toEqual([6, 7, 8, 9, 10]);
+    expect(getPaginationRange(9, 10)).toEqual([6, 7, 8, 9, 10]);
+    expect(getPaginationRange(10, 10)).toEqual([6, 7, 8, 9, 10]);
+  });
+
+  it('centers the current page when in the middle of a large list', () => {
+    expect(getPaginationRange(5, 10)).toEqual([3, 4, 5, 6, 7]);
+    expect(getPaginationRange(6, 10)).toEqual([4, 5, 6, 7, 8]);
+  });
+});
+

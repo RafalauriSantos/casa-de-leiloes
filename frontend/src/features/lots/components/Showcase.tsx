@@ -26,6 +26,19 @@ const EMPTY_HINT: Record<ShowcaseStatus, string> = {
 
 type State = { status: 'loading' } | { status: 'error'; message: string } | { status: 'ready'; lots: LotSummary[] };
 
+export function getPaginationRange(current: number, total: number): number[] {
+  if (total <= 5) {
+    return Array.from({ length: total }, (_, i) => i + 1);
+  }
+  if (current <= 3) {
+    return [1, 2, 3, 4, 5];
+  }
+  if (current >= total - 2) {
+    return [total - 4, total - 3, total - 2, total - 1, total];
+  }
+  return [current - 2, current - 1, current, current + 1, current + 2];
+}
+
 export function Showcase() {
   const auth = useAuth();
   const isAuctioneer = auth.status === 'signed-in' && auth.me.role === 'auctioneer';
@@ -40,7 +53,8 @@ export function Showcase() {
   const [liveLots, setLiveLots] = useState<LotSummary[]>([]);
   const [liveIndex, setLiveIndex] = useState(0);
   const liveLot = liveLots.length > 0 ? liveLots[liveIndex % liveLots.length] : undefined;
-  const featuredIds = new Set(liveLots.length <= 2 ? liveLots.map((lot) => lot.id) : (liveLot ? [liveLot.id] : []));
+  const primaryLiveLotId = liveLots[0]?.id;
+  const featuredIds = new Set(liveLots.length <= 2 ? liveLots.map((lot) => lot.id) : (primaryLiveLotId ? [primaryLiveLotId] : []));
   // The block is paused while a person points at it or focuses it, and never moves when they ask for less motion (B45).
   const [page, setPage] = useState(1);
   const [paused, setPaused] = useState(false);
@@ -150,21 +164,23 @@ export function Showcase() {
               <img src={liveLot.imageUrl} alt="" />
               <span className="featured-progress" aria-hidden="true" />
             </div>
-            <div className="featured-carousel-pill" role="group" aria-label="Controles do destaque">
-              <span className="carousel-counter" aria-hidden="true">
-                ‹ Lote {(liveIndex % liveLots.length) + 1} de {liveLots.length} ›
-              </span>
-              <span className="carousel-divider" aria-hidden="true" />
-              <button
-                type="button"
-                className="carousel-pause-btn"
-                aria-label={held ? 'Retomar destaque' : 'Pausar destaque'}
-                onClick={() => { setHeld((value) => !value); }}
-              >
-                <span aria-hidden="true">{held ? '▶' : '⏸'}</span>
-                <span>{held ? 'Retomar' : 'Pausar'}</span>
-              </button>
-            </div>
+            {liveLots.length > 1 && (
+              <div className="featured-carousel-pill" role="group" aria-label="Controles do destaque">
+                <span className="carousel-counter" aria-hidden="true">
+                  ‹ Lote {(liveIndex % liveLots.length) + 1} de {liveLots.length} ›
+                </span>
+                <span className="carousel-divider" aria-hidden="true" />
+                <button
+                  type="button"
+                  className="carousel-pause-btn"
+                  aria-label={held ? 'Retomar destaque' : 'Pausar destaque'}
+                  onClick={() => { setHeld((value) => !value); }}
+                >
+                  <span aria-hidden="true">{held ? '▶' : '⏸'}</span>
+                  <span>{held ? 'Retomar' : 'Pausar'}</span>
+                </button>
+              </div>
+            )}
           </div>
           <div key={liveLot.id} className="featured-body">
             <div className="featured-badge-row">
@@ -262,7 +278,7 @@ export function Showcase() {
                     <polyline points="15 18 9 12 15 6" />
                   </svg>
                 </button>
-                {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => i + 1).map((p) => (
+                {getPaginationRange(safePage, totalPages).map((p) => (
                   <button
                     key={p}
                     type="button"

@@ -37,14 +37,30 @@ export function LotCard({ lot }: { lot: LotSummary }) {
           <span className="lot-card-increment">+ {formatBRL(lot.incrementCents)} incremento mínimo</span>
         </div>
         <div className="lot-card-timing">
-          <div className="lot-card-countdown">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <circle cx="12" cy="12" r="10" />
-              <polyline points="12 6 12 12 16 14" />
-            </svg>
-            <span>Termina em {formatRemaining(remaining)}</span>
-          </div>
-          <small className="lot-card-date">{formatWhen(lot.endsAt)}</small>
+          {lot.state === 'ended' ? (
+            <div className="lot-card-countdown lot-card-ended">
+              <span>Encerrado em {formatWhen(lot.endsAt)}</span>
+            </div>
+          ) : lot.state === 'scheduled' ? (
+            <div className="lot-card-countdown">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12 6 12 12 16 14" />
+              </svg>
+              <span>Começa em {formatWhen(lot.startsAt)}</span>
+            </div>
+          ) : (
+            <>
+              <div className="lot-card-countdown">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <circle cx="12" cy="12" r="10" />
+                  <polyline points="12 6 12 12 16 14" />
+                </svg>
+                <span>Termina em {formatRemaining(remaining)}</span>
+              </div>
+              <small className="lot-card-date">{formatWhen(lot.endsAt)}</small>
+            </>
+          )}
         </div>
         <div className="lot-card-action">
           <Link to={`/lotes/${lot.id}`} className="lot-card-btn">Ver lote</Link>
