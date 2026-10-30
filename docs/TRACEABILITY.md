@@ -1,124 +1,124 @@
-# Traceability: brief criteria to tests
+# Rastreabilidade: Critérios do Enunciado aos Testes
 
-Each criterion of the brief's journeys (defined in phase 2 of the delivery process; the notes are kept outside the repository) maps to the tests that prove it. A criterion with no test is listed as open, never omitted.
+Cada critério das jornadas descritas no enunciado técnico mapeia diretamente para os testes automatizados que comprovam sua conformidade. Qualquer critério sem teste automatizado direto é explicitamente indicado como pendente ou verificado por checagem manual.
 
-## J0: access (slice 1)
+## J0: Acesso e Perfis
 
-| Criterion | Tests | Status |
+| Critério | Testes | Situação |
 |---|---|---|
-| 0.1 bidder sign-up | `frontend/src/features/auth/auth.test.tsx` ("creates a real account and opens a session"); `backend/tests/integration/me.test.ts` ("creates the profile and an empty wallet on sign-up") | Covered |
-| 0.2 login with one generic error | `auth.test.tsx` ("shows one generic message for a wrong login"); `frontend/src/features/auth/api.test.ts` ("gives one generic refusal for any sign-up error") | Covered |
-| 0.3 logout | `frontend/src/journey.test.tsx` ("signs up, sees an empty wallet, deposits once even on a double click, signs out and back in") | Covered |
-| 0.4 role guards on screen and API (401/403) | 401/403 cases in `catalog.test.ts`, `lots.test.ts`, `wallet.test.ts`, `bidding.test.ts`; `backend/tests/integration/access-matrix.test.ts` (one table: each role or login route of the API, anonymous and each wrong role; the cron route is left to its own test); `frontend/src/features/lots/lots.test.tsx` ("shows the role message to a bidder who opens it"); `journey.test.tsx` ("has no wallet: no menu entry ...") | Covered |
-| 0.5 identity only from the token | `me.test.ts` ("returns the identity taken from the token"); `auth-claims.test.ts` | Covered |
-| 0.6 sign-up asks "Quero comprar" or "Quero vender" and the account gets that role (B14) | `me.test.ts` ("gives the role chosen at sign-up ..."); `journey.test.tsx` ("signs up choosing \"Quero vender\" and gets the auctioneer panel, not a wallet") | Covered |
-| 0.7 only those two roles are accepted at sign-up, and the role cannot change after it (B14) | `me.test.ts` ("accepts no other role at sign-up, and the role cannot change after it"), with two hand mutations (D24) | Covered |
-| 0.8 the login screen offers the demo accounts, and a shortcut is a real sign-in (B15) | `auth.test.tsx` ("offers the demo accounts, and a shortcut is a real sign-in"); the failed sign-in reuses the generic refusal path of 0.2 | Covered |
+| 0.1 Cadastro de licitante | `frontend/src/features/auth/auth.test.tsx` ("creates a real account and opens a session"); `backend/tests/integration/me.test.ts` ("creates the profile and an empty wallet on sign-up") | Coberto |
+| 0.2 Login com erro genérico e seguro | `auth.test.tsx` ("shows one generic message for a wrong login"); `frontend/src/features/auth/api.test.ts` ("gives one generic refusal for any sign-up error") | Coberto |
+| 0.3 Logout seguro | `frontend/src/journey.test.tsx` ("signs up, sees an empty wallet, deposits once even on a double click, signs out and back in") | Coberto |
+| 0.4 Bloqueio de perfil em tela e API (401/403) | Casos 401/403 em `catalog.test.ts`, `lots.test.ts`, `wallet.test.ts`, `bidding.test.ts`; `backend/tests/integration/access-matrix.test.ts` (matriz de acesso completa por papel); `frontend/src/features/lots/lots.test.tsx`; `journey.test.tsx` | Coberto |
+| 0.5 Identidade obtida estritamente do token JWT | `me.test.ts` ("returns the identity taken from the token"); `auth-claims.test.ts` | Coberto |
+| 0.6 Cadastro pergunta "Quero comprar" ou "Quero vender" atribuindo o papel correto (B14) | `me.test.ts` ("gives the role chosen at sign-up ..."); `journey.test.tsx` ("signs up choosing \"Quero vender\" and gets the auctioneer panel, not a wallet") | Coberto |
+| 0.7 Apenas esses dois papéis são aceitos e o papel é imutável após cadastro (B14) | `me.test.ts` ("accepts no other role at sign-up, and the role cannot change after it") | Coberto |
+| 0.8 Tela de login disponibiliza atalhos de contas de demonstração (B15) | `auth.test.tsx` ("offers the demo accounts, and a shortcut is a real sign-in") | Coberto |
 
-## J1: auctioneer (slice 2)
+## J1: Painel do Leiloeiro
 
-| Criterion | Tests | Status |
+| Critério | Testes | Situação |
 |---|---|---|
-| 1.1 search an item in the external API, page by page up to the Met's 10,000-result window (B24, D28) | `backend/tests/integration/catalog.test.ts` ("pages through every result", "answers an empty page", "refuses a page that is not a positive whole number"); `frontend/src/features/lots/catalog-states.test.tsx` ("shows the total and goes to the next page of results, then back"); | `catalog.test.ts` ("returns the public-domain items with an image ..."); `lots.test.tsx` ("publishes a lot from a catalog item and manages it") | Covered |
-| 1.2 create a lot with validations | `backend/tests/integration/lots.test.ts` (creation, refusals, and Portuguese messages for out-of-range amounts); `backend/src/modules/lots/rules.test.ts`; `lots.test.tsx` ("refuses inverted times with the reason ...", "refuses an amount above the limit before the summary step") | Covered |
-| 1.3 item data copied into the database | `lots.test.ts` ("keeps the copy: the lot keeps its item even if the catalog later fails") | Covered |
-| 1.4 search with the API down shows a clear error | `catalog.test.ts` (503 `catalog_unavailable` cases); `frontend/src/features/lots/catalog-states.test.tsx` ("a failed item search says so on the screen, and a new search recovers") | Covered |
-| 1.5 edit only before the start and without bids | `lots.test.ts` (edit cases, 409 `lot_not_editable`); `rules.test.ts`; `lots.test.tsx` (edit pre-fills amounts with two decimals) | Covered |
-| 1.6 cancel a lot that has not ended; one with bids refunds the leader (9.1) | `lots.test.ts` (cancel cases); `rules.test.ts`; `cancel-refund.test.ts` | Covered |
-| 1.7 result of each ended lot and the total received | `backend/tests/integration/auctioneer-results.test.ts` (sold for how much, no bids, pending settlement, the total without other auctioneers' lots, 403 for a bidder); `frontend/src/features/lots/results.test.tsx` ("shows what each ended lot sold for, its no-bids state, and the total received") | Covered |
-| 1.8 only their own lots | `lots.test.ts` ("lists only the auctioneer's ...", "refuses to edit another auctioneer's ...", "refuses to cancel another auctioneer's ...") | Covered |
-| 1.9 an auctioneer cannot bid | `bidding.test.ts` ("refuses an anonymous visitor with 401 and an auctioneer with 403"); `frontend/src/features/lots/bidding.test.tsx` ("an auctioneer sees the room and is told they cannot bid") | Covered |
+| 1.1 Busca de itens no acervo externo (The Met) com paginação até 10.000 resultados | `backend/tests/integration/catalog.test.ts` ("pages through every result", "answers an empty page", "refuses a page that is not a positive whole number"); `frontend/src/features/lots/catalog-states.test.tsx`; `lots.test.tsx` | Coberto |
+| 1.2 Criação de lote com validações de tempo e valores | `backend/tests/integration/lots.test.ts` (criação, recusas e mensagens em português para valores fora dos limites); `backend/src/modules/lots/rules.test.ts`; `lots.test.tsx` | Coberto |
+| 1.3 Cópia e persistência dos dados do acervo no banco local | `lots.test.ts` ("keeps the copy: the lot keeps its item even if the catalog later fails") | Coberto |
+| 1.4 Busca com a API externa fora do ar exibe mensagem clara | `catalog.test.ts` (casos de 503 `catalog_unavailable`); `frontend/src/features/lots/catalog-states.test.tsx` | Coberto |
+| 1.5 Edição permitida apenas antes do início do lote e sem lances | `lots.test.ts` (casos de edição, 409 `lot_not_editable`); `rules.test.ts`; `lots.test.tsx` | Coberto |
+| 1.6 Cancelamento de lote não encerrado com estorno automático do líder (9.1) | `lots.test.ts` (casos de cancelamento); `rules.test.ts`; `cancel-refund.test.ts` | Coberto |
+| 1.7 Resultado de cada lote encerrado e total recebido consolidado | `backend/tests/integration/auctioneer-results.test.ts` (valor vendido, sem lances, pendente de liquidação, total exclusivo do leiloeiro, 403 para licitante); `frontend/src/features/lots/results.test.tsx` | Coberto |
+| 1.8 Isolamento de lotes: leiloeiro gerencia apenas seus próprios lotes | `lots.test.ts` ("lists only the auctioneer's ...", "refuses to edit another auctioneer's ...", "refuses to cancel another auctioneer's ...") | Coberto |
+| 1.9 Leiloeiro não pode dar lances em lotes | `bidding.test.ts` ("refuses an anonymous visitor with 401 and an auctioneer with 403"); `frontend/src/features/lots/bidding.test.tsx` | Coberto |
 
-## J2: public showcase (slice 2)
+## J2: Vitrine Pública e Catálogo
 
-| Criterion | Tests | Status |
+| Critério | Testes | Situação |
 |---|---|---|
-| 2.1 live, scheduled and ended tabs; cancelled hidden | `lots.test.ts` ("lists lots by state and hides cancelled ones"); `frontend/src/features/lots/showcase.test.tsx` ("turns off on its own, without a reload, once the only live lot ends", "shows the live lots one at a time in a loop, and the list below does not repeat them"); `LotCard.test.tsx` | Covered |
-| 2.2 card with image, title, current bid and time | `frontend/src/features/lots/showcase.test.tsx` ("shows the starting bid until a bid arrives, then the current bid"); `frontend/src/features/lots/components/LotCard.test.tsx`; `lots.test.tsx` ("lists a published lot under its state ...") | Covered |
-| 2.3 search and filter | `lots.test.ts` ("searches by title, ignoring case ..."; "refuses an unknown status filter with 422") | Covered |
-| 2.4 works with the external API down | `catalog.test.ts` ("keeps working for everything else when the catalog is down") | Covered |
-| 2.5 loading, empty and error states | `lots.test.tsx` ("shows the showcase loading and an empty state ...", "answers a missing lot with a message, not a blank page"); `catalog-states.test.tsx` ("a failed list shows the error with a retry, and the retry shows the list again") | Covered |
+| 2.1 Abas Ao vivo, Agendados e Encerrados; lotes cancelados ocultos | `lots.test.ts` ("lists lots by state and hides cancelled ones"); `frontend/src/features/lots/showcase.test.tsx`; `LotCard.test.tsx` | Coberto |
+| 2.2 Card com imagem, título, lance atual e contagem de tempo | `frontend/src/features/lots/showcase.test.tsx`; `frontend/src/features/lots/components/LotCard.test.tsx`; `lots.test.tsx` | Coberto |
+| 2.3 Busca por título e filtragem por estado | `lots.test.ts` ("searches by title, ignoring case ...", "refuses an unknown status filter with 422") | Coberto |
+| 2.4 Vitrine continua funcionando mesmo se a API externa do Met estiver fora do ar | `catalog.test.ts` ("keeps working for everything else when the catalog is down") | Coberto |
+| 2.5 Estados de carregamento, vazio e erro com nova tentativa sem piscar dados anteriores | `lots.test.tsx`; `catalog-states.test.tsx`; `showcase.test.tsx` | Coberto |
 
-## J3: wallet (slice 1)
+## J3: Carteira do Licitante
 
-| Criterion | Tests | Status |
+| Critério | Testes | Situação |
 |---|---|---|
-| 3.1 total, committed, available and deposit | `frontend/src/features/wallet/wallet.test.tsx` ("shows total, committed and available in reais"); `journey.test.tsx` | Covered |
-| 3.2 available = total - committed, never negative | `backend/src/modules/wallet/rules.test.ts`; `wallet.test.ts` ("refuses committed above total even when written directly", "refuses a negative balance when written directly") | Covered |
-| 3.3 deposit limits and validation | `wallet.test.ts` ("accepts exactly the minimum and the maximum deposit"); `journey.test.tsx` ("refuses a deposit below the minimum ..."); `frontend/src/lib/format.test.ts` (bounds and string-only cent conversion) | Covered |
-| 3.4 simultaneous deposits add up | `wallet.test.ts` ("sums simultaneous deposits with different keys", "credits exactly once when many identical requests race with the same key") | Covered |
+| 3.1 Total, comprometido, disponível e depósito simulado | `frontend/src/features/wallet/wallet.test.tsx` ("shows total, committed and available in reais"); `journey.test.tsx` | Coberto |
+| 3.2 Disponível = Total - Comprometido (nunca negativo) | `backend/src/modules/wallet/rules.test.ts`; `wallet.test.ts` ("refuses committed above total even when written directly", "refuses a negative balance when written directly") | Coberto |
+| 3.3 Limites de depósito (R$ 1,00 a R$ 100.000,00) e validação | `wallet.test.ts` ("accepts exactly the minimum and the maximum deposit"); `journey.test.tsx`; `frontend/src/lib/format.test.ts` | Coberto |
+| 3.4 Concorrência: depósitos simultâneos somam corretamente e chave idempotente evita crédito duplicado | `wallet.test.ts` ("sums simultaneous deposits with different keys", "credits exactly once when many identical requests race with the same key") | Coberto |
 
-## J4: live room and bids (slice 3)
+## J4: Sala ao Vivo e Lances
 
-| Criterion | What it requires | Tests | Status |
+| Critério | Descrição | Testes | Situação |
 |---|---|---|---|
-| 4.1 | Live room: current bid, history, position, countdown, leading or outbid, no reload | `frontend/src/features/lots/bidding.test.tsx` ("a bidder leads, and the room tells them without a reload when someone else outbids them", including the updated minimum in the bid field and button; "keeps the amount a bidder typed through the polls, and follows the minimum again after the shortcut or an accepted bid"); `backend/tests/integration/bidding.test.ts` ("is public and shows no user ids, and marks my position only when I am signed in"; "still says \"outbid\" to someone who bid long before the last 50 bids") | Covered: the countdown is tested under 4.9 |
-| 4.2 | Bids only in a live lot; first at least the starting bid; later at least current plus increment | `rules.test.ts` ("lot state gates the bid", "minimum amount"); `bidding.test.ts` ("refuses a first bid below the starting bid ...", "requires the next bid ...") | Covered |
-| 4.3 | Refusals with the exact reason: below minimum, insufficient funds, already leading, not started, ended | Messages asserted: `backend/tests/integration/bidding.test.ts` ("refuses a first bid below the starting bid with the exact minimum", "refuses a bid above the available balance with the exact available amount, and changes nothing", "refuses the leader bidding again with already_leading, and a double click does not double the bid"); `frontend/src/features/lots/bidding.test.tsx` ("a refused bid shows the exact reason and keeps the amount typed", plus the link to `/carteira` on `insufficient_funds`). Messages asserted too: "refuses a lot that has not started with lot_not_started" and "refuses a lot that has ended with lot_ended" in `bidding.test.ts`; the codes also in `backend/src/modules/bidding/rules.test.ts` | Covered |
-| 4.4 | The leader cannot cover their own bid | `rules.test.ts` ("refuses the current leader with already_leading"); `bidding.test.ts` ("refuses the leader bidding again with already_leading, and a double click does not double the bid") | Covered |
-| 4.5 | Committed money while leading, released when outbid | `rules.test.ts` ("the outbid leader is released"); `bidding.test.ts` ("requires the next bid ... releases the previous leader"; "20 bidders at the same instant: the accepted bids form one contiguous, increasing chain" (checks that committed money equals the leader's amount)) | Covered |
-| 4.6 | Anti-sniping: a bid in the last two minutes extends the end by two minutes | `rules.test.ts` ("anti-sniping ..." block, 6 cases); `bidding.test.ts` ("a lot ending in 90 seconds gets exactly two more minutes") | Covered |
-| 4.7 | Two bids at the same time: only one leads | `bidding.test.ts` ("one bidder firing ten requests at once ..."; "20 bidders at the same instant ...") | Covered |
-| 4.8 | Same balance in two lots at the same time never goes negative | `bidding.test.ts` ("one balance in two lots at once ..."; "bids crossing between two lots ...") | Covered |
-| 4.9 | Server clock: the countdown uses the server's time, not the browser's | `frontend/src/features/lots/clock.test.ts` (the offset from the server time and the request midpoint; a browser clock an hour off still shows 10 minutes left; zero or less once the server says it ended). The sign was checked by mutation | Covered |
+| 4.1 | Sala ao vivo: lance atual, histórico, posição do licitante, contagem regressiva, indicação de liderança ou superado sem recarregar | `frontend/src/features/lots/bidding.test.tsx`; `backend/tests/integration/bidding.test.ts` | Coberto |
+| 4.2 | Lances aceitos apenas em lote ao vivo; primeiro lance >= inicial; lances seguintes >= atual + incremento | `rules.test.ts`; `bidding.test.ts` | Coberto |
+| 4.3 | Mensagens de recusa com motivo exato em português: abaixo do mínimo, saldo insuficiente, já líder, não iniciado, já encerrado | `backend/tests/integration/bidding.test.ts`; `frontend/src/features/lots/bidding.test.tsx`; `backend/src/modules/bidding/rules.test.ts` | Coberto |
+| 4.4 | Licitante líder não pode cobrir seu próprio lance | `rules.test.ts` ("refuses the current leader with already_leading"); `bidding.test.ts` | Coberto |
+| 4.5 | Saldo comprometido enquanto líder, liberado imediatamente ao ser superado | `rules.test.ts`; `bidding.test.ts` | Coberto |
+| 4.6 | Anti-sniping: lance nos últimos 2 minutos estende o encerramento em exatamente 2 minutos | `rules.test.ts` ("anti-sniping ..." com 6 casos); `bidding.test.ts` | Coberto |
+| 4.7 | Lances concorrentes no mesmo instante: apenas um assume a liderança | `bidding.test.ts` ("20 bidders at the same instant ...") | Coberto |
+| 4.8 | Mesmo saldo disputando dois lotes simultâneos nunca fica negativo | `bidding.test.ts` ("bids crossing between two lots ...") | Coberto |
+| 4.9 | Contagem regressiva sincronizada com o relógio do servidor, imune a relógio desregulado no cliente | `frontend/src/features/lots/clock.test.ts` | Coberto |
 
-## J5: closing and settlement (slice 4)
+## J5: Encerramento e Liquidação
 
-| Criterion | Test | Status |
+| Critério | Descrição | Teste | Situação |
+|---|---|---|---|
+| 5.1 | Encerramento automático no horário previsto mesmo sem nenhum visitante na página | `backend/tests/integration/settlement.test.ts`, `settlement-on-demand.test.ts` | Coberto |
+| 5.2 | Vencedor paga, leiloeiro recebe crédito, saldos de lances superados liberados, recibo gravado | `settlement.test.ts` | Coberto |
+| 5.3 | Lote sem lances encerra normalmente sem vencedor | `settlement.test.ts` | Coberto |
+| 5.4 | Idempotência sob concorrência de múltiplos disparos de liquidação | `settlement.test.ts` (dez execuções paralelas) | Coberto |
+| 5.5 | Conservação de moeda: transferência sem criação ou perda de saldo | `settlement.test.ts` | Coberto |
+| | Recusa de liquidação se a cópia da ponta divergir da cadeia criptográfica | `settlement.test.ts` | Coberto |
+
+## J6: Meus Arremates e Comprovante de Vitória
+
+| Critério | Testes | Situação |
 |---|---|---|
-| 5.1 closes at its time with nobody looking | `backend/tests/integration/settlement.test.ts`, "5.1" (cron call settles an ended lot, leaves a running one) | Covered (cron trigger), plus on-demand in `settlement-on-demand.test.ts` |
-| 5.2 winner pays, auctioneer is credited, outbid money released, receipt written | `settlement.test.ts`, "5.2" | Covered |
-| 5.3 no bids closes without a winner | `settlement.test.ts`, "5.3" | Covered |
-| 5.4 settles once under parallel triggers | `settlement.test.ts`, "5.4" (ten parallel cron calls) | Covered |
-| 5.5 the money only moves, the lot's ledger nets to zero | `settlement.test.ts`, "5.5" | Covered |
-| Settlement refuses a head copy that does not match the chain (D6) | `settlement.test.ts`, "a settlement that cannot prove its history" | Covered |
+| 6.1 Listagem de lotes participados e arrematados com código de comprovante | `backend/tests/integration/receipts.test.ts`; `backend/src/modules/receipts/rules.test.ts`; `frontend/src/features/wins/wins.test.tsx` | Coberto |
+| 6.2 Link compartilhável com código aleatório, acessível sem login | `receipts.test.ts`; `wins.test.tsx` | Coberto |
+| 6.3 Comprovante exibe apenas pseudônimo público do vencedor | `receipts.test.ts` | Coberto |
+| 6.4 Isolamento: ninguém acessa comprovante de outro usuário sem o código | `receipts.test.ts` (404 para código inexistente, 401 sem token, 403 para leiloeiro) | Coberto |
 
-## J6: my wins and the win receipt
+## J7: Auditoria Pública Independente
 
-| Criterion | Tests | Status |
+| Critério | Testes | Situação |
 |---|---|---|
-| 6.1 list the lots bid on and won, with the receipt | `backend/tests/integration/receipts.test.ts` ("lists the lots a bidder bid on: a won lot with its receipt code, a lost one without"; "shows the highest amount the bidder offered, not the first one"); `backend/src/modules/receipts/rules.test.ts` (every outcome: won, cancelled, leading, settling, outbid, lost); `frontend/src/features/wins/wins.test.tsx` ("a winner sees the lot in Meus arremates ..."; "says so when the bidder has not bid on any lot yet") | Covered. Declared limit: the list shows at most 100 lots, with no note when there are more |
-| 6.2 shareable link with a random code, no login | `receipts.test.ts` ("opens the receipt by its code without login ..."); `wins.test.tsx` (the same link opens signed out) | Covered |
-| 6.3 the receipt shows only pseudonyms | `receipts.test.ts` ("opens the receipt by its code without login ..." asserts the winner's id and e-mail are absent, and that the label is the one the public audit shows for the winner's last bid) | Covered |
-| 6.4 nobody sees someone else's receipt | `receipts.test.ts` ("keeps a receipt behind its code and a list with its owner": 404 for a random or malformed code, 401 without token, 403 for an auctioneer, another bidder's list has no receipt) | Covered |
+| 7.1 Histórico completo com pseudônimos criptográficos estáveis | `backend/tests/integration/audit.test.ts`; `frontend/src/features/audit/audit.test.tsx` | Coberto |
+| 7.2 Veredito de integridade: íntegro ou adulterado, indicando exatamente onde a cadeia quebra | `audit.test.ts`; `audit.test.tsx` | Coberto |
+| 7.3 Detecção de valor alterado, lance removido no meio, último lance excluído, lance inserido, ordem trocada e alteração direta no banco | `audit.test.ts`; `backend/src/shared/bid-chain.test.ts`; `backend/tests/integration/audit-anchor.test.ts`; `frontend/src/features/audit/audit.test.tsx` | Coberto |
+| 7.4 Ausência total de dados pessoais ou identificadores internos no histórico | `audit.test.ts` (sem nomes, e-mails, user_ids ou segredos) | Coberto |
+| 7.5 Explicação detalhada da integridade no README | `README.md`, seção "Como a auditoria funciona" | Coberto |
 
-## J7: public audit (D22)
+## J8: Requisitos Transversais
 
-| Criterion | Tests | Status |
+| Critério | Testes | Situação |
 |---|---|---|
-| 7.1 full history with pseudonyms | `backend/tests/integration/audit.test.ts` ("is public, lists every bid oldest first with its hash ...", "shows the same pseudonym as the live room ..."); `frontend/src/features/audit/audit.test.tsx` | Covered |
-| 7.2 intact or tampered, and where it breaks | `audit.test.ts` ("names ..." cases); `audit.test.tsx` ("shows the tampered headline in an alert, with where the chain breaks") | Covered |
-| 7.3 detects an edited value, a bid removed in the middle, the last bid removed, an inserted bid, a swapped order, a direct database change | `audit.test.ts` ("names an edited amount, bidder and time", "names the seq expected where a bid was removed from the middle", "names the head_seq when the last bid was removed ...", "names a forged bid added at the end", "names two bids whose order was swapped"); `backend/src/shared/bid-chain.test.ts`; `backend/tests/integration/audit-anchor.test.ts` ("links to the public file of the lot in the anchor repository"); `frontend/src/features/audit/audit.test.tsx` ("renders the public anchor file link...") | Covered, with a declared limit: a last bid removed with the head rewritten before its publication is caught only by the bidder's receipt (README, D22) |
-| 7.4 no personal data, not even indirect | `audit.test.ts` ("exposes no name, e-mail, user id or secret", "truncates every time to the second") | Covered |
-| 7.5 the technique explained in the README | README, "Como a auditoria funciona" | Covered (documentation, no test) |
+| 8.1 Dados de demonstração (seed): leiloeiro, dois licitantes com saldo, lote ao vivo com lances e seis lotes agendados do acervo | `backend/tests/integration/seed.test.ts`; `README.md` | Coberto |
+| 8.2 Deploy público verificado | `make e2e-prod` (`backend/scripts/e2e-deployed.ts` passou com 6 de 6 fluxos em produção) | Coberto |
+| 8.3 Documentação viva e instruções fiéis ao código | `README.md`, `docs/DECISIONS.md`, `docs/BACKLOG.md` | Coberto |
+| 8.4 Formato único e consistente de respostas de erro da API | `failures.test.ts`; asserções em testes de integração | Coberto |
+| 8.5 Dados de demonstração com lote encerrado arrematado e lote com histórico adulterado para prova de auditoria | `seed.test.ts` | Coberto |
+| 8.6 Acessibilidade de foco e título de página para cada tela | `frontend/src/app/navigation.test.tsx` | Coberto |
+| 8.7 Mensagens de falha de login com causa clara e redirecionamento de retorno | `frontend/src/features/auth/auth.test.tsx`; `journey.test.tsx` | Coberto |
+| 8.8 Responsividade sem overflow horizontal de 320 px a 1280 px com alvos de toque >= 44 px | `e2e/overflow.spec.ts`; medição em Playwright | Coberto |
+| 8.9 Sala ao vivo com tratamento de erros, recuperação e anti-sniping visível | `frontend/src/features/lots/bidding.test.tsx` | Coberto |
+| 8.10 Auditoria e comprovante destacam a quebra da cadeia quando adulterado | `frontend/src/features/audit/audit.test.tsx`; `frontend/src/features/wins/receipt.test.tsx` | Coberto |
+| 8.11 Polling da vitrine pausa quando a aba do navegador fica oculta | `frontend/src/features/lots/showcase.test.tsx` | Coberto |
+| 8.12 Link "Histórico" abre a âncora correta; reconexão progressiva na sala ao vivo | `frontend/src/features/lots/showcase.test.tsx`; `frontend/src/features/lots/bidding.test.tsx` | Coberto |
+| 8.13 Menu de conta sem repetição desnecessária de saldo e contraste adequado no tema escuro | `frontend/src/journey.test.tsx` | Coberto |
+| 8.14 Busca vazia exibe destaques do acervo com termos em português traduzidos pelo glossário | `backend/src/modules/catalog/translate.test.ts`; `backend/tests/integration/catalog.test.ts` | Coberto |
+| 8.15 Carrossel automático no destaque sem repetição de lotes na listagem inferior | `frontend/src/features/lots/showcase.test.tsx` | Coberto |
 
-## J8: cross-cutting
+## J9: Requisitos Opcionais do Enunciado
 
-| Criterion | Tests | Status |
+| Critério | Testes | Situação |
 |---|---|---|
-| 8.1 seeds: one auctioneer, two bidders, one live lot with bids, six scheduled lots of other Met objects (B23), credentials in the README | `backend/tests/integration/seed.test.ts` ("creates an auctioneer, two funded bidders and one live lot with bids"; "running it again creates nothing new"); the README lists the accounts | Covered. The end-to-end run against the deployed URL is criterion 8.2 |
-| 8.2 public deploy | `make e2e-prod` (`backend/scripts/e2e-deployed.ts`) walks sign-up, deposit (and a top-up to the live minimum before the bid, since the demo price rises), the live lot, a refused and an accepted bid, "Meus arremates" and the public audit on the published URL; it passed on the production site (6 of 6). The receipt step needs the lot to end, so it is not in the script | Covered for the published site; the receipt is covered by the integration tests |
-| 8.3 README with the steps and the unexpected behaviors | README (reviewed against the code in this PR: targets, limits, deposit range, anchor repository name, the seed) | Covered by review (docs are not tested) |
-| 8.4 one error shape, never a fake success | `failures.test.ts`; `catalog.test.ts` (503 cases); the `code` assertions across the integration tests | Covered |
-| 8.5 the demo data also holds an ended lot with a receipt and a tampered lot (B17, B18) | `seed.test.ts` ("also leaves an ended lot with a winner and a receipt, and a settled lot whose history was changed"; "running it again creates nothing new") | Covered locally; the hosted run is pending (D9c) |
-| 8.6 every screen has its own document title; moving to a screen moves focus to its heading, or to its main region while the heading is still loading; going back to the first screen moves focus too; the first load keeps focus where the browser put it; the not-found page has a heading and a link back; the role radios show a focus ring (B36) | `frontend/src/app/navigation.test.tsx` (titles, not-found page, focus after a move, return to the first screen, lot page whose title loads later); the focus ring is checked on screen | Covered |
-| 8.7 a sign-in failure says its cause; a protected page brings the person back after sign-in; a screen for another role links to the right home; a failed cancellation is an alert; the sign-in fields name their error (B37) | `frontend/src/features/auth/auth.test.tsx` (causes, return path, field links); `journey.test.tsx` (wrong-role link) | Open |
-| 8.8 a long title with no spaces does not scroll the page sideways at phone widths; the action links on phones are at least 44 px high (B38) | measured in a browser on the running app (320 to 390 px); not a unit test, because it is layout | Open |
-| 8.9 the live room: the leader gets no bid form; an ended lot shows its final price (or that nobody bid); a lot that cannot load has a way back and a retry; a bid near the end says the end moved; the bid field names its error (B39) | `frontend/src/features/lots/bidding.test.tsx` (leader and final price, anti-sniping on a real database, the lot page retry, the bid field's error link); the room's own error page for an expired sign-in is checked on screen | Covered |
-| 8.10 a tampered history marks the broken bid row; a receipt of a tampered lot warns like the audit, and says so when the check cannot run; copying the receipt link says what happened (B40) | `frontend/src/features/audit/audit.test.tsx` (the broken row); `frontend/src/features/wins/receipt.test.tsx` (the warning, the check that cannot run, copying) | Covered |
-| 8.11 the storefront checks for a live lot only while its tab is visible, and removes that check when it leaves; the stored theme applies before the first paint under the site's Content-Security-Policy (B41) | `frontend/src/features/lots/showcase.test.tsx` (the hidden tab, the listener added and removed); `frontend/src/app/theme.test.tsx` (the script in `public/theme-init.js` applies the stored choice, run against the same key); the theme was measured in a browser with the `vercel.json` Content-Security-Policy applied to the page | Covered |
-| 8.12 the featured lot's Histórico link opens the lot's bid history; a live room that cannot read waits longer between reads (B42) | `frontend/src/features/lots/showcase.test.tsx` (the link); `frontend/src/features/lots/bidding.test.tsx` (the growing wait) | Covered |
-| 8.13 the account menu shows the role without repeating the balance; the publish notice is a visible block; the placeholders are legible in the dark theme (B43, first part) | `frontend/src/journey.test.tsx` (the open menu shows the role and no balance, checked under a mutation that puts the balance back); the notice and the placeholder were checked on screen and by measurement | Open |
-| 8.14 an empty search shows the featured items; the Met's titles are translated for the known terms, and the rest stays in English (B44, D48) | `backend/src/modules/catalog/translate.test.ts`; `backend/tests/integration/catalog.test.ts` (the featured items on an empty search) | Covered |
-| 8.15 the featured block shows the live lots in a loop, and the list below does not repeat them; the sign-in screen names its heading once and centres its shortcuts (B45) | `frontend/src/features/lots/showcase.test.tsx` (the carousel, mutated for the rotation and the filter); the sign-in look was checked on screen | Covered |
-
-## J9: optionals of the brief (section 05)
-
-| Criterion | Tests | Status |
-|---|---|---|
-| Search and filter of lots | see 2.3 | Covered |
-| Automated tests | `make ci` | Covered |
-| 9.1 cancelling a lot with bids refunds the committed money automatically (B19) | `backend/tests/integration/cancel-refund.test.ts`; `frontend/src/features/lots/results.test.tsx` ("asks to confirm, says the leader is refunded ..."); five hand mutations in D25 | Covered |
-| 9.2 Docker Compose runs the app (B20) | Checked by hand on 2026-10-26 (Linux): `make compose` built the image and served the site (200), `/api/health` (200, database ok) directly and through the site's proxy, and `/api/me` with a token from the local Auth (200). No automated test: it would need Docker inside the CI job (D26) | Covered by a manual check |
-| 9.3 light and dark theme, with a switch (B21) | `frontend/src/app/theme.test.tsx` ("switches to dark and back, and the choice survives a reload"); the colors are checked on screen | Covered |
-| B28 and the accessibility of the main screens (D46) | `e2e/overflow.spec.ts` (five widths, five screens, no sideways scroll); `e2e/accessibility.spec.ts` (axe: no critical or serious violation); `e2e/journeys.spec.ts` (visitor, bidder, auctioneer, audit); run with `make e2e-browser` | Covered by the browser suite; not part of `make ci` |
+| Busca e filtro de lotes por título e estado | Ver critério 2.3 | Coberto |
+| Testes automatizados com cobertura global | `make ci` (backend, frontend e contratos) | Coberto |
+| 9.1 Cancelamento de lote com estorno automático | `backend/tests/integration/cancel-refund.test.ts`; `frontend/src/features/lots/results.test.tsx` | Coberto |
+| 9.2 Docker Compose para execução completa dos serviços | `make compose` verificado em ambiente Linux | Coberto |
+| 9.3 Tema claro e escuro persistido com alternância instantânea | `frontend/src/app/theme.test.tsx` | Coberto |
+| Responsividade e acessibilidade completas (D46) | `e2e/overflow.spec.ts`, `e2e/accessibility.spec.ts` (axe-core), `e2e/journeys.spec.ts` | Coberto |

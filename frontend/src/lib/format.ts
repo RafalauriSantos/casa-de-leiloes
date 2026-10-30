@@ -9,7 +9,44 @@ export function formatBRL(cents: number): string {
 /** Integer cents to a plain field value with two decimals ("500,00", "0,05"), without floating point. */
 export function formatReaisInput(cents: number): string {
   const digits = String(cents).padStart(3, '0');
-  return `${digits.slice(0, -2)},${digits.slice(-2)}`;
+  const integer = digits.slice(0, -2);
+  const decimal = digits.slice(-2);
+  const formattedInteger = integer.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  return `${formattedInteger},${decimal}`;
+}
+
+/**
+ * Formats user input dynamically as typed:
+ * - When digits are typed (e.g. "1000000"), formats with thousands dots ("1.000.000").
+ * - Preserves decimals if typed ("1000000,50" -> "1.000.000,50").
+ * - Leaves invalid values (letters, negative signs, 3+ decimal digits) intact so form validation can report them.
+ */
+export function formatDynamicReais(raw: string): string {
+  if (!raw.trim()) return '';
+  const parts = raw.split(',');
+  if (parts.length > 2) return raw;
+  if (parts[1] && parts[1].length > 2) return raw;
+  const integerRaw = parts[0]?.replace(/\./g, '') ?? '';
+  if (!/^\d+$/.test(integerRaw)) return raw;
+
+  const formattedInteger = integerRaw.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  if (parts.length === 2) {
+    return `${formattedInteger},${parts[1]}`;
+  }
+  return formattedInteger;
+}
+
+/**
+ * Formats a raw user input into Brazilian Reais currency format in real-time ("1.000.000,00").
+ * Strips non-digit characters and treats the digits as cents, automatically adding thousands separators
+ * and two decimal places.
+ */
+export function maskReaisInput(raw: string, maxDigits = 12): string {
+  const digits = raw.replace(/\D/g, '').slice(0, maxDigits);
+  if (!digits) return '';
+  const asNumber = Number(digits);
+  if (asNumber === 0) return '0,00';
+  return formatReaisInput(asNumber);
 }
 
 /**

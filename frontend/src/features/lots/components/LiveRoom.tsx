@@ -2,7 +2,7 @@ import { BID_LIMIT_MESSAGE, MAX_BIDS_PER_LOT, type BidReceipt, type ErrorCode, t
 import { useEffect, useRef, useState, type SyntheticEvent } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { ApiRequestError } from '@/lib/api-client';
-import { formatBRL, formatReaisInput, parseReaisToCents } from '@/lib/format';
+import { formatBRL, formatDynamicReais, formatReaisInput, parseReaisToCents } from '@/lib/format';
 import { useAuth } from '@/features/auth';
 import { fetchWallet } from '@/features/wallet';
 import { fetchLive, placeBid } from '../api';
@@ -272,10 +272,16 @@ export function LiveRoom({ lotId }: { lotId: string }) {
             value={amount}
             onChange={(event) => {
               edited.current = true;
-              setAmount(event.target.value);
+              setAmount(formatDynamicReais(event.target.value));
               setBidError(undefined);
             }}
-            inputMode="decimal"
+            onBlur={() => {
+              const cents = parseReaisToCents(amount);
+              if (cents !== undefined) {
+                setAmount(formatReaisInput(cents));
+              }
+            }}
+            inputMode="numeric"
             required
             aria-invalid={bidError ? true : undefined}
             aria-describedby={bidError ? 'bid-error' : undefined}

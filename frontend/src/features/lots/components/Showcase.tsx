@@ -24,7 +24,10 @@ const EMPTY_HINT: Record<ShowcaseStatus, string> = {
   ended: 'Ainda não há lotes encerrados.',
 };
 
-type State = { status: 'loading' } | { status: 'error'; message: string } | { status: 'ready'; lots: LotSummary[] };
+type State =
+  | { status: 'loading' }
+  | { status: 'error'; message: string }
+  | { status: 'ready'; lots: LotSummary[]; loadedTab: ShowcaseStatus; loadedQuery: string };
 
 export function getPaginationRange(current: number, total: number): number[] {
   if (total <= 5) {
@@ -67,9 +70,10 @@ export function Showcase() {
 
   useEffect(() => {
     let cancelled = false;
-    setState({ status: 'loading' });
     fetchLots({ status: tab, q: query || undefined })
-      .then((lots) => { if (!cancelled) setState({ status: 'ready', lots }); })
+      .then((lots) => {
+        if (!cancelled) setState({ status: 'ready', lots, loadedTab: tab, loadedQuery: query });
+      })
       .catch((error: unknown) => {
         if (!cancelled) setState({ status: 'error', message: error instanceof Error ? error.message : 'Erro inesperado.' });
       });
@@ -122,7 +126,14 @@ export function Showcase() {
 
   // On the live tab the featured lots are above the list, so the list does not repeat them (B45).
   // Without a search, the live lots are above the list; a search lists what it finds, live lots included.
-  const listed = tab === 'live' && query === '' && state.status === 'ready' ? state.lots.filter((lot) => !featuredIds.has(lot.id)) : state.status === 'ready' ? state.lots : [];
+  const isLoaded = state.status === 'ready' && state.loadedTab === tab && state.loadedQuery === query;
+  const isLoading = state.status === 'loading' || (!isLoaded && state.status !== 'error');
+  const currentLots = isLoaded ? state.lots : [];
+  const listed = isLoaded
+    ? tab === 'live' && query === ''
+      ? currentLots.filter((lot) => !featuredIds.has(lot.id))
+      : currentLots
+    : [];
   const PAGE_SIZE = 4;
   const totalPages = Math.max(1, Math.ceil(listed.length / PAGE_SIZE));
   const safePage = Math.min(page, totalPages);
@@ -222,14 +233,14 @@ export function Showcase() {
             ))}
           </nav>
         </div>
-        {state.status === 'loading' && <p>Carregando lotes…</p>}
+        {isLoading && <p>Carregando lotes…</p>}
         {state.status === 'error' && (
           <>
             <p role="alert">{state.message}</p>
             <button type="button" onClick={() => { setAttempt((n) => n + 1); }}>Tentar de novo</button>
           </>
         )}
-        {state.status === 'ready' && state.lots.length === 0 && (
+        {isLoaded && currentLots.length === 0 && (
           <div className="empty">
             <p>{query ? `Nenhum lote encontrado para "${query}".` : EMPTY_HINT[tab]}</p>
             {isAuctioneer && <Link className="my-lot-action" to="/leiloeiro/novo">Criar lote</Link>}
@@ -238,7 +249,7 @@ export function Showcase() {
             )}
           </div>
         )}
-        {state.status === 'ready' && state.lots.length > 0 && listed.length === 0 && (
+        {isLoaded && currentLots.length > 0 && listed.length === 0 && (
           <p className="featured-all-note">Todos os lotes ao vivo estão no destaque acima.</p>
         )}
         {listed.length > 0 && (

@@ -1,7 +1,7 @@
 import { MAX_INCREMENT_CENTS, MAX_STARTING_BID_CENTS, type LotInput, type OwnLot } from '@casa/contracts';
 import { useState, type SyntheticEvent } from 'react';
 import { ApiRequestError } from '@/lib/api-client';
-import { formatBRL, formatReaisInput, parseReaisToCents } from '@/lib/format';
+import { formatBRL, formatDynamicReais, formatReaisInput, parseReaisToCents } from '@/lib/format';
 import { toInstant, toLocalField } from '../time';
 
 export interface LotFormValues {
@@ -83,6 +83,17 @@ export function LotFields({ values, onChange }: { values: LotFormValues; onChang
     onChange({ ...values, [field]: event.target.value });
   };
 
+  const setCurrency = (field: 'startingBid' | 'increment') => (event: { target: { value: string } }) => {
+    onChange({ ...values, [field]: formatDynamicReais(event.target.value) });
+  };
+
+  const blurCurrency = (field: 'startingBid' | 'increment') => () => {
+    const cents = parseReaisToCents(values[field]);
+    if (cents !== undefined) {
+      onChange({ ...values, [field]: formatReaisInput(cents) });
+    }
+  };
+
   const applyDuration = (hours: number) => {
     const parsedStart = Date.parse(toInstant(values.startsAt));
     const baseMs = Number.isNaN(parsedStart) ? Date.now() + 5 * 60_000 : parsedStart;
@@ -123,7 +134,14 @@ export function LotFields({ values, onChange }: { values: LotFormValues; onChang
           <label>
             Lance inicial (R$)
             <span className="currency-field">
-              <input value={values.startingBid} onChange={set('startingBid')} inputMode="decimal" required placeholder="500,00" />
+              <input
+                value={values.startingBid}
+                onChange={setCurrency('startingBid')}
+                onBlur={blurCurrency('startingBid')}
+                inputMode="numeric"
+                required
+                placeholder="500,00"
+              />
             </span>
           </label>
           <small className="field-limit">Máximo: {formatBRL(MAX_STARTING_BID_CENTS)}</small>
@@ -132,7 +150,14 @@ export function LotFields({ values, onChange }: { values: LotFormValues; onChang
           <label>
             Incremento mínimo (R$)
             <span className="currency-field">
-              <input value={values.increment} onChange={set('increment')} inputMode="decimal" required placeholder="50,00" />
+              <input
+                value={values.increment}
+                onChange={setCurrency('increment')}
+                onBlur={blurCurrency('increment')}
+                inputMode="numeric"
+                required
+                placeholder="50,00"
+              />
             </span>
           </label>
           <small className="field-limit">Máximo: {formatBRL(MAX_INCREMENT_CENTS)}</small>

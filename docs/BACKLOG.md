@@ -1,86 +1,61 @@
 # Backlog
 
-The work items of the project, done and to do. The acceptance criteria are not repeated here: each item points to
-the criteria in `docs/TRACEABILITY.md` (J0 to J8, taken from the brief) and to the decisions in `docs/DECISIONS.md`.
-An item is done when its criteria are Covered there.
+Itens de trabalho do projeto, concluídos e pendentes. Os critérios de aceitação detalhados estão mapeados em `docs/TRACEABILITY.md` (critérios J0 a J8, derivados do enunciado técnico) e nas decisões registradas em `docs/DECISIONS.md`. Um item é considerado concluído quando seus critérios estão cobertos e verificados por testes.
 
-Risk levels: **high** (money, bids, settlement, authentication, permissions, migrations) needs both reviewers, a
-mutation per rule and the owner's "pode mergear"; **normal** needs one reviewer and merges on green CI.
+Níveis de risco:
+- **Alto** (dinheiro, lances, liquidação, autenticação, permissões, migrations de banco): exige testes com mutação por regra, revisão minuciosa e autorização explícita do proprietário.
+- **Normal**: revisão e aprovação pela esteira automatizada verde de integração contínua (`make ci`).
 
-## Done
+## Concluídos
 
-| Item | Criteria | Decisions | PRs |
+| Item | Critérios | Decisões | PR / Branch |
 |---|---|---|---|
-| Walking skeleton: monorepo, CI, Supabase, Vercel deploy, per-minute scheduler | 8.2 | D1, D2 | #1 |
-| Access and wallet: role guard, idempotent simulated deposit, append-only ledger | 0.1 to 0.5, 3.1 to 3.4 | D3, D9 | #2, #3 |
-| Catalog search, lots and the public showcase | 1.1 to 1.3, 1.5, 1.6, 1.8, 2.1, 2.3, 2.4 | D17 | #4, #5, #9 |
-| Bids, the live room and the hash-chained bid history | 1.9, 4.2, 4.4 to 4.8 | D4, D18 | #6, #7 |
-| Quality bar and the traceability map | | | #8 |
-| Settlement: due lots, receipts, on-demand triggers, refusal of a broken history | 5.1 to 5.5 | D6 | #10, #11 |
-| Bid receipt with the chain head | 7.3 | D21 | #13 |
-| Public anchor on GitHub: rules and publisher | 7.3 | D21 | #14, #15 |
-| Public audit: route, first broken bid, anchor, receipt head, headline, page | 7.1 to 7.5 | D22 | #16 to #22 |
-| Limit of 1,000 bids per lot | | D23 | #23 |
-| Payment waits for the publication of the last bid | | D21 | #24 |
-| Owner release of a lot whose history fails verification | 7.2 | D20 | #12, #25 |
-| Decision: no read-back of the anchor before payment | | D21 | #26 |
-| AO VIVO badge on live lots (replaced by the brass "Ao vivo" label, D34) | 2.1 | | #27 |
-| The Ao vivo dot only while a lot is open; test runs leave no open lot behind | 2.1, 2.5 | | #28 |
-| "Meus arremates" and the shareable win receipt | 6.1 to 6.4 | high | #30 |
-| Demo seed: one auctioneer, two funded bidders, one live lot with bids (D9c) | 8.1 | normal | #31 |
-| Auctioneer panel: result of each ended lot and the total received | 1.7 | normal | #33 |
-| End-to-end script against the published site (`make e2e-prod`) | 8.2 | normal | #36 |
-| Receipt head wraps on phones (no sideways scroll in the live room) | | normal | #32 |
-| Countdown in days when more than a day is left | | normal | #34 |
-| Countdown from the server clock (clock arithmetic in pure functions, tested) | 4.1, 4.9 | normal | #39 (review and CI in progress) |
-| CI on pull requests only, cancel superseded runs, skip tests for docs-only changes | | normal | #37 |
-| Supabase image cache (added in #38, removed in #40: it missed on every new branch) | | normal | #38, #40 |
-| Catalog down: the search shows the server's message on the screen (test with the API's 503 answer) | 1.4 | normal | #42 |
-| Showcase card shows the current bid once there are bids (it always showed the starting bid); card fields and the error state with retry tested | 2.2, 2.5 | normal | #42 |
-| Exact messages for "not started" and "ended" bid refusals are asserted (the messages were already sent) | 4.3 | normal | #43 |
-| The Ao vivo dot goes off on its own when the only live lot ends with the page open (the test closes open lots in the local database first) | 2.1 | normal | #43 |
-| README final review: steps and limits checked against the code; the intro no longer says bids and audit are coming | 8.3 | normal | #44 |
-| The demo catalog has real variety: the seed adds six real Met objects of other kinds (clock, sword, chair, teapot, box), scheduled for tomorrow (B23) | 8.1 | normal | #46 |
-| Catalog search pages through the Met's results, 12 at a time, up to its 10,000-result window, with the total and the page count (B24, D28) | 1.1 | normal | #47 |
-| Redesign, slice 1: showcase with the featured live lot and the room in two columns, from the Claude Design canvas (copy unchanged; visual change) (D29) | 2.1, 2.2 | normal | #48 |
-| Redesign, remaining screens in one pass: sign-in with its side panel, wallet with the balance bar and quick deposit amounts, my wins, the receipt with its seal and frame, the audit headline, the auctioneer panel (visual; copy kept) (D30) | 2.x, 6.x, 7.x, 1.x | normal | #49 |
-| Brief gaps: seed test reads the active demo lot (B13); sign-up chooses bidder or auctioneer (B14, migration 11); demo sign-in shortcuts (B15); README with the site and the demo accounts (B16); seed with an ended lot and a tampered lot (B17, B18); cancel with refund (B19, optional); Docker Compose (B20, optional); theme switch (B21, optional); AI usage notes (B22) | 0.6 to 0.8, 8.1, 8.5, 9.1 to 9.3 | D24, D25, D26 | #45 (waiting for "pode mergear") |
-| The app uses the approved canvas palette (white and graphite, dark gold accents, gold in the dark theme) and Jost | 2.x | D33 | #66 |
-| The storefront follows the canvas: headline with search, featured live lot, list of lots with a small photo | 2.1, 2.2 | D34 | #67 |
-| Public anchor link on audit page: links to the lot file on GitHub | 7.3 | D49 | |
-| Editorial showcase overhaul: single hero spotlight and 4-column catalog grid | 2.1, 2.2 | D50 | |
+| Walking skeleton: monorepo, CI, Supabase, deploy Vercel, agendador por minuto | 8.2 | D1, D2 | #1 |
+| Acesso e carteira: bloqueio por perfil, depósito simulado idempotente, livro-razão somente anexação | 0.1 a 0.5, 3.1 a 3.4 | D3, D9 | #2, #3 |
+| Busca no catálogo, lotes e vitrine pública | 1.1 a 1.3, 1.5, 1.6, 1.8, 2.1, 2.3, 2.4 | D17 | #4, #5, #9 |
+| Lances, sala ao vivo e histórico de lances encadeado por HMAC | 1.9, 4.2, 4.4 a 4.8 | D4, D18 | #6, #7 |
+| Barra de qualidade e matriz de rastreabilidade | | | #8 |
+| Liquidação: lotes vencidos, comprovantes, gatilhos sob demanda, recusa de histórico adulterado | 5.1 a 5.5 | D6 | #10, #11 |
+| Comprovante de lance com a ponta da cadeia criptográfica | 7.3 | D21 | #13 |
+| Âncora pública no GitHub: regras de consistência e publicador | 7.3 | D21 | #14, #15 |
+| Auditoria pública: rota independente, detecção do primeiro lance rompido, âncora, cabeçalho e página | 7.1 a 7.5 | D22 | #16 a #22 |
+| Limite de 1.000 lances por lote | | D23 | #23 |
+| Pagamento condicionado à publicação do último lance na âncora | | D21 | #24 |
+| Liberação pelo proprietário de lote cujo histórico falhe na verificação | 7.2 | D20 | #12, #25 |
+| Decisão arquitetural: sem releitura da âncora antes do pagamento | | D21 | #26 |
+| Destaque de lotes ao vivo na vitrine | 2.1 | D34 | #27 |
+| Ponto indicador verde apenas quando há lote ao vivo; suíte sem deixar lotes abertos | 2.1, 2.5 | | #28 |
+| "Meus arremates" e comprovante de vitória compartilhável | 6.1 a 6.4 | Alto | #30 |
+| Seed rica de demonstração: leiloeiro, dois licitantes com saldo, lote ao vivo com lances | 8.1 | Normal | #31 |
+| Painel do leiloeiro: resultado de cada lote encerrado e total recebido consolidado | 1.7 | Normal | #33 |
+| Script ponta a ponta em produção (`make e2e-prod`) | 8.2 | Normal | #36 |
+| Quebra de linha responsiva da ponta do recibo no celular (sem scroll lateral na sala ao vivo) | | Normal | #32 |
+| Contagem regressiva em dias quando restar mais de 24 horas | | Normal | #34 |
+| Contagem regressiva baseada no relógio do servidor (aritmética pura testada) | 4.1, 4.9 | Normal | #39 |
+| Otimização de CI: apenas em pull requests, cancelamento de execuções obsoletas | | Normal | #37 |
+| Tratamento de indisponibilidade do acervo do The Met na busca | 1.4 | Normal | #42 |
+| Card da vitrine exibe lance atual quando há lances; tratamento de erro com nova tentativa | 2.2, 2.5 | Normal | #42 |
+| Mensagens de recusa assertivas para "não iniciado" e "já encerrado" | 4.3 | Normal | #43 |
+| Ponto "Ao vivo" desliga sozinho quando o último lote encerra sem necessidade de reload | 2.1 | Normal | #43 |
+| Seed com seis objetos reais do acervo do The Met com variedade de categorias | 8.1 | Normal | #46 |
+| Busca paginada no acervo do The Met com glossário traduzido para termos artísticos | 1.1, D28, D48 | Normal | #47 |
+| Redesign editorial da vitrine: destaque heróico único e catálogo em grid de 4 colunas com paginação | 2.1, 2.2 | D50 | #103 |
+| Responsividade mobile em viewports estreitos (320px a 390px): abas em 3 colunas compactas e 0px overflow | 2.1, 2.2 | D50 | `fix/showcase-mobile` |
+| Carrossel com pausa automática acessível por foco (`:focus-within`), hover e movimento reduzido (sem botão) | 2.1 | D51 | `fix/showcase-mobile` |
+| Suporte a milhões e formatação dinâmica de moedas em tempo real (`1.000.000,00`) com pontos e vírgula | 3.3 | D52 | `fix/showcase-mobile` |
+| Eliminação da concorrência e piscada de lotes na alternância entre abas da vitrine | 2.1, 2.5 | D52 | `fix/showcase-mobile` |
+| Enquadramento natural de imagens sem corte de laterais nem zoom agressivo (`object-fit: contain`) | 2.2 | D52 | `fix/showcase-mobile` |
 
-## To do (by priority)
+## Em aberto / Melhorias contínuas
 
-| # | Item | Criteria | Risk | Done when |
+| # | Item | Critérios | Risco | Condição de conclusão |
 |---|---|---|---|---|
-| B10 | Security headers (CSP and others): set in `vercel.json` in #44; still open until the browser console shows no CSP error on the site and the preview's API answers | | normal | the app answers with them and still works on Vercel |
-| B11 | Daily live test of the public anchor: moved past the brief's deadline (29 October); declared as a known limit | | normal | planned in D21 |
-| B27 | Visual v3, desktop: build the nine screens of the canvas page "Desktop" (`https://claude.ai/artifact/MnWiASFsu9vAdWfhNLJ4Qu`) exactly as drawn: positions, spacing, type, and one primary action per screen. One navigation bar with the brand once; no repeated brand card. Done so far: the storefront (#67, #72, #73), the palette (#66), the header (#69), the auctioneer panel and new lot (#70), the wallet and sign-in (#71) my wins (#74), the receipt (#75) and the audit screen (this one); the states are left | Each screen matches its canvas artboard at 1280 px (side by side screenshots); the bidder's and auctioneer's flow links work from start to switching roles | normal | all nine screens reviewed side by side with the canvas and approved by the owner |
-| B28 | Visual v3, phone: build the nine screens of the canvas page "Celular" (390 px) exactly as drawn | No horizontal overflow at 320, 360, 390, 768 and 1280 px; the same content order as the canvas on each width; screenshots at 320 and 390 px reviewed; the phone header is one line (logo at the left, the main link of the role and an account menu with the name and "Sair"), the theme switch is a 44 px icon button without underline, and the balance shows once. Done for the header in this slice (D35), the screens follow | normal | screenshots reviewed by the owner at 320, 360, 390 px and at 768 and 1280 px Overflow fixed and measured at 320, 360, 390, 768 and 1280 px (D43); the owner's screenshot review is still open |
-| B29 | Visual v3, dark theme: design and build the dark version of the nine screens (tokens and screens). The tokens and the canvas are done (#66, D33); the screens follow the other items | Contrast of text at 4.5:1 and of control borders at 3:1 in the dark theme; the theme switch keeps working | normal | dark screens reviewed by the owner |
-| B30 | Auctioneer panel as the brief asks (Front-End, "Painel do leiloeiro"): summary at the top (total received, sold ended lots, active lots), "New lot" as the main action, "My lots" before the item search, the creation form after choosing an item, cancel is offered for a lot that has not ended (with bids it asks for confirmation and refunds the leader, D25), and the result of each ended lot. Creating a lot is a flow of steps (item, data, publish) with a way back; the catalog opens with search shortcuts (Relógio, Mapa, Vaso, Pintura, Espada) and calls the external API only on a tap or a search; start and end dates come filled (start five minutes ahead, because a lot must start in the future; end in seven days) and the values are filled, not placeholders | Each item of the brief's panel row is visible on the screen; the catalog is never an empty box; cancelling a lot with bids asks for confirmation and refunds the leader (test); the total received equals the sum of the winning bids of sold lots (test) | normal, money-adjacent (total and cancel) | a test covers the total, the cancel refund and the refusal to cancel an ended lot; the screen matches the canvas. Built in the branch `feat/app-panel-and-lot-flow` (D36) |
-| B31 | Feedback states on every screen: loading, empty, error, and the refusal messages the brief lists (below the minimum, insufficient balance, already leading, lot not started, lot ended) | Each refusal message from the brief appears for its case (test per case); empty and loading states exist on the lists and the room; the storefront state tabs are a segmented control (this replaces the text buttons of D34) and an empty state offers an action (auctioneer: "Criar lote"; visitor: "Ver agendados"; both done in D38) | normal, money-adjacent (bid refusals) | one test per refusal message in the brief; states visible on the screens. Done in D38 (empty states and the segmented tabs) and D44 (why a bidder cannot bid on a scheduled or ended lot). The refusal messages were already tested in the API |
-| B32 | Auction flow with the role switch: bidder and auctioneer accounts can switch at the sign-in screen, and the screens show only what the role can do | Logging out and in as the other role shows the right menu and screens (test); after sign-in the auctioneer lands on the panel (done, D35), and the lot room does not offer the bid action to the auctioneer (the brief: the auctioneer cannot bid; room done earlier, featured lot on the storefront done in D39) | normal | the flow in the canvas runs end to end on the deployed site |
-| B33 | App icons: the gavel as the favicon and as PNG icons for the home screen (Android and iOS, `apple-touch-icon` and a web manifest) | Every screen shows the gavel in the browser tab; adding the site to the home screen shows the gavel, not a generic icon | normal | the owner confirms the tab icon and the home-screen icon on the phone Done in D45 (PNG icons, manifest, head links); waiting for the owner to check both icons on the phone |
-| B34 | Wallet history ("Movimentações" on the canvas): list the bidder's deposits and committed bids, newest first. Needs a read endpoint over the ledger, so it is a money-path read (D37) | The list shows each deposit and each bid with date and amount; it never shows another user's rows (test) | high, money and access | a test per rule and the owner's "pode mergear" |
-| B35 | Bid input and money validation (frontend audit, slice 1): the live room updates the pre-filled bid amount and button label when another bidder raises the minimum (unless the bidder edited the field) and links to the wallet when funds are insufficient; `parseReaisToCents` refuses zero and >10 integer digits without floating point; lot forms format cents with two decimals (`formatReaisInput`), check limits before the review step, and return Portuguese schema errors from `/api/lots` (D47) | The outbid bidder's input and button advance to the new minimum; `insufficient_funds` shows a link to `/carteira`; 25-digit and zero amounts are refused locally; `200000000` is refused on step 1 of `/leiloeiro/novo` and in Portuguese on `/api/lots` | high, money and bids | a failing test first for each rule, mutation checks, `make ci`, and the owner's "pode mergear" |
-| B36 | Navigation and focus (frontend audit, slice 2): every screen sets its own document title (for example "Painel do leiloeiro · Casa de Leilões"); after a move to another screen, focus goes to the screen's main heading, or to its main region while the heading is still loading, and then to the heading when it appears; the first load keeps focus where the browser put it; the not-found page has an h1, a link back to the lots and its own title; the role choice on the sign-in screen shows a visible focus ring. Exception: `/entrar` has no h1 today, so focus goes to its main region | Titles, focus after a move (including going back to the first screen and a lot page whose title loads later), the first-load rule and the not-found page are tested; the focus ring on the role radios is checked on screen | normal | a failing test first, `make ci` green locally, `pr-reviewer` PASS on the final diff, then the GitHub merge |
-| B37 | Errors that tell the truth (frontend audit, slice 3): a sign-in failure says why it failed (wrong password or unconfirmed e-mail, too many attempts, or the server or network is down) instead of always "wrong e-mail or password"; a protected page takes the person back to the page they asked for after sign-in (only paths of this app); a screen that is not for the person's role links to the right home; a failed lot cancellation is an alert, never a success line; the sign-in fields point to their error (`aria-invalid`, `aria-describedby`) | Each failure message is tested by its cause; the return path is tested on a real sign-in and refused for anything that is not a path of this app; the wrong-role link is tested; the cancel-failure alert is checked on screen (it needs a refusal the panel offers no button for); the field links are tested | normal | a failing test first, `make ci` green locally, `pr-reviewer` PASS on the final diff, then the GitHub merge |
-| B38 | Long text and touch targets (frontend audit, slice 4): a lot title with no spaces or a long word wraps inside its card, the lot room and the panel instead of pushing the page sideways; the action links of the auctioneer panel ("Ver sala") and the standalone links on the lot page ("Auditar histórico", "Ver a obra na fonte") have a touch target of at least 44 px high on a phone | At 320 to 390 px, a 120-character title with no spaces does not make the page scroll sideways on the storefront, the lot room and the panel (measured in a browser, before and after); the action links are 44 px high or more on a phone (measured) | normal | a measured failure first on the running app, `make ci` green locally, `pr-reviewer` PASS on the final diff, then the GitHub merge |
-| B39 | Live room clarity (frontend audit, slice 5, money path): the leader does not get a bid form that can only fail; an ended lot shows its final price, or that nobody bid, instead of "Mínimo para dar lance"; a room that cannot load (lot not found, server error, sign-in expired) says so with a way back to the lots and a retry where it makes sense; when a bid pushes the end of the lot (anti-sniping) the room says the end moved, with the new end time; the bid field points to its error (`aria-invalid`, `aria-describedby`) | A leader sees no bid form (test); an ended lot with a bid shows its final price and without a bid says nobody bid (test); a missing lot has a link back and a retry (test); the room's own error page for an expired sign-in has a link back and to sign in (checked on screen, an expired session cannot be made in a test); a bid near the end shows the new end (test, real database); the field points to its error (test) | high, money and bids | a failing test first for each rule, mutation checks, `make ci` green locally, `pr-reviewer` PASS on the final diff, then the owner's "pode mergear" |
-| B40 | Audit and receipt that tell the truth (frontend audit, slice 6): a tampered history marks the bid where the chain breaks (not only the line above the table); a receipt of a lot whose history was changed shows the same warning as the audit page; "Copiar link" says whether the link was copied, and what to do when the browser refuses | A tampered audit highlights the broken bid row (test); the receipt of a tampered lot carries the warning, and says the check could not run when it cannot (test); "Copiar link" shows a status when it works and an alert when the browser refuses (test with the clipboard refused) | normal | a failing test first, `make ci` green locally, `pr-reviewer` PASS on the final diff, then the GitHub merge |
-| B41 | Storefront quality (frontend audit, slice 7): the storefront stops asking for the live lot while its tab is hidden, and asks again when it is shown; the stored theme is applied before the first paint, so a dark choice does not flash white on a slow load | The live check stops while the tab is hidden and resumes when it is shown (test); with the site's Content-Security-Policy applied, the stored theme is applied (measured in a browser, before and after; the first version was blocked by that policy and moved to `public/theme-init.js`) | normal | a failing test first for the polling, a measured failure for the theme, `make ci` green locally, `pr-reviewer` PASS on the final diff, then the GitHub merge. Left for later items: the layout shift when the featured lot appears (needs a layout decision: reserve the space or not), the route split of the bundle, the repeated CSS rules, the image sizes |
-| B42 | Money-path clean-up from the pending list: the featured lot's "Histórico" link opens the bid history of that lot (its own anchor), not the bid form; while the connection to a live room fails, the room waits longer between reads (up to 30 s) and goes back to 3 s when it works. The lot-amount formatting item is covered by B35 | The link goes to the lot's history anchor (test); the room's retry wait grows while the connection fails (test with a failing endpoint) | high, money and bids | a failing test first for each rule, mutation checks, `make ci` green locally, `pr-reviewer` PASS on the final diff, then the owner's "pode mergear" |
-| B43 | Layout and text, first part (UX list, PR C): the publish notice on the auctioneer panel is a visible block, not a plain green line; the account menu does not repeat the balance (it is in the header); the placeholder of the sign-in and deposit fields is legible in the dark theme. Left for the next part: zoom of 200% (reflow), the audit table's hash and time columns on phones, the alignment of the lot actions under the thumbnail, the empty thumbnail | The account menu shows the role without the balance (test); the notice is a block with its own style (checked on screen); the placeholder meets 4.5:1 in the dark theme (measured) | normal | a failing test first for the menu, measurements in a browser for the rest, `make ci` green locally, `pr-reviewer` PASS on the final diff, then the GitHub merge |
-| B44 | Demo catalog: the auctioneer sees real items on an empty search (the featured list, six Met objects captured in the fixtures), and the Met's titles of those items are translated by a glossary (D48) so the lots read in Portuguese. The limitation is declared in the README | An empty search returns the featured items (integration test); the glossary translates known terms and keeps the rest (unit test); a captured Met object comes out translated (unit test) | normal | `make ci` green locally, `pr-reviewer` PASS on the final diff, then the GitHub merge. Next: more lots in the bidder's default tab (the seed's variety items start tomorrow, so they show under Agendados) |
-| B45 | Storefront carousel and sign-in clean-up (UX, from the owner's review): the featured block shows the live lots one at a time, moving on in a loop like a showcase; the list below does not repeat the lots of the featured block; a tap on the lot's block or on "Dar lance" opens that lot, and nothing else takes focus. On the sign-in screen: the heading "Entrar" is not repeated (the card says "Acesse sua conta", the bar shows no title), the demo shortcuts and the links are centred, and the theme switch is a round icon without underline | The featured block rotates through the live lots and the list does not repeat them (test, with mutations for the rotation and the filter); the sign-in heading and the switch are checked on screen | normal | `make ci` green locally, `pr-reviewer` PASS on the final diff, then the GitHub merge |
+| B10 | Cabeçalhos de segurança avançados (CSP rígido e afins) no `vercel.json` | | Normal | Resposta em produção sem bloqueios de scripts legítimos |
+| B11 | Monitoramento diário de saúde da âncora pública do GitHub | | Normal | Rotina de teste automatizado diário do repositório da âncora |
+| B34 | Extrato completo de movimentações na carteira do licitante (depósitos e reservas) | 3.1 | Alto | Endpoint dedicado sobre o livro-razão com autorização e testes |
+| B49 | Alerta ao administrador se um lote encerrado aguardar mais de 10 minutos para publicação | | Normal | Definição de canal (webhook, Discord, e-mail) |
 
-Owner actions (not code): make the repository public after checking its history for secrets; protect the `main` branch of the anchor repository (checked on 2026-10-26: not protected).
+## Ações administrativas externas (fora do código)
 
-## Waiting for a decision
-
-| Item | What is needed |
-|---|---|
-| Owner alert when a lot waits more than 10 minutes for publication | The owner chooses the channel (e-mail or other) |
-| Visual identity | The owner sends the references |
+- Manter o repositório principal público sem segredos no histórico.
+- Proteger a branch `main` do repositório público de ancoragem (`casa-de-leiloes-ancora`).
