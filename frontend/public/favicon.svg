@@ -1,1 +1,21 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="330 250 360 280"><g transform="translate(0 -40)" fill="#1d1d1f" stroke="#1d1d1f" stroke-width="10" stroke-linejoin="round"><rect x="340" y="500" width="320" height="56" rx="8"/><g transform="rotate(15 474.5 498.8)"><polygon points="460.9,420.3 623.5,257.6 605.3,239.3 442.7,402"/><path d="M555.8 288.8L574.3 307.2" stroke="#d4a84f" stroke-width="7" stroke-linecap="round" fill="none"/><rect x="375.3" y="370.8" width="156" height="92" rx="14" transform="rotate(45 453.3 416.8)" fill="#d4a84f"/></g></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Bloco de som do leiloeiro (Sounding block) -->
+  <path d="M 8 58 L 56 58 L 52 52 L 12 52 Z" fill="#1c1a16" />
+  <rect x="18" y="47" width="28" height="5" rx="1.5" fill="#c5a153" />
+
+  <!-- Malhete de leilão autêntico (Auction Gavel) -->
+  <g transform="translate(28 32) rotate(-35)">
+    <!-- Cabo torneado clássico com pomo -->
+    <path d="M -2 -14 L -1.5 -28 Q -2.2 -32 -3 -35 Q -3.5 -38 -2 -40 L 2 -40 Q 3.5 -38 3 -35 Q 2.2 -32 1.5 -28 L 2 -14 Z" fill="#1c1a16" />
+    <circle cx="0" cy="-42" r="3" fill="#c5a153" />
+    <rect x="-2.2" y="-14" width="4.4" height="4" rx="0.8" fill="#c5a153" />
+
+    <!-- Cabeça em barril simétrico com anel de apresentação em latão -->
+    <rect x="-16" y="-8" width="32" height="16" rx="3.5" fill="#1c1a16" />
+    <rect x="-3" y="-9" width="6" height="18" rx="1" fill="#c5a153" />
+    <line x1="-11" y1="-7.5" x2="-11" y2="7.5" stroke="#c5a153" stroke-width="1.6" />
+    <line x1="11" y1="-7.5" x2="11" y2="7.5" stroke="#c5a153" stroke-width="1.6" />
+    <path d="M -16 -8.5 C -19 -8.5 -20 -6 -20 0 C -20 6 -19 8.5 -16 8.5 Z" fill="#c5a153" />
+    <path d="M 16 -8.5 C 19 -8.5 20 -6 20 0 C 20 6 19 8.5 16 8.5 Z" fill="#c5a153" />
+  </g>
+</svg>
