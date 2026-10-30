@@ -57,7 +57,13 @@ export function AppLayout() {
       <header className="app-header">
         <div className="app-header-inner">
           <Link to={me?.role === 'auctioneer' ? '/leiloeiro' : '/'} className="brand" aria-label="Casa de Leilões"><Logo /><span className="brand-name" aria-hidden="true">CASA DE LEILÕES</span></Link>
-          {auth.status === 'signed-out' && pathname !== '/' && pathname !== '/entrar' && <Link to="/" className="header-back" aria-label="Voltar aos lotes"><svg width="12" height="20" viewBox="0 0 12 20" aria-hidden="true" focusable="false"><path d="M10 2L2 10l8 8" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg></Link>}
+          {pathname !== '/' && pathname !== '/entrar' && (
+            <Link to={me?.role === 'auctioneer' ? '/leiloeiro' : '/'} className="header-back" aria-label={auth.status === 'signed-out' ? 'Voltar aos lotes' : 'Voltar'}>
+              <svg width="12" height="20" viewBox="0 0 12 20" aria-hidden="true" focusable="false">
+                <path d="M10 2L2 10l8 8" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </Link>
+          )}
           {screen && !onSignIn && <span className="screen-title" aria-hidden="true">{screen.title}</span>}
           {!onSignIn && (
             <nav aria-label="Principal" className="main-nav">

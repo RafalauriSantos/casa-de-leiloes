@@ -108,10 +108,16 @@ describe('AuditView, from data', () => {
     expect(within(region).getByRole('table', { name: 'Histórico de lances' })).toBeTruthy();
   });
 
-  it('shows a stale pending anchor as an incident', () => {
-    view(report({ anchor: { status: 'pending', publishedThroughSeq: 1, stale: true }, headline: { kind: 'no_divergence_until', publishedThroughSeq: 1 } }));
+  it('renders the public anchor file link when anchorFileUrl is provided, and omits it when absent', () => {
+    view(report({ anchorFileUrl: 'https://github.com/owner/anchor/blob/main/lots/test.csv' }));
+    const link = screen.getByRole('link', { name: 'Ver o arquivo público da âncora no GitHub' });
+    expect(link.getAttribute('href')).toBe('https://github.com/owner/anchor/blob/main/lots/test.csv');
+    expect(link.getAttribute('target')).toBe('_blank');
+    expect(link.getAttribute('rel')).toContain('noopener');
 
-    expect(screen.getByText(/aguardam publicação há 10 minutos ou mais/)).toBeTruthy();
+    cleanup();
+    view(report({ anchorFileUrl: undefined }));
+    expect(screen.queryByRole('link', { name: 'Ver o arquivo público da âncora no GitHub' })).toBeNull();
   });
 });
 

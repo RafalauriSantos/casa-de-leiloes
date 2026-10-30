@@ -204,7 +204,7 @@ export function LiveRoom({ lotId }: { lotId: string }) {
     <section aria-label="Sala do lote">
       <h2>Sala ao vivo</h2>
       <p className="room-status">
-        <span className="state">{STATE_LABEL[room.state]}</span>
+        <span className="state" data-state={room.state}>{STATE_LABEL[room.state]}</span>
         {room.state === 'live' && <span className="room-refresh">Atualiza a cada 3 s</span>}
       </p>
       {NOT_LIVE_MESSAGE[room.state] && <p>{NOT_LIVE_MESSAGE[room.state]}</p>}
@@ -307,8 +307,8 @@ export function LiveRoom({ lotId }: { lotId: string }) {
           </ul>
         </section>
       )}
-      {room.state === 'live' && role === undefined && <p>Entre como licitante para dar lances.</p>}
-      {role === 'auctioneer' && <p>Leiloeiros não dão lances.</p>}
+      {room.state === 'live' && role === undefined && <p className="room-visitor-note">Entre como licitante para dar lances.</p>}
+      {role === 'auctioneer' && <p className="room-visitor-note">Leiloeiros não dão lances.</p>}
 
       <h3 id="historico">Histórico</h3>
       {room.history.length === 0 ? (

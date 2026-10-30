@@ -1,6 +1,7 @@
 :root {
   color-scheme: light dark;
   --display: Jost, -apple-system, system-ui, sans-serif;
+  --serif: 'Cormorant Garamond', Georgia, serif;
   /* Neutral scale (D33): ink, muted, field, line, paper (page) and card, from the approved canvas. */
   --ink: #3a3d42;
   --muted: #6a6e74;
@@ -58,7 +59,7 @@
 }
 
 body { margin: 0; background: var(--paper); color: var(--ink); }
-main { max-width: 72rem; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
+main { max-width: 78rem; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
 h1, h2, h3 { font-family: var(--display); font-weight: 600; overflow-wrap: anywhere; min-width: 0; }
 h1 { font-size: 2.6rem; line-height: 1.1; letter-spacing: -0.025em; font-weight: 600; margin: 0.5rem 0 1rem; }
 h2 { font-size: 1.5rem; }
@@ -395,11 +396,12 @@ button.secondary { background: transparent; color: var(--ink); border: 1px solid
 .theme-toggle-icon .theme-toggle-text { display: none; }
 .header-back { display: none; }
 @media (max-width: 600px) {
-  .app-header-inner { min-height: 56px; gap: 0.5rem; }
-  .header-back { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; margin-left: -0.75rem; color: var(--ink); }
+  .app-header-inner { min-height: 56px; gap: 0.5rem; justify-content: space-between; }
+  .header-back { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; margin-left: -0.25rem; color: var(--ink); text-decoration: none; }
   .brand, .main-nav, .header-balance { display: none; }
-  .screen-title { display: block; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 1.375rem; font-weight: 500; letter-spacing: -0.01em; }
-  .header-end { flex: none; gap: 0.5rem; }
+  .screen-title { display: block; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 1.25rem; font-weight: 500; letter-spacing: -0.01em; }
+  .header-end { flex: none; display: inline-flex; align-items: center; gap: 0.5rem; margin-left: auto; }
+  .header-theme-signed-in { display: inline-flex; align-items: center; }
   .account-nav { display: flex; flex-direction: column; }
   .account-nav a { display: flex; align-items: center; min-height: 52px; padding: 0 1.1rem; border-top: 1px solid var(--line); color: var(--ink); text-decoration: none; font-size: 1.05rem; }
   .account-nav a[aria-current="page"] { color: var(--brass); font-weight: 500; }
@@ -476,3 +478,1669 @@ input::placeholder { color: var(--muted); opacity: 1; }
 button.theme-toggle-icon { text-decoration: none; color: var(--ink); border: 1px solid var(--line); border-radius: 50%; }
 .demo-accounts { justify-content: center; text-align: center; }
 .demo-accounts button.link { justify-content: center; text-align: center; }
+
+/* ==========================================================================
+   UI/UX Redesign Proposal: Editorial Gallery Aesthetic (Desktop & Mobile)
+   ========================================================================== */
+
+.sr-only {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* 1. Header & Navigation Polish */
+.app-header {
+  border-bottom: 1px solid var(--line);
+  background: var(--paper);
+}
+.app-header-inner {
+  min-height: 84px;
+}
+.brand .logo {
+  width: 52px;
+  height: 40px;
+}
+.brand-name {
+  font-size: 1.05rem;
+  letter-spacing: 0.22em;
+  font-weight: 500;
+}
+.main-nav a {
+  padding: 0.45rem 0;
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+.main-nav a:hover {
+  color: var(--ink);
+}
+.main-nav a[aria-current="page"] {
+  color: var(--brass);
+  font-weight: 500;
+  border-bottom-color: var(--brass);
+}
+.header-balance {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  padding: 0.38rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--card);
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+.header-theme-signed-in {
+  display: inline-flex;
+}
+
+/* 2. Storefront Hero & Search (Editorial Typography & Exact Placement) */
+.showcase-hero {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 2rem;
+  margin: 1.5rem 0 2.5rem;
+  flex-wrap: wrap;
+}
+.showcase-hero-intro {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+.showcase-hero h1 {
+  font-family: var(--serif);
+  font-size: 3.8rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  color: #1e2022;
+  margin: 0;
+}
+html[data-theme="dark"] .showcase-hero h1 {
+  color: #f2ead2;
+}
+.showcase-hero-sub {
+  margin: 0;
+  font-size: 0.98rem;
+  color: #7a7e85;
+  font-weight: 400;
+}
+.showcase-hero form.showcase-search {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  width: 28rem;
+  max-width: 100%;
+  padding: 0.25rem 0.35rem 0.25rem 1rem;
+  border: 1px solid #dcd7cb;
+  border-radius: 999px;
+  background: #ffffff;
+  box-sizing: border-box;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+html[data-theme="dark"] .showcase-hero form.showcase-search {
+  border-color: #38342c;
+  background: #141416;
+}
+.showcase-hero form.showcase-search label.showcase-search-label {
+  position: relative;
+  flex: 1 1 0%;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-width: 0;
+  margin: 0;
+}
+.search-icon {
+  flex-shrink: 0;
+  color: #8c8f94;
+}
+.showcase-hero form.showcase-search input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  border-radius: 0;
+  padding: 0.45rem 0;
+  background: transparent;
+  color: var(--ink);
+  font-size: 0.95rem;
+  outline: none;
+}
+.showcase-hero form.showcase-search input::placeholder {
+  color: #8c8f94;
+  font-size: 0.9rem;
+}
+.showcase-hero form.showcase-search button.showcase-search-btn {
+  min-height: 40px;
+  padding: 0 1.35rem;
+  border-radius: 999px;
+  border: 0;
+  background: #2b3138;
+  color: #ffffff;
+  font-size: 0.92rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+.showcase-hero form.showcase-search button.showcase-search-btn:hover {
+  background: #1a1e23;
+}
+html[data-theme="dark"] .showcase-hero form.showcase-search button.showcase-search-btn {
+  background: var(--brass);
+  color: #0b0b0c;
+}
+
+/* 3. Featured Live Lot (Single Large Elegant Card) */
+.featured {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  gap: 3.5rem;
+  align-items: center;
+  padding: 1.75rem;
+  border: 1px solid #e5dfd3;
+  border-radius: 20px;
+  background: #ffffff;
+  box-shadow: 0 2px 14px rgba(0, 0, 0, 0.02);
+  margin-bottom: 4rem;
+  box-sizing: border-box;
+}
+html[data-theme="dark"] .featured {
+  border-color: #38342c;
+  background: #141416;
+}
+.featured-media {
+  position: relative;
+  width: 100%;
+}
+.featured-cover {
+  display: block;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #eeebe3;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+}
+html[data-theme="dark"] .featured-cover {
+  background: #1c1a16;
+}
+.featured-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.featured-carousel-pill {
+  position: absolute;
+  right: 1rem;
+  bottom: 1rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+  font-size: 0.8rem;
+  color: var(--ink);
+  opacity: 0.95;
+  pointer-events: auto;
+  z-index: 2;
+  transition: opacity 0.2s ease;
+}
+.featured-carousel-pill:hover,
+.featured-carousel-pill:focus-within {
+  opacity: 1;
+}
+.featured-carousel-pill .carousel-counter {
+  font-weight: 500;
+  color: var(--muted);
+}
+.featured-carousel-pill .carousel-divider {
+  width: 1px;
+  height: 12px;
+  background: var(--line);
+  margin: 0 0.1rem;
+}
+.featured-carousel-pill .carousel-pause-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0 0.2rem;
+  font-size: 0.8rem;
+  color: var(--ink);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-family: inherit;
+  border-radius: 4px;
+}
+.featured-carousel-pill .carousel-pause-btn:hover {
+  color: var(--brand);
+}
+.featured-carousel-pill .carousel-pause-btn:focus-visible {
+  outline: 2px solid var(--brand);
+}
+.featured-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  min-width: 0;
+  padding-right: 0.5rem;
+}
+.featured-badge-row {
+  display: flex;
+  align-items: center;
+}
+.featured-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.22rem 0.75rem;
+  border-radius: 999px;
+  background: #fbf9f4;
+  border: 1px solid #e2dcd0;
+  color: #2b3138;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+html[data-theme="dark"] .featured-status {
+  background: #1c1a16;
+  border-color: #3d3322;
+  color: #f2ead2;
+}
+.featured-status .live-dot {
+  width: 0.48rem;
+  height: 0.48rem;
+  border-radius: 50%;
+  background: #e62117;
+  box-shadow: none;
+  animation: none;
+}
+.featured-title {
+  font-family: var(--serif);
+  font-size: 3.2rem;
+  font-weight: 600;
+  line-height: 1.08;
+  color: #1e2022;
+  text-decoration: none;
+  margin: 0;
+}
+html[data-theme="dark"] .featured-title {
+  color: #f2ead2;
+}
+.featured-title:hover {
+  color: var(--brass);
+}
+.featured-stats {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  gap: 2rem;
+  padding: 1.4rem 0;
+  border-top: 1px solid #ece6da;
+  border-bottom: 0;
+}
+html[data-theme="dark"] .featured-stats {
+  border-top-color: #38342c;
+}
+.featured-stat-col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+.featured-stat-end {
+  border-left: 1px solid #ece6da;
+  padding-left: 2rem;
+}
+html[data-theme="dark"] .featured-stat-end {
+  border-left-color: #38342c;
+}
+.featured-stats .featured-stat-label {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #8c8f94;
+  font-weight: 600;
+}
+.featured-stats div.featured-stat-col strong.featured-stat-value {
+  font-size: 2.35rem;
+  font-weight: 700;
+  color: #1e2022;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+html[data-theme="dark"] .featured-stats div.featured-stat-col strong.featured-stat-value {
+  color: #f2ead2;
+}
+.featured-stats div.featured-stat-col strong.featured-stat-countdown {
+  font-size: 2.35rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+  color: #9c782b;
+}
+.featured-stat-sub {
+  font-size: 0.85rem;
+  color: #8c8f94;
+  margin-top: 0.15rem;
+}
+.featured-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.1rem;
+  align-items: center;
+  margin-top: 0.5rem;
+}
+.featured-actions a.featured-bid {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 1.4rem;
+  border-radius: 8px;
+  background: #2b3138;
+  color: #ffffff;
+  border: 1px solid #2b3138;
+  font-size: 0.95rem;
+  font-weight: 500;
+  text-decoration: none;
+  box-sizing: border-box;
+  transition: background-color 0.15s ease;
+}
+.featured-actions a.featured-bid:hover {
+  background: #1a1e23;
+}
+html[data-theme="dark"] .featured-actions a.featured-bid {
+  background: var(--brass);
+  border-color: var(--brass);
+  color: #0b0b0c;
+}
+.featured-actions a.featured-history {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 1.4rem;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #2b3138;
+  border: 1px solid #cfc9be;
+  font-size: 0.95rem;
+  font-weight: 500;
+  text-decoration: none;
+  box-sizing: border-box;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+.featured-actions a.featured-history:hover {
+  border-color: #2b3138;
+  background: #fbf9f4;
+}
+html[data-theme="dark"] .featured-actions a.featured-history {
+  background: #141416;
+  color: #f2ead2;
+  border-color: #3d3322;
+}
+
+/* 4. Section "Explorar lotes" & 4-Column Editorial Catalog Grid */
+.upcoming {
+  margin-top: 1rem;
+}
+.upcoming-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+.catalog-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 1.15rem;
+}
+.upcoming-head h2 {
+  font-family: var(--serif);
+  font-size: 2.6rem;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  color: #1e2022;
+  margin: 0;
+  line-height: 1;
+}
+html[data-theme="dark"] .upcoming-head h2 {
+  color: #f2ead2;
+}
+.catalog-title-dash {
+  display: inline-block;
+  width: 2.5rem;
+  height: 2px;
+  background: #c5a153;
+}
+.upcoming-head nav[aria-label="Estado dos lotes"] {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin: 0;
+}
+.upcoming-head nav[aria-label="Estado dos lotes"] button {
+  min-height: 38px;
+  padding: 0 1.15rem;
+  border-radius: 999px;
+  border: 1px solid #dcd7cb;
+  background: #ffffff;
+  color: #4a4d52;
+  font-size: 0.88rem;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+  transition: all 0.15s ease;
+}
+html[data-theme="dark"] .upcoming-head nav[aria-label="Estado dos lotes"] button {
+  background: #141416;
+  border-color: #38342c;
+  color: #b5ad9c;
+}
+.upcoming-head nav[aria-label="Estado dos lotes"] button:hover {
+  border-color: #8a6a22;
+}
+.upcoming-head nav[aria-label="Estado dos lotes"] button[aria-pressed="true"] {
+  background: #8b6e35;
+  border-color: #8b6e35;
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(139, 110, 53, 0.25);
+}
+.upcoming-head nav[aria-label="Estado dos lotes"] button .live-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: #e62117;
+}
+.upcoming-head nav[aria-label="Estado dos lotes"] button[aria-pressed="true"] .live-dot {
+  background: #ffffff;
+}
+
+/* 4-Column Catalog Grid */
+.lot-rows {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+@media (max-width: 1100px) {
+  .lot-rows {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 600px) {
+  .lot-rows {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Individual Lot Card matching reference */
+.lot-card {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #e5dfd3;
+  border-radius: 14px;
+  background: #ffffff;
+  padding: 0.85rem;
+  box-sizing: border-box;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+html[data-theme="dark"] .lot-card {
+  border-color: #38342c;
+  background: #141416;
+}
+.lot-card:hover {
+  border-color: #c5a153;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.04);
+}
+.lot-card-thumb-wrap {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #eeebe3;
+  text-decoration: none;
+}
+html[data-theme="dark"] .lot-card-thumb-wrap {
+  background: #1c1a16;
+}
+.lot-card-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.lot-card-body {
+  display: flex;
+  flex-direction: column;
+  padding: 0.85rem 0.25rem 0.25rem;
+  gap: 0.65rem;
+  flex: 1;
+}
+.lot-card-status-row {
+  display: flex;
+  align-items: center;
+}
+.lot-card-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  background: #fbf9f4;
+  border: 1px solid #e2dcd0;
+  color: #2b3138;
+}
+html[data-theme="dark"] .lot-card-badge {
+  background: #1c1a16;
+  border-color: #3d3322;
+  color: #f2ead2;
+}
+.lot-card-badge .live-dot {
+  width: 0.42rem;
+  height: 0.42rem;
+  border-radius: 50%;
+  background: #e62117;
+}
+.lot-card-title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+  line-height: 1.3;
+  min-height: 2.6rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.lot-card-title a {
+  color: #1e2022;
+  text-decoration: none;
+}
+html[data-theme="dark"] .lot-card-title a {
+  color: #f2ead2;
+}
+.lot-card-title a:hover {
+  color: var(--brass);
+}
+.lot-card-pricing {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+.lot-card-price-label {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: #8c8f94;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.lot-card-price-val {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #1e2022;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.15;
+}
+html[data-theme="dark"] .lot-card-price-val {
+  color: #f2ead2;
+}
+.lot-card-increment {
+  font-size: 0.75rem;
+  color: #8c8f94;
+}
+.lot-card-timing {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  margin-top: 0.25rem;
+}
+.lot-card-countdown {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #8b6e35;
+  font-variant-numeric: tabular-nums;
+}
+.lot-card-countdown svg {
+  color: #8b6e35;
+}
+.lot-card-date {
+  font-size: 0.75rem;
+  color: #8c8f94;
+}
+.lot-card-action {
+  margin-top: auto;
+  padding-top: 0.75rem;
+}
+.lot-card-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 38px;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #2b3138;
+  border: 1px solid #cfc9be;
+  font-size: 0.88rem;
+  font-weight: 500;
+  text-decoration: none;
+  box-sizing: border-box;
+  transition: all 0.15s ease;
+}
+.lot-card-btn:hover {
+  background: #fbf9f4;
+  border-color: #2b3138;
+}
+html[data-theme="dark"] .lot-card-btn {
+  background: #141416;
+  color: #f2ead2;
+  border-color: #38342c;
+}
+
+/* Catalog Pagination Row matching reference */
+.catalog-pagination-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.85rem;
+  margin-top: 3.5rem;
+}
+.pagination-arrow {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 0;
+  background: transparent;
+  color: #8c8f94;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+}
+.pagination-arrow:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.pagination-page {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 0;
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.92rem;
+  font-weight: 500;
+  color: #6a6e74;
+  cursor: pointer;
+  padding: 0;
+}
+.pagination-page.active {
+  background: #deb887;
+  color: #3a2b16;
+  font-weight: 600;
+}
+
+/* 5. New Lot Flow: Stepper, 3-Column Museum Acervo Cards & Balanced Step 2 */
+.new-lot-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem 2rem;
+  margin-bottom: 1.5rem;
+}
+.new-lot-header h1 {
+  margin: 0;
+}
+.flow-steps {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.65rem 1.25rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  color: var(--muted);
+}
+.flow-steps li {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-size: 0.95rem;
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+.flow-steps li + li::before {
+  content: "";
+  display: inline-block;
+  width: 2.25rem;
+  height: 1px;
+  background: var(--line);
+  margin-right: 0.5rem;
+}
+.step-badge {
+  width: 1.7rem;
+  height: 1.7rem;
+  border-radius: 6px;
+  border: 1px solid var(--field);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.flow-steps li[aria-current="step"] {
+  color: var(--ink);
+  font-weight: 600;
+  border-bottom: 0;
+}
+.flow-steps li[aria-current="step"] .step-badge {
+  border-color: var(--brass);
+  color: var(--brass);
+}
+.flow-steps li.step-done {
+  color: var(--live);
+}
+.flow-steps li.step-done .step-badge {
+  border-color: var(--live);
+  color: var(--live);
+}
+
+.catalog-search-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  align-items: flex-end;
+  max-width: 38rem;
+}
+.catalog-search-label {
+  flex: 1 1 12rem;
+  min-width: 0;
+}
+.catalog-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  border: 1px solid var(--field);
+  border-radius: 12px;
+  padding: 0 0.85rem;
+  background: var(--card);
+  min-width: 0;
+  box-sizing: border-box;
+}
+.catalog-input-wrap input {
+  border: 0;
+  padding: 0.68rem 0;
+  width: 100%;
+  min-width: 0;
+  background: transparent;
+  outline: none;
+}
+.shortcuts .chip[data-active] {
+  border-color: var(--brass);
+  background: color-mix(in srgb, var(--brass) 14%, var(--card));
+}
+.catalog-heading {
+  font-size: 1.1rem;
+  margin: 1rem 0 0.75rem;
+}
+.catalog-results {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.1rem;
+  list-style: none;
+  padding: 0;
+  margin: 0.75rem 0 1.5rem;
+}
+.catalog-results li.catalog-card {
+  display: grid;
+  grid-template-columns: 6rem minmax(0, 1fr);
+  gap: 0.9rem;
+  align-items: stretch;
+  padding: 0.95rem;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--card);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+}
+.catalog-thumb-wrap {
+  width: 6rem;
+  height: 6.5rem;
+  border-radius: 10px;
+  background: var(--photo);
+  border: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 0.25rem;
+  box-sizing: border-box;
+}
+.catalog-results li.catalog-card img.catalog-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: transparent;
+}
+.catalog-card-body {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 0.35rem;
+  min-width: 0;
+}
+.catalog-card-title {
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+.catalog-card-meta {
+  font-size: 0.8rem;
+  color: var(--muted);
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+.catalog-pick-btn {
+  width: 100%;
+  min-height: 38px;
+  padding: 0.3rem 0.8rem;
+  border-radius: 999px;
+  font-size: 0.88rem;
+  font-weight: 500;
+  margin-top: 0.25rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+}
+.catalog-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 1.5rem;
+}
+.pagination-info {
+  font-size: 0.92rem;
+  color: var(--muted);
+}
+
+/* Step 2 & Step 3 Two-Card Layout */
+.flow-step {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+  gap: 1.5rem;
+  align-items: stretch;
+}
+.flow-card {
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 1.5rem;
+  background: var(--card);
+  box-sizing: border-box;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+}
+.flow-item-card {
+  display: grid;
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+  gap: 1.25rem;
+  align-items: start;
+}
+.flow-photo-wrap {
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--photo);
+  border: 1px solid var(--line);
+  padding: 0.35rem;
+}
+.flow-photo {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  object-fit: contain;
+  background: var(--photo);
+  border-radius: 8px;
+  display: block;
+}
+.flow-item-specs {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  min-width: 0;
+}
+.flow-item-specs h2,
+.flow-item-specs h3,
+.flow-form-heading {
+  font-size: 1.25rem;
+  margin: 0 0 0.25rem;
+}
+.spec-list {
+  display: grid;
+  gap: 0;
+  max-width: none;
+  margin: 0;
+}
+.spec-list > div {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.1rem;
+  padding: 0.45rem 0;
+  border-bottom: 1px solid var(--line);
+}
+.spec-list dt {
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+.spec-list dd {
+  text-align: left;
+  font-size: 0.92rem;
+  font-weight: 500;
+  color: var(--ink);
+}
+.flow-change-item {
+  align-self: flex-start;
+  margin-top: 0.35rem;
+  font-size: 0.9rem;
+}
+.lot-config-form {
+  max-width: none;
+  gap: 0.9rem;
+}
+.lot-field-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+.lot-field-col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+.lot-field-grid input {
+  width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
+}
+.duration-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.duration-chip {
+  min-height: 36px;
+  padding: 0 0.9rem;
+  font-size: 0.88rem;
+}
+.currency-field {
+  display: flex;
+  align-items: stretch;
+  border: 1px solid var(--field);
+  border-radius: 12px;
+  background: var(--card);
+  overflow: hidden;
+}
+.currency-field::before {
+  content: "R$";
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 0.75rem;
+  background: color-mix(in srgb, var(--ink) 7%, transparent);
+  border-right: 1px solid var(--field);
+  color: var(--ink);
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+.currency-field input {
+  border: 0;
+  border-radius: 0;
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+}
+.field-limit {
+  font-size: 0.76rem;
+  color: var(--muted);
+}
+.flow-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.8rem;
+  margin-top: 0.75rem;
+  flex-wrap: wrap;
+}
+.review-dl {
+  max-width: none;
+}
+
+/* Responsive Breakpoints (Tablet & Mobile, down to 320px with zero horizontal overflow) */
+@media (max-width: 960px) {
+  .catalog-results {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .flow-step {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 900px) {
+  .header-theme-signed-in {
+    display: none;
+  }
+  .showcase-hero {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+    margin: 1rem 0 1.75rem;
+  }
+  .showcase-hero form.showcase-search {
+    width: 100%;
+  }
+  .featured {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.5rem;
+  }
+  .featured-title {
+    font-size: 2.1rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .featured-stats {
+    gap: 0.85rem;
+  }
+  .featured-stat-end {
+    padding-left: 0.85rem;
+  }
+  .featured-stats div.featured-stat-col strong.featured-stat-value,
+  .featured-stats div.featured-stat-col strong.featured-stat-countdown {
+    font-size: 1.3rem;
+  }
+  .featured-actions {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.65rem;
+  }
+  .featured-actions a.featured-bid,
+  .featured-actions a.featured-history {
+    width: 100%;
+  }
+  .featured-carousel-pill {
+    right: 0.65rem;
+    bottom: 0.65rem;
+    padding: 0.15rem 0.45rem;
+    font-size: 0.76rem;
+  }
+  .catalog-results {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .flow-item-card {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .lot-field-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .flow-steps li + li::before {
+    display: none;
+  }
+}
+
+@media (max-width: 380px) {
+  .featured-stats {
+    gap: 0.6rem;
+  }
+  .featured-stat-end {
+    padding-left: 0.6rem;
+  }
+  .featured-stats div.featured-stat-col strong.featured-stat-value,
+  .featured-stats div.featured-stat-col strong.featured-stat-countdown {
+    font-size: 1.12rem;
+  }
+}
+
+/* 6. Account Menu Desktop De-duplication */
+@media (min-width: 901px) {
+  .account-panel .theme-toggle {
+    display: none;
+  }
+}
+
+/* 7. Meus Arremates (MyWins) — Framed Cards & Semantic Status Badges */
+section[aria-label="Meus arremates"] > h1 {
+  font-family: var(--serif);
+  font-size: 3rem;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  margin-bottom: 1.25rem;
+}
+section[aria-label="Meus arremates"] h2 {
+  margin: 2rem 0 0.75rem;
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+.my-lots {
+  display: grid;
+  gap: 0.8rem;
+  margin: 0 0 1.75rem;
+}
+.my-lots li {
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  padding: 0.95rem 1.2rem;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--card);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  gap: 0.6rem 1.15rem;
+}
+.my-lots li .lot-thumb {
+  width: 5rem;
+  height: 4.1rem;
+  object-fit: contain;
+  background: var(--photo);
+  border-radius: 6px;
+  display: block;
+}
+.my-lot-body {
+  gap: 0.4rem;
+}
+.my-lot-note {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+  color: var(--ink);
+  font-size: 0.92rem;
+  font-weight: 500;
+}
+.my-lots li .state {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.16rem 0.65rem;
+  font-weight: 600;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+}
+.my-lots li[data-outcome="leading"] .state,
+.my-lots li[data-outcome="won"] .state {
+  color: var(--live);
+  border-color: var(--live);
+  background: color-mix(in srgb, var(--live) 10%, var(--card));
+}
+.my-lots li[data-outcome="leading"] .state::before {
+  content: "";
+  width: 0.48rem;
+  height: 0.48rem;
+  border-radius: 50%;
+  background: var(--live);
+}
+.my-lots li[data-outcome="outbid"] .state {
+  color: var(--danger);
+  border-color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 8%, var(--card));
+}
+.my-lots li[data-outcome="settling"] .state {
+  color: var(--brass);
+  border-color: var(--brass);
+  background: color-mix(in srgb, var(--brass) 10%, var(--card));
+}
+
+/* 8. Lot Detail & Live Room (Gallery Frame, 3-Column Stats & Callout) */
+article[aria-label="Lote"] > h1 {
+  font-family: var(--serif);
+  font-size: 2.85rem;
+  font-weight: 600;
+  line-height: 1.1;
+  margin-bottom: 1.5rem;
+}
+.lot-hero {
+  background: var(--photo);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 1.1rem;
+  box-shadow: inset 0 0 0 6px var(--card), 0 2px 12px rgba(0, 0, 0, 0.04);
+}
+.lot-info > p:has(> .state) {
+  display: none;
+}
+details.lot-facts {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 0.5rem 1.25rem 1.15rem;
+  background: var(--card);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+}
+details.lot-facts h2 {
+  font-size: 1.15rem;
+  margin: 1.1rem 0 0.35rem;
+}
+details.lot-facts dl {
+  max-width: none;
+}
+details.lot-facts > p {
+  margin: 1rem 0 0;
+}
+.lot-info > p {
+  margin: 0;
+}
+details.lot-facts > p > a,
+.lot-info > p > a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 1.15rem;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--card);
+  color: var(--ink);
+  font-size: 0.92rem;
+  font-weight: 500;
+  text-decoration: none;
+  box-sizing: border-box;
+}
+details.lot-facts > p > a:hover,
+.lot-info > p > a:hover {
+  border-color: var(--brass);
+}
+
+section[aria-label="Sala do lote"] {
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 1.65rem;
+}
+section[aria-label="Sala do lote"] .room-status .state[data-state="live"] {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.24rem 0.75rem;
+  border-color: var(--line);
+  background: var(--card);
+  color: var(--ink);
+  font-weight: 600;
+}
+section[aria-label="Sala do lote"] .room-status .state[data-state="live"]::before {
+  content: "";
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background: #e62117;
+}
+section[aria-label="Sala do lote"] dl {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.1fr) minmax(0, 0.65fr);
+  gap: 0.85rem;
+  padding: 1rem 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  margin: 0;
+}
+section[aria-label="Sala do lote"] dl > div + div {
+  border-left: 1px solid var(--line);
+  padding-left: 0.85rem;
+}
+section[aria-label="Sala do lote"] dl dt {
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+section[aria-label="Sala do lote"] dl dd {
+  font-size: 1.45rem;
+}
+.room-visitor-note {
+  margin: 0.25rem 0;
+  padding: 0.85rem 1.05rem;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--brass);
+  background: var(--paper);
+  color: var(--ink);
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+@media (max-width: 600px) {
+  .my-lots li {
+    grid-template-columns: auto minmax(0, 1fr);
+    padding: 0.85rem;
+  }
+  .my-lots li .my-lot-action {
+    grid-column: 1 / -1;
+    justify-self: stretch;
+    justify-content: center;
+  }
+  section[aria-label="Sala do lote"] dl {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  section[aria-label="Sala do lote"] dl > div:nth-child(3) {
+    border-left: 0;
+    padding-left: 0;
+  }
+}
+
+/* 9. Sliding Pill Theme Toggle Switch (Sun/Moon + Circular Knob) */
+.account-panel .theme-toggle {
+  gap: 0.65rem;
+  align-items: center;
+}
+button.theme-toggle-icon {
+  width: 52px;
+  height: 44px;
+  min-width: 52px;
+  min-height: 44px;
+  padding: 0;
+  border-radius: 999px;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+button.theme-toggle-icon:hover {
+  background: transparent;
+}
+.theme-switch-track {
+  position: relative;
+  width: 52px;
+  height: 28px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 6px;
+  box-sizing: border-box;
+  background: linear-gradient(180deg, #dcd9d0 0%, #eae7df 100%);
+  border: 1.5px solid #c8c3b7;
+  box-shadow: inset 0 1.5px 4px rgba(0, 0, 0, 0.16), 0 1px 2px rgba(255, 255, 255, 0.75);
+  transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+button.theme-toggle:hover .theme-switch-track {
+  border-color: var(--brass);
+}
+button.theme-toggle[data-current-theme="dark"] .theme-switch-track {
+  background: #0d0d0c;
+  border-color: #3a3833;
+  box-shadow: inset 0 1.5px 5px rgba(0, 0, 0, 0.8);
+}
+.theme-switch-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 21px;
+  height: 21px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #ffffff 0%, #f3f1ec 100%);
+  box-shadow: 0 1.5px 4px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.04);
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), background 0.3s ease, box-shadow 0.3s ease;
+  z-index: 2;
+}
+button.theme-toggle[data-current-theme="dark"] .theme-switch-thumb {
+  transform: translateX(24px);
+  background: #ffffff;
+  box-shadow: 0 1.5px 5px rgba(0, 0, 0, 0.55);
+}
+.theme-switch-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 15px;
+  height: 15px;
+  z-index: 1;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+.theme-switch-sun {
+  color: #ffffff;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.32));
+  opacity: 1;
+  transform: scale(1);
+}
+button.theme-toggle[data-current-theme="dark"] .theme-switch-sun {
+  opacity: 0;
+  transform: scale(0.7);
+}
+.theme-switch-moon {
+  color: #ffffff;
+  opacity: 0;
+  transform: scale(0.7);
+}
+button.theme-toggle[data-current-theme="dark"] .theme-switch-moon {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* 10. Painel do Leiloeiro & Meus Lotes (.own-lot) — Full Rounded Cards Without Cut Edges */
+section[aria-label="Painel do leiloeiro"] .panel-head h1 {
+  font-family: var(--serif);
+  font-size: 3rem;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  margin: 0;
+}
+.panel-stats div {
+  border: 1.5px solid #d5d0c4;
+  border-radius: 16px;
+  padding: 1.15rem 1.35rem;
+  background: var(--card);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+html[data-theme="dark"] .panel-stats div {
+  border-color: #36342f;
+}
+.panel-stats strong {
+  font-size: 1.65rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.own-lot {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 0.85rem 1.25rem;
+  align-items: center;
+  padding: 1.2rem 1.5rem;
+  margin: 0.95rem 0;
+  border: 1.5px solid #d5d0c4;
+  border-radius: 16px;
+  background: var(--card);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+  box-sizing: border-box;
+}
+html[data-theme="dark"] .own-lot {
+  border-color: #36342f;
+}
+.own-lot .lot-thumb-frame {
+  width: 4.8rem;
+  height: 4.8rem;
+  padding: 0;
+  border-radius: 12px;
+  border: 1px solid #d5d0c4;
+  background: var(--photo);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+html[data-theme="dark"] .own-lot .lot-thumb-frame {
+  border-color: #36342f;
+}
+.own-lot .lot-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: var(--photo);
+  border-radius: 11px;
+  display: block;
+}
+.own-lot-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+.own-lot-body h3 {
+  font-size: 1.12rem;
+  font-weight: 600;
+  margin: 0;
+}
+.own-lot-body p {
+  margin: 0;
+  color: var(--muted);
+}
+.own-lot .state {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.38rem;
+  font-weight: 600;
+  font-size: 0.75rem;
+  padding: 0.14rem 0.6rem;
+}
+.own-lot[data-state="live"] .state {
+  color: var(--ink);
+  border-color: var(--line);
+  background: color-mix(in srgb, var(--photo) 70%, var(--card));
+}
+.own-lot[data-state="live"] .state::before {
+  content: "";
+  width: 0.48rem;
+  height: 0.48rem;
+  border-radius: 50%;
+  background: #e62117;
+}
+.own-lot[data-state="scheduled"] .state {
+  color: var(--brass);
+  border-color: var(--brass);
+  background: color-mix(in srgb, var(--brass) 10%, var(--card));
+}
+.own-lot-actions a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 1.05rem;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--card);
+  color: var(--ink);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.92rem;
+  box-sizing: border-box;
+}
+.own-lot-actions a:hover {
+  border-color: var(--brass);
+}
+@media (max-width: 600px) {
+  .own-lot {
+    grid-template-columns: auto minmax(0, 1fr);
+    padding: 1rem;
+  }
+}
+
+/* 11. Continuous & Slow Gallery Carousel (.featured) */
+.featured-cover {
+  position: relative;
+  overflow: hidden;
+  animation: featured-slide-in 1.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.featured-body {
+  animation: featured-fade-in 1.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.featured-cover img {
+  animation: slow-gallery-drift 5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+  transform-origin: center center;
+}
+.featured-progress {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 3px;
+  width: 0%;
+  background: var(--brass);
+  opacity: 0.85;
+  animation: carousel-progress 5s linear forwards;
+}
+.featured[data-paused] .featured-cover img,
+.featured[data-paused] .featured-progress {
+  animation-play-state: paused;
+}
+
+@keyframes featured-slide-in {
+  0% {
+    opacity: 0.2;
+    transform: translateX(40px) scale(0.98);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+@keyframes featured-fade-in {
+  0% {
+    opacity: 0.3;
+    transform: translateY(12px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes slow-gallery-drift {
+  0% {
+    transform: scale(1.0);
+  }
+  100% {
+    transform: scale(1.05);
+  }
+}
+@keyframes carousel-progress {
+  0% {
+    width: 0%;
+  }
+  100% {
+    width: 100%;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .featured-cover,
+  .featured-body,
+  .featured-cover img,
+  .featured-progress {
+    animation: none;
+  }
+}

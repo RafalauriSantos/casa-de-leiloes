@@ -70,8 +70,10 @@ export function MyWins({ token }: { token: string }) {
             <h2>{group.title}</h2>
             <ul className="my-lots">
               {lots.map((lot) => (
-                <li key={lot.lotId}>
-                  <img src={lot.imageUrl} alt="" className="lot-thumb" loading="lazy" />
+                <li key={lot.lotId} data-outcome={lot.outcome}>
+                  <div className="lot-thumb-frame">
+                    <img src={lot.imageUrl} alt="" className="lot-thumb" loading="lazy" />
+                  </div>
                   <div className="my-lot-body">
                     {lot.outcome === 'cancelled' ? <strong>{lot.title}</strong> : <Link to={`/lotes/${lot.lotId}`}><strong>{lot.title}</strong></Link>}
                     <span className="my-lot-note"><span className="state">{OUTCOME_LABEL[lot.outcome]}</span> · {noteFor(lot.outcome, lot.myBestCents)}</span>

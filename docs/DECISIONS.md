@@ -402,3 +402,21 @@ Built so far: each accepted bid returns a bid receipt `{seq, head, placedAt}` in
 - **Tradeoff:** only the glossary is translated. Medium, culture, artist and any title not in the glossary stay in English, as the Met wrote them. A translation the glossary does not have is never guessed. Growing the glossary is a small change, and each term is a decision a reviewer can read.
 - **Test:** `translate.test.ts` (terms, unknown terms, a captured Met object), and `catalog.test.ts` (the featured items on an empty search, one-letter queries refused).
 
+## D49. Public anchor file link on the audit page (J7)
+- **Why:** Anyone auditing a lot can inspect the public anchor in GitHub, but had to deduce the URL of the lot's file in the repository.
+- **What changes:** `GET /api/lots/{id}/audit` returns `anchorFileUrl` when `ANCHOR_MODE=github` based on the configured repository and branch (`https://github.com/{repo}/blob/{branch}/lots/{id}.csv`). The audit page (`AuditView`) presents this as a direct link opening in a new tab with `target="_blank"` and `rel="noopener noreferrer"`.
+- **Tradeoff:** The URL is computed from backend configuration and lot id without extra network calls to GitHub. When the anchor mode is off or local, the link is omitted.
+- **Test:** Integration test in `backend/tests/integration/audit-anchor.test.ts` and unit test in `frontend/src/features/audit/audit.test.tsx`.
+
+## D50. Editorial showcase overhaul: single hero spotlight and 4-column catalog grid (B45)
+- **Why:** The storefront required visual fidelity to the editorial museum identity: a quiet, high-contrast composition with serif display typography, ivory background, aged brass accents, an un-rotated hero block, and clean 4-column exploration without repeating the featured lot.
+- **What changes:**
+  - `Showcase.tsx`: replaces the continuous scrolling ticker and rotating controls with a single static horizontal hero spotlight. The hero presents the active live lot with large 4:3 image, status capsule (`• AO VIVO`), serif title, columnated current bid/minimum increment and golden countdown timer, plus role-aware action buttons (`Dar lance` / `Ver lote` and `Histórico`).
+  - Catalog "Explorar lotes": heading with brass dash rule, state filter tabs ("Ao vivo", "Agendados", "Encerrados"), and a responsive 4-column grid (2 on tablet, 1 on mobile). The lot in the hero spotlight is excluded from the catalog below to eliminate duplicate cards on the same screen.
+  - Functional catalog pagination (`< (1) 2 3 >`) with 4 lots per page matching the reference layout.
+  - `LotCard.tsx`: vertical museum card structure with status badge, title link, price details, countdown with SVG clock icon, and outline "Ver lote" button.
+- **Tradeoff:** The carousel pause/rotation controls are visible with subtle contrast and pause on hover, click, and keyboard focus, complying with WCAG 2.2.2.
+- **Test:** `frontend/src/features/lots/showcase.test.tsx` and `frontend/src/features/lots/components/LotCard.test.tsx`.
+
+
+

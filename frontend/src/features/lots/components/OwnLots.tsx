@@ -78,8 +78,10 @@ export function OwnLots({ token }: { token: string }) {
       )}
       {load.status === 'ready' && load.lots.length === 0 && <p>Você ainda não publicou lotes.</p>}
       {load.status === 'ready' && load.lots.map((lot) => (
-        <article key={lot.id} className="own-lot">
-          <img src={lot.imageUrl} alt="" className="lot-thumb" loading="lazy" />
+        <article key={lot.id} className="own-lot" data-state={lot.state}>
+          <div className="lot-thumb-frame">
+            <img src={lot.imageUrl} alt="" className="lot-thumb" loading="lazy" />
+          </div>
           <div className="own-lot-body">
             <h3>{lot.title}</h3>
             <p>

@@ -12,6 +12,7 @@ type Results = { status: 'idle' } | { status: 'loading' } | { status: 'error'; m
 
 /** One tap lists items: the catalog is never an empty box. The label is Portuguese, the term is what the Met understands. */
 const SHORTCUTS: Array<{ label: string; term: string }> = [
+  { label: 'Todos', term: '' },
   { label: 'Relógio', term: 'clock' },
   { label: 'Mapa', term: 'map' },
   { label: 'Vaso', term: 'vase' },
@@ -74,18 +75,9 @@ export function CatalogSearch({ token, onPick }: Props) {
         <button type="submit" className="catalog-search-submit" disabled={results.status === 'loading'}>Buscar</button>
       </form>
       <div className="shortcuts">
-        <button
-          type="button"
-          className="chip"
-          data-active={searched === '' ? '' : undefined}
-          disabled={results.status === 'loading'}
-          onClick={() => { setQ(''); run(''); }}
-        >
-          Todos
-        </button>
         {SHORTCUTS.map((shortcut) => (
           <button
-            key={shortcut.term}
+            key={shortcut.label}
             type="button"
             className="chip"
             data-active={searched === shortcut.term ? '' : undefined}
@@ -133,7 +125,7 @@ export function CatalogSearch({ token, onPick }: Props) {
             <button type="button" className="secondary pagination-btn" disabled={results.page.page <= 1} onClick={() => { void load(searched, results.page.page - 1); }}>
               <span aria-hidden="true">← </span>Página anterior
             </button>
-            <span className="pagination-info" aria-hidden={searched !== '' ? 'true' : undefined}>
+            <span className="pagination-info">
               {searched === '' ? `Página ${results.page.page} de ${results.page.pages}` : `${results.page.page} / ${results.page.pages}`}
             </span>
             <button type="button" className="secondary pagination-btn" disabled={!results.page.hasNext} onClick={() => { void load(searched, results.page.page + 1); }}>
