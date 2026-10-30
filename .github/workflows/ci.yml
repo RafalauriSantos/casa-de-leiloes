@@ -1,9 +1,10 @@
 name: ci
 
-# Runs on pull requests only (not on every push, and not again after the merge: the PR already tested the same tree).
-# A cancelled older run is replaced by the newest push, so superseded commits do not spend minutes.
+# Runs on pull requests, pushes to main, and manual workflow_dispatch.
 on:
   pull_request:
+  push:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -20,10 +21,17 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      # A change that touches only docs or markdown needs no test run. The job still reports, so the required check passes.
+      # On main (pushes, merges and dispatches), always run the full test suite.
+      # On pull requests, skip the test run only if the change touches exclusively docs/markdown.
       - id: scope
         run: |
-          if git diff --name-only "${{ github.event.pull_request.base.sha || 'origin/main' }}" HEAD -- . ':!docs' ':!*.md' | grep -q .; then
+          if [ "${{ github.ref_name }}" = "main" ]; then
+            echo "Running full CI suite for main branch"
+            echo "code=true" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "Running full CI suite for manual dispatch"
+            echo "code=true" >> "$GITHUB_OUTPUT"
+          elif git diff --name-only "${{ github.event.pull_request.base.sha || 'origin/main' }}" HEAD -- . ':!docs' ':!*.md' | grep -q .; then
             echo "code=true" >> "$GITHUB_OUTPUT"
           else
             echo "code=false" >> "$GITHUB_OUTPUT"
