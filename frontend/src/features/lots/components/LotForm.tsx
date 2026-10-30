@@ -123,7 +123,6 @@ export function LotFields({ values, onChange }: { values: LotFormValues; onChang
           <label>
             Lance inicial (R$)
             <span className="currency-field">
-              <span className="currency-adornment" aria-hidden="true">R$</span>
               <input value={values.startingBid} onChange={set('startingBid')} inputMode="decimal" required placeholder="500,00" />
             </span>
           </label>
@@ -133,7 +132,6 @@ export function LotFields({ values, onChange }: { values: LotFormValues; onChang
           <label>
             Incremento mínimo (R$)
             <span className="currency-field">
-              <span className="currency-adornment" aria-hidden="true">R$</span>
               <input value={values.increment} onChange={set('increment')} inputMode="decimal" required placeholder="50,00" />
             </span>
           </label>

@@ -40,8 +40,9 @@ export function Showcase() {
   const [liveLots, setLiveLots] = useState<LotSummary[]>([]);
   const [liveIndex, setLiveIndex] = useState(0);
   const liveLot = liveLots.length > 0 ? liveLots[liveIndex % liveLots.length] : undefined;
-  const featuredIds = new Set(liveLots.map((lot) => lot.id));
+  const featuredIds = new Set(liveLots.length <= 2 ? liveLots.map((lot) => lot.id) : (liveLot ? [liveLot.id] : []));
   // The block is paused while a person points at it or focuses it, and never moves when they ask for less motion (B45).
+  const [page, setPage] = useState(1);
   const [paused, setPaused] = useState(false);
   // A button holds the block still for anyone who cannot hover, or who needs it still (WCAG 2.2.2).
   const [held, setHeld] = useState(false);
@@ -103,14 +104,25 @@ export function Showcase() {
     return () => { clearInterval(timer); };
   }, [liveLots.length, paused, held]);
 
+  useEffect(() => {
+    setPage(1);
+  }, [tab, query]);
+
   // On the live tab the featured lots are above the list, so the list does not repeat them (B45).
   // Without a search, the live lots are above the list; a search lists what it finds, live lots included.
   const listed = tab === 'live' && query === '' && state.status === 'ready' ? state.lots.filter((lot) => !featuredIds.has(lot.id)) : state.status === 'ready' ? state.lots : [];
+  const PAGE_SIZE = 4;
+  const totalPages = Math.max(1, Math.ceil(listed.length / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages);
+  const pageLots = listed.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
 
   return (
     <section aria-label="Vitrine">
       <div className="showcase-hero">
-        <h1>Leilões ao vivo</h1>
+        <div className="showcase-hero-intro">
+          <h1>Leilões ao vivo</h1>
+          <p className="showcase-hero-sub">Acompanhe os lotes em tempo real e participe dos pregões.</p>
+        </div>
         <form className="showcase-search" onSubmit={(event) => { event.preventDefault(); setQuery(search.trim()); }} role="search">
           <label className="showcase-search-label">
             <span className="sr-only">Buscar por título</span>
@@ -120,9 +132,6 @@ export function Showcase() {
             </svg>
             <input value={search} onChange={(event) => { setSearch(event.target.value); }} placeholder="Buscar por título, artista ou período..." />
           </label>
-          {query !== '' && (
-            <button type="button" className="search-clear" aria-label="Limpar busca" onClick={() => { setSearch(''); setQuery(''); }}>✕</button>
-          )}
           <button type="submit" className="showcase-search-btn">Buscar</button>
         </form>
       </div>
@@ -130,62 +139,49 @@ export function Showcase() {
         <section
           className="featured"
           aria-label="Lote ao vivo em destaque"
+          data-paused={paused || held ? '' : undefined}
           onMouseEnter={() => { setPaused(true); }}
           onMouseLeave={() => { setPaused(false); }}
           onFocus={() => { setPaused(true); }}
           onBlur={() => { setPaused(false); }}
         >
           <div className="featured-media">
-            <Link to={`/lotes/${liveLot.id}`} className="featured-cover" aria-hidden="true" tabIndex={-1}>
+            <div key={liveLot.id} className="featured-cover">
               <img src={liveLot.imageUrl} alt="" />
-            </Link>
+              <span className="featured-progress" aria-hidden="true" />
+            </div>
             <div className="featured-carousel-pill" role="group" aria-label="Controles do destaque">
-              <button
-                type="button"
-                className="carousel-nav-btn"
-                aria-label="Lote anterior"
-                onClick={() => { setLiveIndex((index) => (index - 1 + liveLots.length) % liveLots.length); }}
-              >
-                <span aria-hidden="true">‹</span>
-              </button>
               <span className="carousel-counter" aria-hidden="true">
-                Lote {(liveIndex % liveLots.length) + 1} de {liveLots.length}
+                ‹ Lote {(liveIndex % liveLots.length) + 1} de {liveLots.length} ›
               </span>
-              <button
-                type="button"
-                className="carousel-nav-btn"
-                onClick={() => { setLiveIndex((index) => (index + 1) % liveLots.length); }}
-              >
-                <span className="sr-only">Próximo lote</span>
-                <span aria-hidden="true">›</span>
-              </button>
               <span className="carousel-divider" aria-hidden="true" />
               <button
                 type="button"
                 className="carousel-pause-btn"
+                aria-label={held ? 'Retomar destaque' : 'Pausar destaque'}
                 onClick={() => { setHeld((value) => !value); }}
               >
                 <span aria-hidden="true">{held ? '▶' : '⏸'}</span>
-                <span>{held ? 'Retomar' : 'Pausar'}<span className="sr-only"> destaque</span></span>
+                <span>{held ? 'Retomar' : 'Pausar'}</span>
               </button>
             </div>
           </div>
-          <div className="featured-body">
+          <div key={liveLot.id} className="featured-body">
             <div className="featured-badge-row">
               <span className="featured-status">
                 <span className="live-dot" aria-hidden="true" />
-                AO VIVO AGORA
+                AO VIVO
               </span>
             </div>
             <Link to={`/lotes/${liveLot.id}`} className="featured-title">{liveLot.title}</Link>
             <div className="featured-stats">
               <div className="featured-stat-col">
-                <span className="featured-stat-label">Lance atual</span>
+                <span className="featured-stat-label">LANCE ATUAL</span>
                 <strong className="featured-stat-value">{formatBRL(liveLot.currentAmountCents ?? liveLot.startingBidCents)}</strong>
                 <small className="featured-stat-sub">+ {formatBRL(liveLot.incrementCents)} incremento mínimo</small>
               </div>
               <div className="featured-stat-col featured-stat-end">
-                <span className="featured-stat-label">Encerra em</span>
+                <span className="featured-stat-label">ENCERRA EM</span>
                 <strong className="featured-stat-countdown">{formatRemaining(Math.max(0, Date.parse(liveLot.endsAt) - now))}</strong>
                 <small className="featured-stat-sub">{formatWhen(liveLot.endsAt)}</small>
               </div>
@@ -197,9 +193,12 @@ export function Showcase() {
           </div>
         </section>
       )}
-      <section className="upcoming" aria-labelledby="upcoming-title">
+      <section className="upcoming" aria-label="Próximos leilões">
         <div className="upcoming-head">
-          <h2 id="upcoming-title">Próximos leilões</h2>
+          <div className="catalog-title-wrap">
+            <h2 id="upcoming-title">Explorar lotes</h2>
+            <span className="catalog-title-dash" aria-hidden="true" />
+          </div>
           <nav aria-label="Estado dos lotes">
             {TABS.map((item) => (
               <button
@@ -210,6 +209,17 @@ export function Showcase() {
                 onClick={() => { setTab(item.value); }}
               >
                 {item.value === 'live' && hasLive && <span className="live-dot" aria-hidden="true" />}
+                {item.value === 'scheduled' && (
+                  <svg className="tab-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <circle cx="12" cy="12" r="10" />
+                    <polyline points="12 6 12 12 16 14" />
+                  </svg>
+                )}
+                {item.value === 'ended' && (
+                  <svg className="tab-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                )}
                 {item.label}
               </button>
             ))}
@@ -235,9 +245,48 @@ export function Showcase() {
           <p className="featured-all-note">Todos os lotes ao vivo estão no destaque acima.</p>
         )}
         {listed.length > 0 && (
-          <div className="lot-rows">
-            {listed.map((lot) => <LotCard key={lot.id} lot={lot} />)}
-          </div>
+          <>
+            <div className="lot-rows">
+              {pageLots.map((lot) => <LotCard key={lot.id} lot={lot} />)}
+            </div>
+            {totalPages > 1 && (
+              <nav className="catalog-pagination-row" aria-label="Paginação do catálogo">
+                <button
+                  type="button"
+                  className="pagination-arrow"
+                  aria-label="Página anterior"
+                  disabled={safePage <= 1}
+                  onClick={() => { setPage((p) => Math.max(1, p - 1)); }}
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <polyline points="15 18 9 12 15 6" />
+                  </svg>
+                </button>
+                {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => i + 1).map((p) => (
+                  <button
+                    key={p}
+                    type="button"
+                    className={`pagination-page ${safePage === p ? 'active' : ''}`}
+                    aria-current={safePage === p ? 'page' : undefined}
+                    onClick={() => { setPage(p); }}
+                  >
+                    {p}
+                  </button>
+                ))}
+                <button
+                  type="button"
+                  className="pagination-arrow"
+                  aria-label="Próxima página"
+                  disabled={safePage >= totalPages}
+                  onClick={() => { setPage((p) => Math.min(totalPages, p + 1)); }}
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <polyline points="9 18 15 12 9 6" />
+                  </svg>
+                </button>
+              </nav>
+            )}
+          </>
         )}
       </section>
     </section>

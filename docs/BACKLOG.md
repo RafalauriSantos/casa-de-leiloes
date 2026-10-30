@@ -47,6 +47,8 @@ mutation per rule and the owner's "pode mergear"; **normal** needs one reviewer 
 | Brief gaps: seed test reads the active demo lot (B13); sign-up chooses bidder or auctioneer (B14, migration 11); demo sign-in shortcuts (B15); README with the site and the demo accounts (B16); seed with an ended lot and a tampered lot (B17, B18); cancel with refund (B19, optional); Docker Compose (B20, optional); theme switch (B21, optional); AI usage notes (B22) | 0.6 to 0.8, 8.1, 8.5, 9.1 to 9.3 | D24, D25, D26 | #45 (waiting for "pode mergear") |
 | The app uses the approved canvas palette (white and graphite, dark gold accents, gold in the dark theme) and Jost | 2.x | D33 | #66 |
 | The storefront follows the canvas: headline with search, featured live lot, list of lots with a small photo | 2.1, 2.2 | D34 | #67 |
+| Public anchor link on audit page: links to the lot file on GitHub | 7.3 | D49 | |
+| Editorial showcase overhaul: single hero spotlight and 4-column catalog grid | 2.1, 2.2 | D50 | |
 
 ## To do (by priority)
 
