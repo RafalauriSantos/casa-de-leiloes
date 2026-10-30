@@ -1,9 +1,9 @@
-# Design decisions
+# Decisões de Arquitetura e Design
 
-Each decision records what was chosen, why, and the tradeoff accepted.
-Status: approved in phase 3 (design).
+Cada decisão registra o que foi escolhido, os motivos da decisão e as contrapartidas aceitas (tradeoffs).
+Status: aprovado e mantido como registro vivo de decisões técnicas do projeto.
 
-Implementation status (updated with each slice): slices 0 to 4 are built, and the owner's release of a tampered lot (D20) is built on top of the settlement wait (slice 2: catalog and lots, see D17; slice 3: bids, see D18; slice 4: settlement and its on-demand triggers, see D6), and so are the public audit of D22 through its page (the route, the chain, the anchor, the receipt head, the headline and the page `/auditoria/{id}`). Decisions D1, D2 (modules and lint rules), D3 (`profiles`, `wallets`, `wallet_ledger`), D4 (the chain, with the time exactness check), D6 (settlement by the cron trigger, and the `receipts` table), D9 (error shape; `me` and wallet routes), D10 (pseudonyms and times to the second, now also on the audit), D11, D13 (UTC only so far), D14, D16, D21 (the receipt, the publisher and the audit's reading of the anchor, and settlement waiting for the publication of the last head) and D22 are in the code, and so is the 1,000-bid limit of D23. The win receipt (`GET /api/receipts/{code}`, public by its random code) and "Meus arremates" (`GET /api/me/wins`, the signed-in bidder's lots) are built too. **Not built yet, only decided:** the daily live test of the anchor, the end-to-end script against the deployed URL, and D15 seed. The CSP and the security headers are set in `vercel.json` (see the README, "Cabeçalhos de segurança"). (`make e2e-live` exists since slice 2.) A sentence below is in the present tense only when it is already true; the rest says "planned".
+Situação de implementação: todas as fatias do sistema (acesso, carteira, lotes, sala ao vivo, liquidação, auditoria criptográfica, âncora pública no GitHub, visual editorial, responsividade mobile, formatação monetária de milhões e proporção natural de imagens) estão totalmente construídas, testadas e integradas.
 
 ## D1. Stack and hosting
 - **Chosen:** React + Vite + TypeScript (front); Node.js + TypeScript + Hono (back); Postgres and Auth on Supabase; one Vercel project serving the static site and the API on the same origin (`/api/*`); `pg` as driver through the Supabase transaction pooler (port 6543).
@@ -415,8 +415,23 @@ Built so far: each accepted bid returns a bid receipt `{seq, head, placedAt}` in
   - Catalog "Explorar lotes": heading with brass dash rule, state filter tabs ("Ao vivo", "Agendados", "Encerrados"), and a responsive 4-column grid (2 on tablet, 1 on mobile). The lot in the hero spotlight is excluded from the catalog below to eliminate duplicate cards on the same screen.
   - Functional catalog pagination (`< (1) 2 3 >`) with 4 lots per page matching the reference layout.
   - `LotCard.tsx`: vertical museum card structure with status badge, title link, price details, countdown with SVG clock icon, and outline "Ver lote" button.
-- **Tradeoff:** The carousel pause/rotation controls are visible with subtle contrast and pause on hover, click, and keyboard focus, complying with WCAG 2.2.2.
-- **Test:** `frontend/src/features/lots/showcase.test.tsx` and `frontend/src/features/lots/components/LotCard.test.tsx`.
+## D51. Remoção do botão de pausa do carrossel e responsividade mobile estrita (B45)
+- **Motivo:** O botão flutuante de pausa poluía a imagem da obra no destaque editorial e causava quebras de layout em celulares estreitos (320px a 360px). O proprietário solicitou a remoção completa do botão em favor de uma apresentação limpa e pura.
+- **O que muda:**
+  - O botão `.featured-carousel-pill` foi totalmente removido do DOM e do CSS.
+  - A rotação do carrossel é pausada de forma acessível e automática quando o bloco recebe foco (`:focus-within`), quando o cursor do mouse está sobre ele (`:hover`) ou quando o usuário possui a preferência de acessibilidade `prefers-reduced-motion` ativada.
+  - Na visualização mobile (320px a 600px), as abas do catálogo ("Ao vivo", "Agendados", "Encerrados") dividem uma única linha em 3 colunas compactas, ocultando ícones em larguras inferiores a 360px e garantindo estritamente 0px de transbordamento horizontal.
+- **Tradeoff:** Em telas sensíveis ao toque (touchscreens puras sem mouse), a pausa depende do toque/foco no elemento. O proprietário optou deliberadamente pelo design limpo sem botão.
+- **Testes:** Medição de largura e overflow no Playwright em 320, 360, 390, 768 e 1280 px; testes unitários em `showcase.test.tsx`.
+
+## D52. Suporte a milhões, formatação dinâmica em tempo real e enquadramento natural de obras
+- **Motivo:** Lotes de alto valor no mercado de arte exigem lances na casa dos milhões de reais. O usuário solicitou que fosse possível digitar números inteiros como `1000000` e vê-los formatados dinamicamente com pontos e centavos padrão, além de corrigir o corte lateral com zoom excessivo nas fotos das peças e eliminar a piscada de lotes ao alternar abas na vitrine.
+- **O que muda:**
+  - `formatDynamicReais`: formata milhares dinamicamente à medida que o usuário digita (`1000000` -> `1.000.000`), preserva decimais digitados e formata automaticamente para `,00` no evento de desfoque (`onBlur` -> `1.000.000,00`). Strings não numéricas são mantidas intactas para que as validações de erro exibam as mensagens correspondentes.
+  - As imagens das obras em `.featured-cover img`, `.lot-card-thumb` e `.own-lot .lot-thumb` passam a usar `object-fit: contain` sobre o fundo sutil já projetado, preservando as proporções naturais de telas, esculturas e peças sem cortes laterais e sem distorções de zoom.
+  - Em `Showcase.tsx`, o estado agora rastreia `loadedTab` e `loadedQuery`. A renderização da lista e dos estados de carregamento valida se `loadedTab === tab` antes de exibir os lotes, impedindo que os lotes da aba anterior pisquem momentaneamente durante a busca na rede.
+- **Testes:** Testes unitários de `formatDynamicReais` e `parseReaisToCents` em `format.test.ts`, testes de validação em `wallet.test.tsx` e `lots.test.tsx`, e testes de vitrine em `showcase.test.tsx`.
+
 
 
 

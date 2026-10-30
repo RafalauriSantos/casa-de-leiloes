@@ -24,7 +24,10 @@ const EMPTY_HINT: Record<ShowcaseStatus, string> = {
   ended: 'Ainda não há lotes encerrados.',
 };
 
-type State = { status: 'loading' } | { status: 'error'; message: string } | { status: 'ready'; lots: LotSummary[] };
+type State =
+  | { status: 'loading' }
+  | { status: 'error'; message: string }
+  | { status: 'ready'; lots: LotSummary[]; loadedTab: ShowcaseStatus; loadedQuery: string };
 
 export function getPaginationRange(current: number, total: number): number[] {
   if (total <= 5) {
@@ -58,8 +61,6 @@ export function Showcase() {
   // The block is paused while a person points at it or focuses it, and never moves when they ask for less motion (B45).
   const [page, setPage] = useState(1);
   const [paused, setPaused] = useState(false);
-  // A button holds the block still for anyone who cannot hover, or who needs it still (WCAG 2.2.2).
-  const [held, setHeld] = useState(false);
   const [now, setNow] = useState(() => Date.now());
 
   useEffect(() => {
@@ -69,9 +70,10 @@ export function Showcase() {
 
   useEffect(() => {
     let cancelled = false;
-    setState({ status: 'loading' });
     fetchLots({ status: tab, q: query || undefined })
-      .then((lots) => { if (!cancelled) setState({ status: 'ready', lots }); })
+      .then((lots) => {
+        if (!cancelled) setState({ status: 'ready', lots, loadedTab: tab, loadedQuery: query });
+      })
       .catch((error: unknown) => {
         if (!cancelled) setState({ status: 'error', message: error instanceof Error ? error.message : 'Erro inesperado.' });
       });
@@ -113,10 +115,10 @@ export function Showcase() {
   useEffect(() => {
     const count = liveLots.length;
     const reducedMotion = typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (count < 2 || paused || held || reducedMotion) return;
+    if (count < 2 || paused || reducedMotion) return;
     const timer = setInterval(() => { setLiveIndex((index) => (index + 1) % count); }, CAROUSEL_MS);
     return () => { clearInterval(timer); };
-  }, [liveLots.length, paused, held]);
+  }, [liveLots.length, paused]);
 
   useEffect(() => {
     setPage(1);
@@ -124,7 +126,14 @@ export function Showcase() {
 
   // On the live tab the featured lots are above the list, so the list does not repeat them (B45).
   // Without a search, the live lots are above the list; a search lists what it finds, live lots included.
-  const listed = tab === 'live' && query === '' && state.status === 'ready' ? state.lots.filter((lot) => !featuredIds.has(lot.id)) : state.status === 'ready' ? state.lots : [];
+  const isLoaded = state.status === 'ready' && state.loadedTab === tab && state.loadedQuery === query;
+  const isLoading = state.status === 'loading' || (!isLoaded && state.status !== 'error');
+  const currentLots = isLoaded ? state.lots : [];
+  const listed = isLoaded
+    ? tab === 'live' && query === ''
+      ? currentLots.filter((lot) => !featuredIds.has(lot.id))
+      : currentLots
+    : [];
   const PAGE_SIZE = 4;
   const totalPages = Math.max(1, Math.ceil(listed.length / PAGE_SIZE));
   const safePage = Math.min(page, totalPages);
@@ -153,7 +162,7 @@ export function Showcase() {
         <section
           className="featured"
           aria-label="Lote ao vivo em destaque"
-          data-paused={paused || held ? '' : undefined}
+          data-paused={paused ? '' : undefined}
           onMouseEnter={() => { setPaused(true); }}
           onMouseLeave={() => { setPaused(false); }}
           onFocus={() => { setPaused(true); }}
@@ -164,23 +173,6 @@ export function Showcase() {
               <img src={liveLot.imageUrl} alt="" />
               <span className="featured-progress" aria-hidden="true" />
             </div>
-            {liveLots.length > 1 && (
-              <div className="featured-carousel-pill" role="group" aria-label="Controles do destaque">
-                <span className="carousel-counter" aria-hidden="true">
-                  ‹ Lote {(liveIndex % liveLots.length) + 1} de {liveLots.length} ›
-                </span>
-                <span className="carousel-divider" aria-hidden="true" />
-                <button
-                  type="button"
-                  className="carousel-pause-btn"
-                  aria-label={held ? 'Retomar destaque' : 'Pausar destaque'}
-                  onClick={() => { setHeld((value) => !value); }}
-                >
-                  <span aria-hidden="true">{held ? '▶' : '⏸'}</span>
-                  <span>{held ? 'Retomar' : 'Pausar'}</span>
-                </button>
-              </div>
-            )}
           </div>
           <div key={liveLot.id} className="featured-body">
             <div className="featured-badge-row">
@@ -241,14 +233,14 @@ export function Showcase() {
             ))}
           </nav>
         </div>
-        {state.status === 'loading' && <p>Carregando lotes…</p>}
+        {isLoading && <p>Carregando lotes…</p>}
         {state.status === 'error' && (
           <>
             <p role="alert">{state.message}</p>
             <button type="button" onClick={() => { setAttempt((n) => n + 1); }}>Tentar de novo</button>
           </>
         )}
-        {state.status === 'ready' && state.lots.length === 0 && (
+        {isLoaded && currentLots.length === 0 && (
           <div className="empty">
             <p>{query ? `Nenhum lote encontrado para "${query}".` : EMPTY_HINT[tab]}</p>
             {isAuctioneer && <Link className="my-lot-action" to="/leiloeiro/novo">Criar lote</Link>}
@@ -257,7 +249,7 @@ export function Showcase() {
             )}
           </div>
         )}
-        {state.status === 'ready' && state.lots.length > 0 && listed.length === 0 && (
+        {isLoaded && currentLots.length > 0 && listed.length === 0 && (
           <p className="featured-all-note">Todos os lotes ao vivo estão no destaque acima.</p>
         )}
         {listed.length > 0 && (
